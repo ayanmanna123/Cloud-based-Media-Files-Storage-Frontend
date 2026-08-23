@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import ImageKit from 'imagekit-javascript';
 
 export function useDrive(folderId = null) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [data, setData] = useState({ folder: null, children: { folders: [], files: [] }, path: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,9 +14,12 @@ export function useDrive(folderId = null) {
     setLoading(true);
     setError(null);
     try {
-      const endpoint = folderId 
-        ? `${import.meta.env.VITE_API_URL}/api/folders/${folderId}`
-        : `${import.meta.env.VITE_API_URL}/api/folders/root`;
+      let endpoint = `${import.meta.env.VITE_API_URL}/api/folders/root`;
+      if (folderId === 'shared') {
+        endpoint = `${import.meta.env.VITE_API_URL}/api/shares/me`;
+      } else if (folderId) {
+        endpoint = `${import.meta.env.VITE_API_URL}/api/folders/${folderId}`;
+      }
         
       const response = await fetch(endpoint, {
         headers: {
@@ -26,11 +29,23 @@ export function useDrive(folderId = null) {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          logout();
+          throw new Error('Session expired. Please log in again.');
+        }
         throw new Error('Failed to fetch folder contents');
       }
 
       const result = await response.json();
-      setData(result);
+      if (folderId === 'shared') {
+        setData({
+          folder: { id: 'shared', name: 'Shared with me' },
+          children: { folders: result.folders || [], files: result.files || [] },
+          path: [{ id: 'shared', name: 'Shared with me' }]
+        });
+      } else {
+        setData(result);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -293,6 +308,51 @@ export function useDrive(folderId = null) {
     }
   };
 
+  const fetchShares = async (resourceType, resourceId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/shares/${resourceType}/${resourceId}`, {
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch shares');
+      return await response.json();
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  const shareResource = async (resourceType, resourceId, email, role, message) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/shares`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ resourceType, resourceId, email, role, message })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Failed to share resource');
+      }
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const revokeShare = async (shareId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/shares/${shareId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to revoke share');
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   return {
     ...data,
     loading,
@@ -306,6 +366,9 @@ export function useDrive(folderId = null) {
     moveFile,
     downloadFile,
     fetchAllFolders,
+    fetchShares,
+    shareResource,
+    revokeShare,
     refresh: fetchFolder
   };
 }

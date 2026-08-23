@@ -25,6 +25,7 @@ export function Login() {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       })
 
@@ -52,6 +53,7 @@ export function Login() {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ token: credential }),
       })
 

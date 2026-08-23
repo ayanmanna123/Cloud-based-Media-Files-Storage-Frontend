@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from "react"
-import { useParams, useNavigate, useOutletContext } from "react-router-dom"
+import { useParams, useNavigate, useOutletContext, useLocation } from "react-router-dom"
 import { 
   FolderOpen, 
   MoreVertical, 
@@ -24,7 +24,8 @@ import {
   ChevronUp,
   X,
   LayoutGrid,
-  List
+  List,
+  Users
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -45,16 +46,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../components/ui/dialog"
+import { ShareModal } from "../../components/ShareModal"
 
 export function Dashboard() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { searchQuery } = useOutletContext() || { searchQuery: "" }
+  
+  const currentView = location.pathname.split("/").pop()
+  const driveId = currentView === "shared" ? "shared" : id
+
   const { 
     folder, children, path, loading, error, 
     createFolder, renameFolder, deleteFolder, 
-    uploadFile, renameFile, deleteFile, moveFile, downloadFile, fetchAllFolders 
-  } = useDrive(id)
+    uploadFile, renameFile, deleteFile, moveFile, downloadFile, fetchAllFolders,
+    fetchShares, shareResource, revokeShare
+  } = useDrive(driveId)
 
   // Folder Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -65,6 +73,8 @@ export function Dashboard() {
   const [renameFileModalData, setRenameFileModalData] = useState({ isOpen: false, id: null, currentName: "" })
   const [moveFileModalData, setMoveFileModalData] = useState({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })
   const [allFolders, setAllFolders] = useState([])
+  
+  const [shareModalData, setShareModalData] = useState({ isOpen: false, resourceType: null, resourceId: null, resourceName: "" })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sortMethod, setSortMethod] = useState(() => {
@@ -419,11 +429,9 @@ export function Dashboard() {
           </div>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <ArrowUpDown className="w-4 h-4" />
-                Sort
-              </Button>
+            <DropdownMenuTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 gap-2">
+              <ArrowUpDown className="w-4 h-4" />
+              Sort
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setSortMethod("name-asc")}>Name (A-Z) {sortMethod === "name-asc" && "✓"}</DropdownMenuItem>
@@ -471,6 +479,9 @@ export function Dashboard() {
                         <MoreVertical className="w-4 h-4 text-muted-foreground" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
+                          <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setRenameModalData({ isOpen: true, id: f.id, currentName: f.name })}>
                           <Edit2 className="w-4 h-4 mr-2" /> Rename
                         </DropdownMenuItem>
@@ -537,6 +548,9 @@ export function Dashboard() {
                               <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
                                 <Download className="w-4 h-4 mr-2" /> Download
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
+                                <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
                                 <Edit2 className="w-4 h-4 mr-2" /> Rename
                               </DropdownMenuItem>
@@ -601,6 +615,9 @@ export function Dashboard() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
                               <Download className="w-4 h-4 mr-2" /> Download
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
+                              <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
                               <Edit2 className="w-4 h-4 mr-2" /> Rename
@@ -766,6 +783,15 @@ export function Dashboard() {
           </form>
         </DialogContent>
       </Dialog>
+      {/* Share Modal */}
+      <ShareModal 
+        isOpen={shareModalData.isOpen}
+        onClose={() => setShareModalData({ ...shareModalData, isOpen: false })}
+        resourceType={shareModalData.resourceType}
+        resourceId={shareModalData.resourceId}
+        resourceName={shareModalData.resourceName}
+        useDrive={{ fetchShares, shareResource, revokeShare }}
+      />
     </div>
   )
 }
