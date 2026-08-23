@@ -47,9 +47,19 @@ export function FileCard({
   const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
   const isPdf = file.name.match(/\.(pdf)$/i)
   const isVideo = file.name.match(/\.(mp4|mov|avi|mkv|webm)$/i)
+  const isOfficeDoc = file.name.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i)
   const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-400,h-300,c-at_max`
   const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-400,h-300,c-at_max`
+  const fileUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`
   const isStarred = starredItems.includes(`file_${file.id}`)
+
+  const handleCardClick = () => {
+    if (isOfficeDoc) {
+      window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`, '_blank')
+    } else {
+      window.open(fileUrl, '_blank')
+    }
+  }
 
   const DropdownActions = () => (
     <DropdownMenuContent align="end">
@@ -90,7 +100,10 @@ export function FileCard({
 
   if (viewMode === "list") {
     return (
-      <div className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer">
+      <div 
+        className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer"
+        onClick={handleCardClick}
+      >
         <div className="col-span-11 sm:col-span-6 md:col-span-5 flex items-center gap-3">
           <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
           <span className="text-sm font-medium truncate">{file.name}</span>
@@ -128,7 +141,10 @@ export function FileCard({
   }
 
   return (
-    <div className="group border border-border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48">
+    <div 
+      className="group border border-border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48"
+      onClick={handleCardClick}
+    >
       <div className="flex-1 bg-muted/30 flex items-center justify-center overflow-hidden relative">
         {(isImage || isPdf || isVideo) ? (
           <>
