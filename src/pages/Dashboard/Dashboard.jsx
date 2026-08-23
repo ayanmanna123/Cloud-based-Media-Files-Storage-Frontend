@@ -288,7 +288,12 @@ export function Dashboard() {
         id: Math.random().toString(36).substring(2, 9), 
         name: f.name, 
         status: isTooLarge ? 'error' : 'uploading',
-        message: isTooLarge ? 'Max 20MB allowed' : undefined
+        message: isTooLarge ? 'Max 20MB allowed' : undefined,
+        progress: 0,
+        speed: 0,
+        timeRemaining: 0,
+        loaded: 0,
+        totalSize: f.size
       }
     })
     
@@ -309,7 +314,10 @@ export function Dashboard() {
         abortControllersRef.current[taskId] = controller
 
         try {
-          await uploadFile(file, controller.signal)
+          const onProgress = (stats) => {
+            setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...stats } : t));
+          };
+          await uploadFile(file, controller.signal, undefined, onProgress)
           setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t))
         } catch (err) {
           if (err.name === 'AbortError') {
@@ -356,7 +364,12 @@ export function Dashboard() {
         id: Math.random().toString(36).substring(2, 9), 
         name: f.name, 
         status: isTooLarge ? 'error' : 'uploading',
-        message: isTooLarge ? 'Max 20MB allowed' : undefined
+        message: isTooLarge ? 'Max 20MB allowed' : undefined,
+        progress: 0,
+        speed: 0,
+        timeRemaining: 0,
+        loaded: 0,
+        totalSize: f.size
       }
     })
     
@@ -378,7 +391,10 @@ export function Dashboard() {
 
         try {
           // Pass the targetFolderId to uploadFile
-          await uploadFile(file, controller.signal, targetFolderId)
+          const onProgress = (stats) => {
+            setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...stats } : t));
+          };
+          await uploadFile(file, controller.signal, targetFolderId, onProgress)
           setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t))
         } catch (err) {
           if (err.name === 'AbortError') {

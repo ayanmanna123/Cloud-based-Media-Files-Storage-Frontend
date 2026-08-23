@@ -26,10 +26,10 @@ export function useDrive(folderId = null) {
     fetchStarredItems();
   }, [fetchStarredItems]);
 
-  const fetchFolder = useCallback(async () => {
+  const fetchFolder = useCallback(async (showLoading = true) => {
     if (!user) return;
     
-    setLoading(true);
+    if (showLoading) setLoading(true);
     setError(null);
     try {
       let endpoint = `${import.meta.env.VITE_API_URL}/api/folders/root`;
@@ -89,7 +89,7 @@ export function useDrive(folderId = null) {
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, [folderId, user]);
 
@@ -174,7 +174,7 @@ export function useDrive(folderId = null) {
     }
   };
 
-  const uploadFile = async (file, abortSignal = null, targetFolderId = folderId) => {
+  const uploadFile = async (file, abortSignal = null, targetFolderId = folderId, onProgress = null) => {
     try {
       // 1. Initialize upload on backend
       const initRes = await fetch(`${import.meta.env.VITE_API_URL}/api/files/init`, {
@@ -197,7 +197,7 @@ export function useDrive(folderId = null) {
       
       const initData = await initRes.json();
       
-      // 2. Upload directly to ImageKit using fetch (supports aborting)
+      // 2. Upload directly to ImageKit using XMLHttpRequest for progress tracking
       const formData = new FormData();
       formData.append('file', file);
       formData.append('publicKey', import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY);
@@ -208,15 +208,67 @@ export function useDrive(folderId = null) {
       formData.append('folder', initData.storageKey.split('/').slice(0, -1).join('/') || "/");
       formData.append('useUniqueFileName', 'false');
 
-      const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
-        method: 'POST',
-        body: formData,
-        signal: abortSignal
-      });
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const startTime = Date.now();
+        let lastReportTime = startTime;
+        let lastLoaded = 0;
 
-      if (!uploadRes.ok) {
-        throw new Error('Failed to upload to ImageKit');
-      }
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable && onProgress) {
+            const currentTime = Date.now();
+            const timeElapsed = (currentTime - lastReportTime) / 1000; // in seconds
+            
+            // Only update speed/ETA every 500ms for stability
+            if (timeElapsed >= 0.5 || e.loaded === e.total) {
+              const progress = (e.loaded / e.total) * 100;
+              const bytesSinceLast = e.loaded - lastLoaded;
+              const speed = bytesSinceLast / timeElapsed; // bytes per second
+              
+              const remainingBytes = e.total - e.loaded;
+              const timeRemaining = speed > 0 ? remainingBytes / speed : 0;
+              
+              onProgress({
+                progress,
+                speed,
+                timeRemaining,
+                loaded: e.loaded,
+                totalSize: e.total
+              });
+              
+              lastReportTime = currentTime;
+              lastLoaded = e.loaded;
+            } else if (onProgress) {
+              // Always update progress percentage smoothly
+              onProgress({
+                progress: (e.loaded / e.total) * 100,
+                loaded: e.loaded,
+                totalSize: e.total
+              });
+            }
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error('Failed to upload to ImageKit'));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+
+        if (abortSignal) {
+          abortSignal.addEventListener('abort', () => {
+            xhr.abort();
+            reject(new DOMException('Upload aborted', 'AbortError'));
+          });
+        }
+
+        xhr.open('POST', 'https://upload.imagekit.io/api/v1/files/upload');
+        xhr.send(formData);
+      });
 
       // 3. Complete upload on backend
       const completeRes = await fetch(`${import.meta.env.VITE_API_URL}/api/files/complete`, {
@@ -238,7 +290,7 @@ export function useDrive(folderId = null) {
       }
 
       // 4. Refresh to show new file
-      await fetchFolder();
+      await fetchFolder(false);
       
     } catch (err) {
       if (err.name === 'AbortError') {
