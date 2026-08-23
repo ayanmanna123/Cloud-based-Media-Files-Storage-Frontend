@@ -125,14 +125,16 @@ export function DashboardLayout() {
         <div className="p-4 border-t border-border">
           <div className="mb-2 flex justify-between text-xs font-medium text-muted-foreground">
             <span>Storage</span>
-            <span>24.5 GB / 100 GB</span>
+            <span>
+              {user?.storageUsed !== undefined ? (user.storageUsed / (1024 * 1024 * 1024)).toFixed(2) : "0.00"} GB / {user?.storageLimit ? Math.round(user.storageLimit / (1024 * 1024 * 1024)) : "100"} GB
+            </span>
           </div>
-          <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-4">
-            <div className="w-[24.5%] h-full bg-blue-500 rounded-full" />
+          <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-1">
+            <div 
+              className="h-full bg-blue-500 rounded-full transition-all duration-500" 
+              style={{ width: `${user?.storageLimit ? Math.min(100, (user.storageUsed / user.storageLimit) * 100) : 0}%` }}
+            />
           </div>
-          <Button variant="outline" className="w-full text-xs h-8">
-            Upgrade Storage
-          </Button>
         </div>
       </aside>
 

@@ -40,15 +40,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog"
 import { ShareModal } from "../../components/ShareModal"
+
+import { FolderCard } from "./components/FolderCard"
+import { FileCard } from "./components/FileCard"
+import { UploadProgress } from "./components/UploadProgress"
+import { CreateFolderModal } from "./components/CreateFolderModal"
+import { RenameFolderModal } from "./components/RenameFolderModal"
+import { RenameFileModal } from "./components/RenameFileModal"
+import { MoveFileModal } from "./components/MoveFileModal"
 
 export function Dashboard() {
   const { id } = useParams()
@@ -412,49 +412,13 @@ export function Dashboard() {
       )}
 
       {/* Upload Progress Toast */}
-      {uploadTasks.length > 0 && (
-        <div className="fixed bottom-6 right-6 w-80 sm:w-96 bg-card border border-border shadow-2xl rounded-xl overflow-hidden z-50 flex flex-col transition-all duration-300 ease-in-out">
-          <div className="flex items-center justify-between px-4 py-3 bg-muted/80 backdrop-blur-sm border-b border-border">
-            <span className="font-semibold text-sm text-foreground">
-              {uploadTasks.filter(t => t.status === 'uploading').length > 0 
-                ? `Uploading ${uploadTasks.filter(t => t.status === 'uploading').length} item${uploadTasks.filter(t => t.status === 'uploading').length > 1 ? 's' : ''}` 
-                : `${uploadTasks.filter(t => t.status === 'completed').length} upload${uploadTasks.filter(t => t.status === 'completed').length > 1 ? 's' : ''} complete`}
-            </span>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-full hover:bg-background/80" onClick={() => setIsUploadToastExpanded(!isUploadToastExpanded)}>
-                {isUploadToastExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-              </Button>
-              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-full hover:bg-background/80 text-muted-foreground hover:text-foreground" onClick={() => setUploadTasks([])}>
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-          
-          {isUploadToastExpanded && (
-            <div className="max-h-72 overflow-y-auto p-2 space-y-0.5">
-              {uploadTasks.map(task => (
-                <div key={task.id} className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-lg transition-colors group">
-                  <div className="flex items-center gap-3 truncate pr-4">
-                    <FileText className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm font-medium truncate text-foreground/90">{task.name}</span>
-                  </div>
-                  <div className="flex-shrink-0 flex items-center justify-end min-w-[60px] gap-2">
-                    {task.status === 'uploading' && (
-                      <>
-                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-blue-600 hover:bg-blue-50/50" onClick={() => cancelUpload(task.id)}>Cancel</Button>
-                        <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                      </>
-                    )}
-                    {task.status === 'completed' && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                    {task.status === 'error' && <XCircle className="w-4 h-4 text-red-500" />}
-                    {task.status === 'cancelled' && <span className="text-xs text-muted-foreground font-medium">Cancelled</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <UploadProgress 
+        tasks={uploadTasks}
+        isExpanded={isUploadToastExpanded}
+        onToggleExpand={() => setIsUploadToastExpanded(!isUploadToastExpanded)}
+        onClose={() => setUploadTasks([])}
+        onCancel={cancelUpload}
+      />
 
       {/* Hidden File Input */}
       <input 
@@ -562,62 +526,19 @@ export function Dashboard() {
           <h2 className="text-sm font-medium text-muted-foreground mb-3">Folders</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredFolders.map((f) => (
-              <div 
-                key={f.id} 
-                onClick={() => navigate(`/dashboard/folder/${f.id}`)}
-                className="group p-4 border border-border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col gap-3 relative"
-              >
-                <div className="flex justify-between items-start">
-                  <FolderOpen className="w-8 h-8 text-blue-500" />
-                  
-                  <div className="flex items-center gap-1">
-                    {/* Context Menu inside folder card */}
-                    <div onClick={e => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                        <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {currentView === 'trash' ? (
-                          <>
-                            <DropdownMenuItem onClick={() => restoreItem(f.id, 'folder')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
-                              <RotateCcw className="w-4 h-4 mr-2" /> Restore
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => deleteForever(f.id, 'folder')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-                              <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
-                            </DropdownMenuItem>
-                          </>
-                        ) : (
-                          <>
-                            <DropdownMenuItem onClick={() => toggleStar(f.id, 'folder', starredItems.includes(`folder_${f.id}`))}>
-                              <Star className={`w-4 h-4 mr-2 ${starredItems.includes(`folder_${f.id}`) ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
-                              {starredItems.includes(`folder_${f.id}`) ? 'Unstar' : 'Star'}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
-                              <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
-                              <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setRenameModalData({ isOpen: true, id: f.id, currentName: f.name })}>
-                              <Edit2 className="w-4 h-4 mr-2" /> Rename
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDeleteFolder(f.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                              <Trash2 className="w-4 h-4 mr-2" /> Delete
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              </div>
-                <div>
-                  <div className="font-medium truncate pr-6">{f.name}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">Folder</div>
-                </div>
-              </div>
+              <FolderCard
+                key={f.id}
+                folder={f}
+                currentView={currentView}
+                starredItems={starredItems}
+                onNavigate={(id) => navigate(`/dashboard/folder/${id}`)}
+                onToggleStar={toggleStar}
+                onShare={setShareModalData}
+                onRename={setRenameModalData}
+                onDelete={handleDeleteFolder}
+                onRestore={restoreItem}
+                onDeleteForever={deleteForever}
+              />
             ))}
           </div>
         </section>
@@ -643,76 +564,21 @@ export function Dashboard() {
                 {filteredFiles.map((file) => {
                   const Icon = getFileIcon(file.name)
                   return (
-                    <div 
-                      key={file.id} 
-                      className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer"
-                    >
-                      <div className="col-span-11 sm:col-span-6 md:col-span-5 flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm font-medium truncate">{file.name}</span>
-                      </div>
-                      <div className="hidden sm:block sm:col-span-3 md:col-span-2 text-sm text-muted-foreground">me</div>
-                      <div className="hidden md:block md:col-span-3 text-sm text-muted-foreground">
-                        {new Date(file.updatedAt || file.createdAt).toLocaleDateString()}
-                      </div>
-                      <div className="hidden sm:block sm:col-span-2 md:col-span-1 text-sm text-muted-foreground">
-                        {file.sizeBytes ? `${(file.sizeBytes / (1024 * 1024)).toFixed(1)} MB` : '--'}
-                      </div>
-                      <div className="col-span-1 flex justify-end gap-1">
-                        {currentView !== 'trash' && (
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleStar(file.id, 'file', starredItems.includes(`file_${file.id}`));
-                            }}
-                            className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${starredItems.includes(`file_${file.id}`) ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
-                          >
-                            <Star className={`w-4 h-4 ${starredItems.includes(`file_${file.id}`) ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
-                          </button>
-                        )}
-                        <div onClick={e => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                              <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {currentView === 'trash' ? (
-                                <>
-                                  <DropdownMenuItem onClick={() => restoreItem(file.id, 'file')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
-                                    <RotateCcw className="w-4 h-4 mr-2" /> Restore
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => deleteForever(file.id, 'file')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-                                    <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
-                                  </DropdownMenuItem>
-                                </>
-                              ) : (
-                                <>
-                                  <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
-                                    <Download className="w-4 h-4 mr-2" /> Download
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
-                                    <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
-                                    <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
-                                    <Edit2 className="w-4 h-4 mr-2" /> Rename
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => openMoveFileModal(file.id, file.name)}>
-                                    <FolderInput className="w-4 h-4 mr-2" /> Move
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem onClick={() => handleDeleteFile(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                                    <Trash2 className="w-4 h-4 mr-2" /> Delete
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                    </div>
+                    <FileCard
+                      key={file.id}
+                      file={file}
+                      viewMode="list"
+                      currentView={currentView}
+                      starredItems={starredItems}
+                      onToggleStar={toggleStar}
+                      onShare={setShareModalData}
+                      onRename={setRenameFileModalData}
+                      onMove={openMoveFileModal}
+                      onDelete={handleDeleteFile}
+                      onDownload={downloadFile}
+                      onRestore={restoreItem}
+                      onDeleteForever={deleteForever}
+                    />
                   )
                 })}
               </div>
@@ -720,96 +586,22 @@ export function Dashboard() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filteredFiles.map((file) => {
-                const Icon = getFileIcon(file.name)
-                const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-                const isPdf = file.name.match(/\.(pdf)$/i)
-                const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-400,h-300,c-at_max`
-                // ImageKit requires appending /ik-thumbnail.jpg to the PDF path to extract the first page as an image
-                const pdfPreviewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-400,h-300,c-at_max`
-
                 return (
-                  <div key={file.id} className="group border border-border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48">
-                    {/* Preview Area */}
-                    <div className="flex-1 bg-muted/30 flex items-center justify-center overflow-hidden relative">
-                       {(isImage || isPdf) ? (
-                         <img 
-                           src={isPdf ? pdfPreviewUrl : previewUrl} 
-                           alt={file.name} 
-                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                           onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                           }}
-                         />
-                       ) : null}
-                       <div className={`flex flex-col items-center justify-center text-muted-foreground w-full h-full absolute inset-0 ${(isImage || isPdf) ? 'hidden' : 'flex'}`}>
-                         <Icon className="w-12 h-12 mb-2 opacity-50" />
-                       </div>
-                    </div>
-                    {/* Details Area */}
-                    <div className="p-3 border-t border-border flex items-center justify-between bg-card z-10">
-                      <div className="flex items-center gap-2 truncate pr-2">
-                        <Icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm font-medium truncate">{file.name}</span>
-                      </div>
-                      
-                      {/* Context Menu */}
-                      <div className="flex items-center gap-1">
-                        {currentView !== 'trash' && (
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleStar(file.id, 'file', starredItems.includes(`file_${file.id}`));
-                            }}
-                            className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${starredItems.includes(`file_${file.id}`) ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
-                          >
-                            <Star className={`w-4 h-4 ${starredItems.includes(`file_${file.id}`) ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
-                          </button>
-                        )}
-                        <div onClick={e => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0 -mr-2">
-                            <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {currentView === 'trash' ? (
-                              <>
-                                <DropdownMenuItem onClick={() => restoreItem(file.id, 'file')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
-                                  <RotateCcw className="w-4 h-4 mr-2" /> Restore
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => deleteForever(file.id, 'file')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-                                  <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
-                                </DropdownMenuItem>
-                              </>
-                            ) : (
-                              <>
-                                <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
-                                  <Download className="w-4 h-4 mr-2" /> Download
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
-                                  <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
-                                  <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
-                                  <Edit2 className="w-4 h-4 mr-2" /> Rename
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => openMoveFileModal(file.id, file.name)}>
-                                  <FolderInput className="w-4 h-4 mr-2" /> Move
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleDeleteFile(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                                  <Trash2 className="w-4 h-4 mr-2" /> Delete
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <FileCard
+                    key={file.id}
+                    file={file}
+                    viewMode="grid"
+                    currentView={currentView}
+                    starredItems={starredItems}
+                    onToggleStar={toggleStar}
+                    onShare={setShareModalData}
+                    onRename={setRenameFileModalData}
+                    onMove={openMoveFileModal}
+                    onDelete={handleDeleteFile}
+                    onDownload={downloadFile}
+                    onRestore={restoreItem}
+                    onDeleteForever={deleteForever}
+                  />
                 )
               })}
             </div>
@@ -828,137 +620,36 @@ export function Dashboard() {
         </div>
       )}
 
-      {/* Create Folder Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent>
-          <form onSubmit={handleCreateFolder}>
-            <DialogHeader>
-              <DialogTitle>Create new folder</DialogTitle>
-              <DialogDescription>
-                Enter a name for your new folder.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <Input 
-                autoFocus
-                placeholder="Folder name" 
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                disabled={isSubmitting}
-              />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={!newFolderName.trim() || isSubmitting}>
-                {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                Create
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CreateFolderModal
+        isOpen={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        newFolderName={newFolderName}
+        setNewFolderName={setNewFolderName}
+        onSubmit={handleCreateFolder}
+        isSubmitting={isSubmitting}
+      />
 
-      {/* Rename Folder Modal */}
-      <Dialog open={renameModalData.isOpen} onOpenChange={(open) => !open && setRenameModalData({ isOpen: false, id: null, currentName: "" })}>
-        <DialogContent>
-          <form onSubmit={handleRenameFolder}>
-            <DialogHeader>
-              <DialogTitle>Rename folder</DialogTitle>
-              <DialogDescription>
-                Enter a new name for the folder.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <Input 
-                autoFocus
-                placeholder="Folder name" 
-                value={renameModalData.currentName}
-                onChange={(e) => setRenameModalData(prev => ({ ...prev, currentName: e.target.value }))}
-                disabled={isSubmitting}
-              />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setRenameModalData({ isOpen: false, id: null, currentName: "" })} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={!renameModalData.currentName.trim() || isSubmitting}>
-                {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                Rename
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <RenameFolderModal
+        renameModalData={renameModalData}
+        setRenameModalData={setRenameModalData}
+        onSubmit={handleRenameFolder}
+        isSubmitting={isSubmitting}
+      />
 
-      {/* Rename File Modal */}
-      <Dialog open={renameFileModalData.isOpen} onOpenChange={(open) => !open && setRenameFileModalData({ isOpen: false, id: null, currentName: "" })}>
-        <DialogContent>
-          <form onSubmit={handleRenameFile}>
-            <DialogHeader>
-              <DialogTitle>Rename file</DialogTitle>
-              <DialogDescription>
-                Enter a new name for the file.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <Input 
-                autoFocus
-                placeholder="File name" 
-                value={renameFileModalData.currentName}
-                onChange={(e) => setRenameFileModalData(prev => ({ ...prev, currentName: e.target.value }))}
-                disabled={isSubmitting}
-              />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setRenameFileModalData({ isOpen: false, id: null, currentName: "" })} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={!renameFileModalData.currentName.trim() || isSubmitting}>
-                {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                Rename
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <RenameFileModal
+        renameFileModalData={renameFileModalData}
+        setRenameFileModalData={setRenameFileModalData}
+        onSubmit={handleRenameFile}
+        isSubmitting={isSubmitting}
+      />
 
-      {/* Move File Modal */}
-      <Dialog open={moveFileModalData.isOpen} onOpenChange={(open) => !open && setMoveFileModalData({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })}>
-        <DialogContent>
-          <form onSubmit={handleMoveFile}>
-            <DialogHeader>
-              <DialogTitle>Move file</DialogTitle>
-              <DialogDescription>
-                Select a destination folder for '{moveFileModalData.currentName}'
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <select 
-                value={moveFileModalData.selectedFolderId}
-                onChange={(e) => setMoveFileModalData(prev => ({ ...prev, selectedFolderId: e.target.value }))}
-                disabled={isSubmitting}
-                className="w-full h-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background"
-              >
-                <option value="root">My Drive (Root)</option>
-                {allFolders.map(f => (
-                  <option key={f.id} value={f.id}>{f.name}</option>
-                ))}
-              </select>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setMoveFileModalData({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                Move
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <MoveFileModal
+        moveFileModalData={moveFileModalData}
+        setMoveFileModalData={setMoveFileModalData}
+        allFolders={allFolders}
+        onSubmit={handleMoveFile}
+        isSubmitting={isSubmitting}
+      />
       {/* Share Modal */}
       <ShareModal 
         isOpen={shareModalData.isOpen}
