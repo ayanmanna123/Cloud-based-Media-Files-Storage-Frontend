@@ -39,6 +39,8 @@ export function useDrive(folderId = null) {
         endpoint = `${import.meta.env.VITE_API_URL}/api/files/recent`;
       } else if (folderId === 'starred') {
         endpoint = `${import.meta.env.VITE_API_URL}/api/search?starred=true`;
+      } else if (folderId === 'trash') {
+        endpoint = `${import.meta.env.VITE_API_URL}/api/trash`;
       } else if (folderId) {
         endpoint = `${import.meta.env.VITE_API_URL}/api/folders/${folderId}`;
       }
@@ -71,14 +73,15 @@ export function useDrive(folderId = null) {
           children: { folders: [], files: result || [] },
           path: [{ id: 'recent', name: 'Recent' }]
         });
-      } else if (folderId === 'starred') {
+      } else if (folderId === 'starred' || folderId === 'trash') {
+        const title = folderId.charAt(0).toUpperCase() + folderId.slice(1);
         setData({
-          folder: { id: 'starred', name: 'Starred' },
+          folder: { id: folderId, name: title },
           children: { 
             folders: result.filter(r => r.type === 'folder') || [], 
             files: result.filter(r => r.type === 'file') || [] 
           },
-          path: [{ id: 'starred', name: 'Starred' }]
+          path: [{ id: folderId, name: title }]
         });
       } else {
         setData(result);
@@ -480,6 +483,50 @@ export function useDrive(folderId = null) {
     }
   };
 
+  const restoreItem = async (resourceId, resourceType) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/trash/restore`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ resourceId, resourceType })
+      });
+      if (!response.ok) throw new Error('Failed to restore item');
+      
+      setData(prevData => ({
+        ...prevData,
+        children: {
+          folders: prevData.children.folders.filter(f => !(resourceType === 'folder' && f.id === resourceId)),
+          files: prevData.children.files.filter(f => !(resourceType === 'file' && f.id === resourceId))
+        }
+      }));
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const deleteForever = async (resourceId, resourceType) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/trash/${resourceType}/${resourceId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to permanently delete item');
+      
+      setData(prevData => ({
+        ...prevData,
+        children: {
+          folders: prevData.children.folders.filter(f => !(resourceType === 'folder' && f.id === resourceId)),
+          files: prevData.children.files.filter(f => !(resourceType === 'file' && f.id === resourceId))
+        }
+      }));
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   return {
     folder: data.folder,
     children: data.children,
@@ -505,6 +552,8 @@ export function useDrive(folderId = null) {
     createLinkShare,
     deleteLinkShare,
     toggleStar,
+    restoreItem,
+    deleteForever,
     refresh: fetchFolder
   };
 }

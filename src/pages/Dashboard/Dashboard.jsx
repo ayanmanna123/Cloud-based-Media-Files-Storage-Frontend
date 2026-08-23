@@ -26,7 +26,8 @@ import {
   LayoutGrid,
   List,
   Users,
-  Star
+  Star,
+  RotateCcw
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -56,14 +57,15 @@ export function Dashboard() {
   const { searchQuery } = useOutletContext() || { searchQuery: "" }
   
   const currentView = location.pathname.split("/").pop()
-  const driveId = currentView === "shared" ? "shared" : currentView === "recent" ? "recent" : currentView === "starred" ? "starred" : id
+  const driveId = currentView === "shared" ? "shared" : currentView === "recent" ? "recent" : currentView === "starred" ? "starred" : currentView === "trash" ? "trash" : id
 
   const { 
     folder, children, path, loading, error, starredItems,
     createFolder, renameFolder, deleteFolder, 
     uploadFile, renameFile, deleteFile, moveFile, downloadFile, fetchAllFolders,
     fetchShares, shareResource, revokeShare,
-    fetchLinkShare, createLinkShare, deleteLinkShare, toggleStar
+    fetchLinkShare, createLinkShare, deleteLinkShare, toggleStar,
+    restoreItem, deleteForever
   } = useDrive(driveId)
 
   // Folder Modals
@@ -444,7 +446,7 @@ export function Dashboard() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {currentView !== "shared" && currentView !== "recent" && currentView !== "starred" && (
+          {currentView !== "shared" && currentView !== "recent" && currentView !== "starred" && currentView !== "trash" && (
             <>
               <Button 
                 onClick={() => fileInputRef.current?.click()} 
@@ -486,23 +488,36 @@ export function Dashboard() {
                         <MoreVertical className="w-4 h-4 text-muted-foreground" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => toggleStar(f.id, 'folder', starredItems.includes(`folder_${f.id}`))}>
-                          <Star className={`w-4 h-4 mr-2 ${starredItems.includes(`folder_${f.id}`) ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
-                          {starredItems.includes(`folder_${f.id}`) ? 'Unstar' : 'Star'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
-                          <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
-                          <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setRenameModalData({ isOpen: true, id: f.id, currentName: f.name })}>
-                          <Edit2 className="w-4 h-4 mr-2" /> Rename
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDeleteFolder(f.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete
-                        </DropdownMenuItem>
+                        {currentView === 'trash' ? (
+                          <>
+                            <DropdownMenuItem onClick={() => restoreItem(f.id, 'folder')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
+                              <RotateCcw className="w-4 h-4 mr-2" /> Restore
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => deleteForever(f.id, 'folder')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                              <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+                            </DropdownMenuItem>
+                          </>
+                        ) : (
+                          <>
+                            <DropdownMenuItem onClick={() => toggleStar(f.id, 'folder', starredItems.includes(`folder_${f.id}`))}>
+                              <Star className={`w-4 h-4 mr-2 ${starredItems.includes(`folder_${f.id}`) ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
+                              {starredItems.includes(`folder_${f.id}`) ? 'Unstar' : 'Star'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
+                              <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
+                              <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setRenameModalData({ isOpen: true, id: f.id, currentName: f.name })}>
+                              <Edit2 className="w-4 h-4 mr-2" /> Rename
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDeleteFolder(f.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+                              <Trash2 className="w-4 h-4 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -554,40 +569,55 @@ export function Dashboard() {
                         {file.sizeBytes ? `${(file.sizeBytes / (1024 * 1024)).toFixed(1)} MB` : '--'}
                       </div>
                       <div className="col-span-1 flex justify-end gap-1">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleStar(file.id, 'file', starredItems.includes(`file_${file.id}`));
-                          }}
-                          className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${starredItems.includes(`file_${file.id}`) ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
-                        >
-                          <Star className={`w-4 h-4 ${starredItems.includes(`file_${file.id}`) ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
-                        </button>
+                        {currentView !== 'trash' && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStar(file.id, 'file', starredItems.includes(`file_${file.id}`));
+                            }}
+                            className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${starredItems.includes(`file_${file.id}`) ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
+                          >
+                            <Star className={`w-4 h-4 ${starredItems.includes(`file_${file.id}`) ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
+                          </button>
+                        )}
                         <div onClick={e => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                               <MoreVertical className="w-4 h-4 text-muted-foreground" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
-                                <Download className="w-4 h-4 mr-2" /> Download
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
-                                <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
-                                <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
-                                <Edit2 className="w-4 h-4 mr-2" /> Rename
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openMoveFileModal(file.id, file.name)}>
-                                <FolderInput className="w-4 h-4 mr-2" /> Move
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleDeleteFile(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                                <Trash2 className="w-4 h-4 mr-2" /> Delete
-                              </DropdownMenuItem>
+                              {currentView === 'trash' ? (
+                                <>
+                                  <DropdownMenuItem onClick={() => restoreItem(file.id, 'file')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
+                                    <RotateCcw className="w-4 h-4 mr-2" /> Restore
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => deleteForever(file.id, 'file')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                                    <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+                                  </DropdownMenuItem>
+                                </>
+                              ) : (
+                                <>
+                                  <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
+                                    <Download className="w-4 h-4 mr-2" /> Download
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
+                                    <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
+                                    <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
+                                    <Edit2 className="w-4 h-4 mr-2" /> Rename
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => openMoveFileModal(file.id, file.name)}>
+                                    <FolderInput className="w-4 h-4 mr-2" /> Move
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handleDeleteFile(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+                                    <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                  </DropdownMenuItem>
+                                </>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -635,40 +665,55 @@ export function Dashboard() {
                       
                       {/* Context Menu */}
                       <div className="flex items-center gap-1">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleStar(file.id, 'file', starredItems.includes(`file_${file.id}`));
-                          }}
-                          className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${starredItems.includes(`file_${file.id}`) ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
-                        >
-                          <Star className={`w-4 h-4 ${starredItems.includes(`file_${file.id}`) ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
-                        </button>
+                        {currentView !== 'trash' && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStar(file.id, 'file', starredItems.includes(`file_${file.id}`));
+                            }}
+                            className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${starredItems.includes(`file_${file.id}`) ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
+                          >
+                            <Star className={`w-4 h-4 ${starredItems.includes(`file_${file.id}`) ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
+                          </button>
+                        )}
                         <div onClick={e => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0 -mr-2">
                             <MoreVertical className="w-4 h-4 text-muted-foreground" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
-                              <Download className="w-4 h-4 mr-2" /> Download
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
-                              <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
-                              <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
-                              <Edit2 className="w-4 h-4 mr-2" /> Rename
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openMoveFileModal(file.id, file.name)}>
-                              <FolderInput className="w-4 h-4 mr-2" /> Move
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDeleteFile(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                              <Trash2 className="w-4 h-4 mr-2" /> Delete
-                            </DropdownMenuItem>
+                            {currentView === 'trash' ? (
+                              <>
+                                <DropdownMenuItem onClick={() => restoreItem(file.id, 'file')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
+                                  <RotateCcw className="w-4 h-4 mr-2" /> Restore
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => deleteForever(file.id, 'file')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                                  <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                              <>
+                                <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
+                                  <Download className="w-4 h-4 mr-2" /> Download
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
+                                  <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
+                                  <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
+                                  <Edit2 className="w-4 h-4 mr-2" /> Rename
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => openMoveFileModal(file.id, file.name)}>
+                                  <FolderInput className="w-4 h-4 mr-2" /> Move
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleDeleteFile(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+                                  <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                         </div>
