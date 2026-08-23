@@ -206,6 +206,39 @@ export function Dashboard() {
     setMoveFileModalData({ isOpen: true, isBulk: true, items: fileIds, selectedFolderId: "root" });
   }
 
+  const handleBulkRestore = async () => {
+    setIsSubmitting(true);
+    try {
+      const restorePromises = selectedItems.map(item => {
+        const [type, id] = item.split('_');
+        return restoreItem(id, type);
+      });
+      await Promise.all(restorePromises);
+      setSelectedItems([]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const handleBulkDeleteForever = async () => {
+    if (!confirm(`Are you sure you want to permanently delete ${selectedItems.length} items? This action cannot be undone.`)) return;
+    setIsSubmitting(true);
+    try {
+      const deletePromises = selectedItems.map(item => {
+        const [type, id] = item.split('_');
+        return deleteForever(id, type);
+      });
+      await Promise.all(deletePromises);
+      setSelectedItems([]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   const handleCreateFolder = async (e) => {
     e.preventDefault()
     if (!newFolderName.trim()) return
@@ -744,15 +777,28 @@ export function Dashboard() {
           <Button variant="ghost" size="sm" onClick={() => setSelectedItems([])}>Clear</Button>
           <Button variant="ghost" size="sm" onClick={handleSelectAll}>Select All</Button>
           <div className="h-4 w-px bg-border"></div>
-          <Button variant="ghost" size="sm" onClick={handleBulkDownload} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
-            <Download className="w-4 h-4 mr-2" /> Download
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleBulkMove} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
-            <FolderInput className="w-4 h-4 mr-2" /> Move
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-            <Trash2 className="w-4 h-4 mr-2" /> Delete
-          </Button>
+          {currentView === 'trash' ? (
+            <>
+              <Button variant="ghost" size="sm" onClick={handleBulkRestore}>
+                <RotateCcw className="w-4 h-4 mr-2" /> Restore
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleBulkDeleteForever} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" onClick={handleBulkDownload} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
+                <Download className="w-4 h-4 mr-2" /> Download
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleBulkMove} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
+                <FolderInput className="w-4 h-4 mr-2" /> Move
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                <Trash2 className="w-4 h-4 mr-2" /> Delete
+              </Button>
+            </>
+          )}
         </div>
       )}
 
