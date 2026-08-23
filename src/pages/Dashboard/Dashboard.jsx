@@ -25,7 +25,8 @@ import {
   X,
   LayoutGrid,
   List,
-  Users
+  Users,
+  Star
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -55,14 +56,14 @@ export function Dashboard() {
   const { searchQuery } = useOutletContext() || { searchQuery: "" }
   
   const currentView = location.pathname.split("/").pop()
-  const driveId = currentView === "shared" ? "shared" : currentView === "recent" ? "recent" : id
+  const driveId = currentView === "shared" ? "shared" : currentView === "recent" ? "recent" : currentView === "starred" ? "starred" : id
 
   const { 
-    folder, children, path, loading, error, 
+    folder, children, path, loading, error, starredItems,
     createFolder, renameFolder, deleteFolder, 
     uploadFile, renameFile, deleteFile, moveFile, downloadFile, fetchAllFolders,
     fetchShares, shareResource, revokeShare,
-    fetchLinkShare, createLinkShare, deleteLinkShare
+    fetchLinkShare, createLinkShare, deleteLinkShare, toggleStar
   } = useDrive(driveId)
 
   // Folder Modals
@@ -274,7 +275,7 @@ export function Dashboard() {
       }
     })
     return result
-  }, [children?.folders, searchQuery, sortMethod])
+  }, [children.folders, searchQuery, sortMethod])
 
   const filteredFiles = useMemo(() => {
     if (!children?.files) return []
@@ -291,7 +292,7 @@ export function Dashboard() {
       }
     })
     return result
-  }, [children?.files, searchQuery, sortMethod])
+  }, [children.files, searchQuery, sortMethod])
 
   if (loading) {
     return (
@@ -443,7 +444,7 @@ export function Dashboard() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {currentView !== "shared" && currentView !== "recent" && (
+          {currentView !== "shared" && currentView !== "recent" && currentView !== "starred" && (
             <>
               <Button 
                 onClick={() => fileInputRef.current?.click()} 
@@ -477,13 +478,18 @@ export function Dashboard() {
                 <div className="flex justify-between items-start">
                   <FolderOpen className="w-8 h-8 text-blue-500" />
                   
-                  {/* Context Menu inside folder card */}
-                  <div onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-1">
+                    {/* Context Menu inside folder card */}
+                    <div onClick={e => e.stopPropagation()}>
                     <DropdownMenu>
-                      <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                      <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                         <MoreVertical className="w-4 h-4 text-muted-foreground" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => toggleStar(f.id, 'folder', starredItems.includes(`folder_${f.id}`))}>
+                          <Star className={`w-4 h-4 mr-2 ${starredItems.includes(`folder_${f.id}`) ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
+                          {starredItems.includes(`folder_${f.id}`) ? 'Unstar' : 'Star'}
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
                           <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
                         </DropdownMenuItem>
@@ -501,6 +507,7 @@ export function Dashboard() {
                     </DropdownMenu>
                   </div>
                 </div>
+              </div>
                 <div>
                   <div className="font-medium truncate pr-6">{f.name}</div>
                   <div className="text-xs text-muted-foreground mt-0.5">Folder</div>
@@ -546,7 +553,16 @@ export function Dashboard() {
                       <div className="hidden sm:block sm:col-span-2 md:col-span-1 text-sm text-muted-foreground">
                         {file.sizeBytes ? `${(file.sizeBytes / (1024 * 1024)).toFixed(1)} MB` : '--'}
                       </div>
-                      <div className="col-span-1 flex justify-end">
+                      <div className="col-span-1 flex justify-end gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleStar(file.id, 'file', starredItems.includes(`file_${file.id}`));
+                          }}
+                          className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${starredItems.includes(`file_${file.id}`) ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
+                        >
+                          <Star className={`w-4 h-4 ${starredItems.includes(`file_${file.id}`) ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
+                        </button>
                         <div onClick={e => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
@@ -618,7 +634,17 @@ export function Dashboard() {
                       </div>
                       
                       {/* Context Menu */}
-                      <div onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleStar(file.id, 'file', starredItems.includes(`file_${file.id}`));
+                          }}
+                          className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${starredItems.includes(`file_${file.id}`) ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
+                        >
+                          <Star className={`w-4 h-4 ${starredItems.includes(`file_${file.id}`) ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
+                        </button>
+                        <div onClick={e => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0 -mr-2">
                             <MoreVertical className="w-4 h-4 text-muted-foreground" />
@@ -645,6 +671,7 @@ export function Dashboard() {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                        </div>
                       </div>
                     </div>
                   </div>

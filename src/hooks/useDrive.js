@@ -7,6 +7,24 @@ export function useDrive(folderId = null) {
   const [data, setData] = useState({ folder: null, children: { folders: [], files: [] }, path: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [starredItems, setStarredItems] = useState([]);
+
+  const fetchStarredItems = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/search?starred=true`, { credentials: 'include' });
+      if (res.ok) {
+        const result = await res.json();
+        setStarredItems(result.map(item => `${item.type}_${item.id}`));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchStarredItems();
+  }, [fetchStarredItems]);
 
   const fetchFolder = useCallback(async () => {
     if (!user) return;
@@ -19,6 +37,8 @@ export function useDrive(folderId = null) {
         endpoint = `${import.meta.env.VITE_API_URL}/api/shares/me`;
       } else if (folderId === 'recent') {
         endpoint = `${import.meta.env.VITE_API_URL}/api/files/recent`;
+      } else if (folderId === 'starred') {
+        endpoint = `${import.meta.env.VITE_API_URL}/api/search?starred=true`;
       } else if (folderId) {
         endpoint = `${import.meta.env.VITE_API_URL}/api/folders/${folderId}`;
       }
@@ -50,6 +70,15 @@ export function useDrive(folderId = null) {
           folder: { id: 'recent', name: 'Recent' },
           children: { folders: [], files: result || [] },
           path: [{ id: 'recent', name: 'Recent' }]
+        });
+      } else if (folderId === 'starred') {
+        setData({
+          folder: { id: 'starred', name: 'Starred' },
+          children: { 
+            folders: result.filter(r => r.type === 'folder') || [], 
+            files: result.filter(r => r.type === 'file') || [] 
+          },
+          path: [{ id: 'starred', name: 'Starred' }]
         });
       } else {
         setData(result);
@@ -418,10 +447,47 @@ export function useDrive(folderId = null) {
     }
   };
 
+  const toggleStar = async (resourceId, resourceType, isStarred) => {
+    try {
+      const method = isStarred ? 'DELETE' : 'POST';
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/stars`, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ resourceId, resourceType })
+      });
+      
+      if (!response.ok) throw new Error('Failed to toggle star');
+      
+      setStarredItems(prev => 
+        isStarred 
+          ? prev.filter(id => id !== `${resourceType}_${resourceId}`)
+          : [...prev, `${resourceType}_${resourceId}`]
+      );
+      
+      if (folderId === 'starred' && isStarred) {
+        setData(prevData => ({
+          ...prevData,
+          children: {
+            folders: prevData.children.folders.filter(f => f.id !== resourceId),
+            files: prevData.children.files.filter(f => f.id !== resourceId)
+          }
+        }));
+      }
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   return {
-    ...data,
+    folder: data.folder,
+    children: data.children,
+    path: data.path,
     loading,
     error,
+    starredItems,
+    fetchFolder,
     createFolder,
     renameFolder,
     deleteFolder,
@@ -438,6 +504,7 @@ export function useDrive(folderId = null) {
     fetchLinkShare,
     createLinkShare,
     deleteLinkShare,
+    toggleStar,
     refresh: fetchFolder
   };
 }
