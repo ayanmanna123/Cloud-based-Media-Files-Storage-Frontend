@@ -37,6 +37,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="folder/:id" element={<Dashboard />} />
             <Route path="recent" element={<Dashboard />} />
             <Route path="starred" element={<Dashboard />} />
             <Route path="shared" element={<Dashboard />} />
