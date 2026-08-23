@@ -21,9 +21,9 @@ export function MoveFileModal({
       <DialogContent>
         <form onSubmit={onSubmit}>
           <DialogHeader>
-            <DialogTitle>Move file</DialogTitle>
+            <DialogTitle>{moveFileModalData.isBulk ? 'Move items' : 'Move file'}</DialogTitle>
             <DialogDescription>
-              Select a destination folder for <span className="font-semibold break-all">'{moveFileModalData.currentName}'</span>
+              Select a destination folder for <span className="font-semibold break-all">{moveFileModalData.isBulk ? `${moveFileModalData.items?.length} items` : `'${moveFileModalData.currentName}'`}</span>
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">

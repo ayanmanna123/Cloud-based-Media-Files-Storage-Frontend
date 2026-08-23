@@ -76,7 +76,8 @@ export function Dashboard() {
   
   // File Modals
   const [renameFileModalData, setRenameFileModalData] = useState({ isOpen: false, id: null, currentName: "" })
-  const [moveFileModalData, setMoveFileModalData] = useState({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [moveFileModalData, setMoveFileModalData] = useState({ isOpen: false, id: null, currentName: "", selectedFolderId: "root", isBulk: false, items: [] })
   const [allFolders, setAllFolders] = useState([])
   
   const [shareModalData, setShareModalData] = useState({ isOpen: false, resourceType: null, resourceId: null, resourceName: "" })
@@ -109,6 +110,7 @@ export function Dashboard() {
   useEffect(() => {
     if (driveId) {
       localStorage.setItem("drive_lastVisitedId", driveId)
+      setSelectedItems([])
     }
   }, [driveId])
 
@@ -131,6 +133,60 @@ export function Dashboard() {
   useEffect(() => {
     localStorage.setItem("drive_viewMode", viewMode)
   }, [viewMode])
+
+  const handleItemClick = (e, id, type) => {
+    e.stopPropagation();
+    const itemKey = `${type}_${id}`;
+    if (e.ctrlKey || e.metaKey) {
+      setSelectedItems(prev => prev.includes(itemKey) 
+        ? prev.filter(k => k !== itemKey) 
+        : [...prev, itemKey]);
+    } else {
+      setSelectedItems([itemKey]);
+    }
+  }
+
+  const handleBackgroundClick = () => {
+    setSelectedItems([]);
+  }
+
+  const handleBulkDownload = async () => {
+    const fileIds = selectedItems.filter(id => id.startsWith('file_')).map(id => id.replace('file_', ''));
+    if (fileIds.length === 0) return;
+    for (const fileId of fileIds) {
+      const file = children.files.find(f => f.id === fileId);
+      if (file) {
+        downloadFile(file.id, file.name);
+      }
+    }
+    setSelectedItems([]);
+  }
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Are you sure you want to delete ${selectedItems.length} items?`)) return;
+    setIsSubmitting(true);
+    try {
+      const deletePromises = selectedItems.map(item => {
+        const [type, id] = item.split('_');
+        if (type === 'file') return deleteFile(id);
+        if (type === 'folder') return deleteFolder(id);
+      });
+      await Promise.all(deletePromises);
+      setSelectedItems([]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const handleBulkMove = async () => {
+    const fileIds = selectedItems.filter(id => id.startsWith('file_'));
+    if (fileIds.length === 0) return; // Only files can be moved
+    const folders = await fetchAllFolders();
+    setAllFolders(folders);
+    setMoveFileModalData({ isOpen: true, isBulk: true, items: fileIds, selectedFolderId: "root" });
+  }
 
   const handleCreateFolder = async (e) => {
     e.preventDefault()
@@ -338,7 +394,7 @@ export function Dashboard() {
   }
 
   const openMoveFileModal = async (fileId, fileName) => {
-    setMoveFileModalData({ isOpen: true, id: fileId, currentName: fileName, selectedFolderId: "root" })
+    setMoveFileModalData({ isOpen: true, id: fileId, currentName: fileName, selectedFolderId: "root", isBulk: false, items: [] })
     const folders = await fetchAllFolders()
     // Filter out current folder if we are in one
     setAllFolders(folders.filter(f => f.id !== id))
@@ -348,9 +404,17 @@ export function Dashboard() {
     e.preventDefault()
     setIsSubmitting(true)
     try {
-      const targetFolderId = moveFileModalData.selectedFolderId === "root" ? null : moveFileModalData.selectedFolderId
-      await moveFile(moveFileModalData.id, targetFolderId)
-      setMoveFileModalData({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })
+      if (moveFileModalData.isBulk) {
+        const movePromises = moveFileModalData.items.map(item => {
+          const [type, id] = item.split('_');
+          if (type === 'file') return moveFile(id, moveFileModalData.selectedFolderId);
+        });
+        await Promise.all(movePromises);
+        setSelectedItems([]);
+      } else {
+        await moveFile(moveFileModalData.id, moveFileModalData.selectedFolderId)
+      }
+      setMoveFileModalData({ isOpen: false, id: null, currentName: "", selectedFolderId: "root", isBulk: false, items: [] })
     } catch (err) {
       console.error(err)
     } finally {
@@ -554,6 +618,9 @@ export function Dashboard() {
                 folder={f}
                 currentView={currentView}
                 starredItems={starredItems}
+                isSelected={selectedItems.includes(`folder_${f.id}`)}
+                onClick={(e) => handleItemClick(e, f.id, 'folder')}
+                onDoubleClick={() => navigate(`/dashboard/folder/${f.id}`)}
                 onNavigate={(id) => navigate(`/dashboard/folder/${id}`)}
                 onToggleStar={toggleStar}
                 onShare={setShareModalData}
@@ -593,6 +660,8 @@ export function Dashboard() {
                       viewMode="list"
                       currentView={currentView}
                       starredItems={starredItems}
+                      isSelected={selectedItems.includes(`file_${file.id}`)}
+                      onClick={(e) => handleItemClick(e, file.id, 'file')}
                       onToggleStar={toggleStar}
                       onShare={setShareModalData}
                       onRename={setRenameFileModalData}
@@ -616,12 +685,14 @@ export function Dashboard() {
                     viewMode={viewMode}
                     currentView={currentView}
                     starredItems={starredItems}
+                    isSelected={selectedItems.includes(`file_${file.id}`)}
+                    onClick={(e) => handleItemClick(e, file.id, 'file')}
                     onToggleStar={toggleStar}
                     onShare={setShareModalData}
                     onRename={setRenameFileModalData}
                     onMove={(id, name) => fetchAllFolders().then(folders => {
                       setAllFolders(folders);
-                      setMoveFileModalData({ isOpen: true, id, currentName: name, selectedFolderId: "root" });
+                      setMoveFileModalData({ isOpen: true, id, currentName: name, selectedFolderId: "root", isBulk: false, items: [] });
                     })}
                     onDelete={handleDeleteFile}
                     onDownload={downloadFile}
@@ -644,6 +715,24 @@ export function Dashboard() {
           <p className="text-sm text-muted-foreground max-w-sm mt-2">
             Upload files or create new folders to get started.
           </p>
+        </div>
+      )}
+
+      {/* Bulk Action Bar */}
+      {selectedItems.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground border shadow-xl rounded-full px-4 py-2 flex items-center gap-4 z-50 animate-in slide-in-from-bottom-5">
+          <span className="text-sm font-medium">{selectedItems.length} selected</span>
+          <div className="h-4 w-px bg-border"></div>
+          <Button variant="ghost" size="sm" onClick={() => setSelectedItems([])}>Clear</Button>
+          <Button variant="ghost" size="sm" onClick={handleBulkDownload} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
+            <Download className="w-4 h-4 mr-2" /> Download
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleBulkMove} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
+            <FolderInput className="w-4 h-4 mr-2" /> Move
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+            <Trash2 className="w-4 h-4 mr-2" /> Delete
+          </Button>
         </div>
       )}
 

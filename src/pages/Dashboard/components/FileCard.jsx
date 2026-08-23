@@ -43,7 +43,9 @@ export function FileCard({
   onDownload,
   onRestore,
   onDeleteForever,
-  onOpenVersionHistory
+  onOpenVersionHistory,
+  isSelected,
+  onClick
 }) {
   const Icon = getFileIcon(file.name)
   const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
@@ -55,7 +57,7 @@ export function FileCard({
   const fileUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`
   const isStarred = starredItems.includes(`file_${file.id}`)
 
-  const handleCardClick = () => {
+  const handleOpen = () => {
     if (isOfficeDoc) {
       window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`, '_blank')
     } else {
@@ -112,8 +114,9 @@ export function FileCard({
   if (viewMode === "list") {
     return (
       <div 
-        className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer"
-        onClick={handleCardClick}
+        className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
+        onClick={onClick}
+        onDoubleClick={handleOpen}
       >
         <div className="col-span-11 sm:col-span-6 md:col-span-5 flex items-center gap-3">
           <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
@@ -153,8 +156,9 @@ export function FileCard({
 
   return (
     <div 
-      className="group border border-border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48"
-      onClick={handleCardClick}
+      className={`group border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48 ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
+      onClick={onClick}
+      onDoubleClick={handleOpen}
     >
       <div className="flex-1 bg-muted/30 flex items-center justify-center overflow-hidden relative">
         {(isImage || isPdf || isVideo) ? (

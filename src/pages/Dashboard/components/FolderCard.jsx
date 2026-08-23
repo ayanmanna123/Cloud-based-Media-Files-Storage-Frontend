@@ -25,14 +25,18 @@ export function FolderCard({
   onRename, 
   onDelete, 
   onRestore, 
-  onDeleteForever 
+  onDeleteForever,
+  isSelected,
+  onClick,
+  onDoubleClick
 }) {
   const isStarred = starredItems.includes(`folder_${folder.id}`)
 
   return (
     <div 
-      onClick={() => onNavigate(folder.id)}
-      className="group p-4 border border-border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col gap-3 relative"
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
+      className={`group p-4 border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col gap-3 relative ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
     >
       <div className="flex justify-between items-start">
         <FolderOpen className="w-8 h-8 text-blue-500" />
