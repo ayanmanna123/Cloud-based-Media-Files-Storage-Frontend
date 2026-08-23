@@ -10,7 +10,10 @@ import {
   Search, 
   Plus, 
   Menu,
-  X
+  X,
+  FileUp,
+  FolderUp,
+  FolderPlus
 } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
 import { ThemeToggle } from "../components/ThemeToggle"
@@ -76,10 +79,26 @@ export function DashboardLayout() {
         </div>
 
         <div className="p-4">
-          <Button className="w-full justify-start gap-2 h-12 bg-blue-600 hover:bg-blue-700 text-white shadow-md">
-            <Plus className="w-5 h-5" />
-            <span className="font-medium text-base">New</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="w-full justify-start gap-2 h-12 bg-blue-600 hover:bg-blue-700 text-white shadow-md">
+                <Plus className="w-5 h-5" />
+                <span className="font-medium text-base">New</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
+              <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('openCreateFolder'))}>
+                <FolderPlus className="w-4 h-4 mr-2 text-muted-foreground" /> Create folder
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('triggerFileUpload'))}>
+                <FileUp className="w-4 h-4 mr-2 text-muted-foreground" /> File upload
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('triggerFolderUpload'))}>
+                <FolderUp className="w-4 h-4 mr-2 text-muted-foreground" /> Folder upload
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">

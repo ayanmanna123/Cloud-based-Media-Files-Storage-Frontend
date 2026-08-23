@@ -86,6 +86,7 @@ export function Dashboard() {
   })
 
   const fileInputRef = useRef(null)
+  const folderInputRef = useRef(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -102,6 +103,28 @@ export function Dashboard() {
   useEffect(() => {
     localStorage.setItem("drive_sortMethod", sortMethod)
   }, [sortMethod])
+
+  useEffect(() => {
+    if (driveId) {
+      localStorage.setItem("drive_lastVisitedId", driveId)
+    }
+  }, [driveId])
+
+  useEffect(() => {
+    const handleCreateFolder = () => setIsCreateModalOpen(true);
+    const handleFileUpload = () => fileInputRef.current?.click();
+    const handleFolderUpload = () => folderInputRef.current?.click();
+
+    document.addEventListener('openCreateFolder', handleCreateFolder);
+    document.addEventListener('triggerFileUpload', handleFileUpload);
+    document.addEventListener('triggerFolderUpload', handleFolderUpload);
+
+    return () => {
+      document.removeEventListener('openCreateFolder', handleCreateFolder);
+      document.removeEventListener('triggerFileUpload', handleFileUpload);
+      document.removeEventListener('triggerFolderUpload', handleFolderUpload);
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("drive_viewMode", viewMode)
@@ -168,6 +191,64 @@ export function Dashboard() {
 
         try {
           await uploadFile(file, controller.signal)
+          setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t))
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'cancelled' } : t))
+          } else {
+            console.error(err)
+            setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'error' } : t))
+          }
+        } finally {
+          delete abortControllersRef.current[taskId]
+        }
+      }
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleFolderUploadSubmit = async (filesList) => {
+    if (!filesList || filesList.length === 0) return
+    setIsUploading(true)
+
+    // The webkitRelativePath contains the path, e.g., "FolderName/subfolder/file.png"
+    // We only want the root folder name.
+    const firstPath = filesList[0].webkitRelativePath || ""
+    const rootFolderName = firstPath.split('/')[0] || "New Folder Upload"
+
+    let targetFolderId = null
+    try {
+      // 1. Create the root folder first
+      const newFolder = await createFolder(rootFolderName)
+      if (newFolder && newFolder.id) {
+        targetFolderId = newFolder.id
+      }
+    } catch (err) {
+      console.error("Failed to create folder for upload", err)
+      setIsUploading(false)
+      return
+    }
+
+    // 2. Proceed with file upload but override the target folder ID
+    const newTasks = Array.from(filesList).map(f => ({ 
+      id: Math.random().toString(36).substring(2, 9), 
+      name: f.name, 
+      status: 'uploading' 
+    }))
+    
+    setUploadTasks(prev => [...prev, ...newTasks])
+    setIsUploadToastExpanded(true)
+
+    try {
+      for (let i = 0; i < filesList.length; i++) {
+        const file = filesList[i]
+        const taskId = newTasks[i].id
+        const controller = new AbortController()
+        abortControllersRef.current[taskId] = controller
+
+        try {
+          await uploadFile(file, controller.signal, targetFolderId)
           setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t))
         } catch (err) {
           if (err.name === 'AbortError') {
@@ -381,6 +462,15 @@ export function Dashboard() {
         ref={fileInputRef} 
         onChange={(e) => handleFileUpload(e.target.files)} 
         className="hidden" 
+        multiple
+      />
+      <input 
+        type="file" 
+        ref={folderInputRef} 
+        onChange={(e) => handleFolderUploadSubmit(e.target.files)} 
+        className="hidden" 
+        webkitdirectory="true"
+        directory="true"
         multiple
       />
 
