@@ -17,6 +17,8 @@ export function useDrive(folderId = null) {
       let endpoint = `${import.meta.env.VITE_API_URL}/api/folders/root`;
       if (folderId === 'shared') {
         endpoint = `${import.meta.env.VITE_API_URL}/api/shares/me`;
+      } else if (folderId === 'recent') {
+        endpoint = `${import.meta.env.VITE_API_URL}/api/files/recent`;
       } else if (folderId) {
         endpoint = `${import.meta.env.VITE_API_URL}/api/folders/${folderId}`;
       }
@@ -42,6 +44,12 @@ export function useDrive(folderId = null) {
           folder: { id: 'shared', name: 'Shared with me' },
           children: { folders: result.folders || [], files: result.files || [] },
           path: [{ id: 'shared', name: 'Shared with me' }]
+        });
+      } else if (folderId === 'recent') {
+        setData({
+          folder: { id: 'recent', name: 'Recent' },
+          children: { folders: [], files: result || [] },
+          path: [{ id: 'recent', name: 'Recent' }]
         });
       } else {
         setData(result);
@@ -294,6 +302,19 @@ export function useDrive(folderId = null) {
     }
   };
 
+  const fetchRecentFiles = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/files/recent`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch recent files');
+      return await response.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   const fetchAllFolders = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/folders/all`, {
@@ -411,6 +432,7 @@ export function useDrive(folderId = null) {
     downloadFile,
     fetchAllFolders,
     fetchShares,
+    fetchRecentFiles,
     shareResource,
     revokeShare,
     fetchLinkShare,

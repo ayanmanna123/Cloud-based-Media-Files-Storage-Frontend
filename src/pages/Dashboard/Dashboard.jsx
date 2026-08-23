@@ -55,7 +55,7 @@ export function Dashboard() {
   const { searchQuery } = useOutletContext() || { searchQuery: "" }
   
   const currentView = location.pathname.split("/").pop()
-  const driveId = currentView === "shared" ? "shared" : id
+  const driveId = currentView === "shared" ? "shared" : currentView === "recent" ? "recent" : id
 
   const { 
     folder, children, path, loading, error, 
@@ -443,19 +443,23 @@ export function Dashboard() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button 
-            onClick={() => fileInputRef.current?.click()} 
-            variant="outline" 
-            className="gap-2"
-            disabled={isUploading}
-          >
-            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-            Upload File
-          </Button>
-          <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="w-4 h-4" />
-            New Folder
-          </Button>
+          {currentView !== "shared" && currentView !== "recent" && (
+            <>
+              <Button 
+                onClick={() => fileInputRef.current?.click()} 
+                variant="outline" 
+                className="gap-2"
+                disabled={isUploading}
+              >
+                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                Upload File
+              </Button>
+              <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                <Plus className="w-4 h-4" />
+                New Folder
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
