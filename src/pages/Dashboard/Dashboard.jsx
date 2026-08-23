@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react"
+import { useState, useRef, useMemo, useEffect } from "react"
 import { useParams, useNavigate, useOutletContext } from "react-router-dom"
 import { 
   FolderOpen, 
@@ -67,7 +67,9 @@ export function Dashboard() {
   const [allFolders, setAllFolders] = useState([])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [sortMethod, setSortMethod] = useState("name-asc") // "name-asc", "name-desc", "date-desc", "date-asc", "size-desc"
+  const [sortMethod, setSortMethod] = useState(() => {
+    return localStorage.getItem("drive_sortMethod") || "name-asc"
+  })
 
   const fileInputRef = useRef(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -78,7 +80,18 @@ export function Dashboard() {
   const [isUploadToastExpanded, setIsUploadToastExpanded] = useState(true)
   const abortControllersRef = useRef({})
 
-  const [viewMode, setViewMode] = useState("grid") // "list" or "grid"
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem("drive_viewMode") || "grid"
+  })
+
+  // Persist preferences
+  useEffect(() => {
+    localStorage.setItem("drive_sortMethod", sortMethod)
+  }, [sortMethod])
+
+  useEffect(() => {
+    localStorage.setItem("drive_viewMode", viewMode)
+  }, [viewMode])
 
   const handleCreateFolder = async (e) => {
     e.preventDefault()
