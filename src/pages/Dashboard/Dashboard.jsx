@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from "react"
+import { useState, useRef, useMemo, useEffect, useCallback } from "react"
 import { useParams, useNavigate, useOutletContext, useLocation } from "react-router-dom"
 import { 
   FolderOpen, 
@@ -133,6 +133,24 @@ export function Dashboard() {
   useEffect(() => {
     localStorage.setItem("drive_viewMode", viewMode)
   }, [viewMode])
+
+  const handleSelectAll = useCallback(() => {
+    const allFolderIds = (children?.folders || []).map(f => `folder_${f.id}`);
+    const allFileIds = (children?.files || []).map(f => `file_${f.id}`);
+    setSelectedItems([...allFolderIds, ...allFileIds]);
+  }, [children]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        e.preventDefault();
+        handleSelectAll();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSelectAll]);
 
   const handleItemClick = (e, id, type) => {
     e.stopPropagation();
@@ -724,6 +742,8 @@ export function Dashboard() {
           <span className="text-sm font-medium">{selectedItems.length} selected</span>
           <div className="h-4 w-px bg-border"></div>
           <Button variant="ghost" size="sm" onClick={() => setSelectedItems([])}>Clear</Button>
+          <Button variant="ghost" size="sm" onClick={handleSelectAll}>Select All</Button>
+          <div className="h-4 w-px bg-border"></div>
           <Button variant="ghost" size="sm" onClick={handleBulkDownload} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
             <Download className="w-4 h-4 mr-2" /> Download
           </Button>
