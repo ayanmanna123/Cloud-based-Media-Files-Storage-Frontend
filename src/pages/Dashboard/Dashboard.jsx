@@ -173,11 +173,15 @@ export function Dashboard() {
     if (!files || files.length === 0) return
     setIsUploading(true)
     
-    const newTasks = Array.from(files).map(f => ({ 
-      id: Math.random().toString(36).substring(2, 9), 
-      name: f.name, 
-      status: 'uploading' 
-    }))
+    const newTasks = Array.from(files).map(f => {
+      const isTooLarge = f.size > 20 * 1024 * 1024;
+      return { 
+        id: Math.random().toString(36).substring(2, 9), 
+        name: f.name, 
+        status: isTooLarge ? 'error' : 'uploading',
+        message: isTooLarge ? 'Max 20MB allowed' : undefined
+      }
+    })
     
     setUploadTasks(prev => [...prev, ...newTasks])
     setIsUploadToastExpanded(true)
@@ -185,7 +189,13 @@ export function Dashboard() {
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
-        const taskId = newTasks[i].id
+        const task = newTasks[i]
+        const taskId = task.id
+        
+        if (task.status === 'error') {
+          continue; // Skip uploading this file since it's too large
+        }
+
         const controller = new AbortController()
         abortControllersRef.current[taskId] = controller
 
@@ -231,11 +241,15 @@ export function Dashboard() {
     }
 
     // 2. Proceed with file upload but override the target folder ID
-    const newTasks = Array.from(filesList).map(f => ({ 
-      id: Math.random().toString(36).substring(2, 9), 
-      name: f.name, 
-      status: 'uploading' 
-    }))
+    const newTasks = Array.from(filesList).map(f => {
+      const isTooLarge = f.size > 20 * 1024 * 1024;
+      return { 
+        id: Math.random().toString(36).substring(2, 9), 
+        name: f.name, 
+        status: isTooLarge ? 'error' : 'uploading',
+        message: isTooLarge ? 'Max 20MB allowed' : undefined
+      }
+    })
     
     setUploadTasks(prev => [...prev, ...newTasks])
     setIsUploadToastExpanded(true)
@@ -243,11 +257,18 @@ export function Dashboard() {
     try {
       for (let i = 0; i < filesList.length; i++) {
         const file = filesList[i]
-        const taskId = newTasks[i].id
+        const task = newTasks[i]
+        const taskId = task.id
+        
+        if (task.status === 'error') {
+          continue; // Skip uploading this file since it's too large
+        }
+
         const controller = new AbortController()
         abortControllersRef.current[taskId] = controller
 
         try {
+          // Pass the targetFolderId to uploadFile
           await uploadFile(file, controller.signal, targetFolderId)
           setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t))
         } catch (err) {

@@ -55,7 +55,7 @@ export function UploadProgress({
                 <div className="text-sm font-medium truncate">{task.name}</div>
                 {task.status === 'uploading' && <div className="text-xs text-blue-500 font-medium">Uploading...</div>}
                 {task.status === 'completed' && <div className="text-xs text-green-500 font-medium flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Complete</div>}
-                {task.status === 'error' && <div className="text-xs text-red-500 font-medium flex items-center gap-1"><XCircle className="w-3 h-3" /> Failed</div>}
+                {task.status === 'error' && <div className="text-xs text-red-500 font-medium flex items-center gap-1"><XCircle className="w-3 h-3" /> {task.message || 'Failed'}</div>}
                 {task.status === 'cancelled' && <div className="text-xs text-muted-foreground font-medium">Cancelled</div>}
               </div>
               {task.status === 'uploading' && (
