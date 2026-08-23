@@ -29,6 +29,7 @@ export function DashboardLayout() {
   const { user, logout } = useAuth()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const navItems = [
     { name: "My Drive", path: "/dashboard", icon: FolderOpen },
@@ -136,6 +137,8 @@ export function DashboardLayout() {
                 type="text" 
                 placeholder="Search files and folders..." 
                 className="pl-10 bg-muted/50 border-border focus-visible:ring-1"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
@@ -172,7 +175,7 @@ export function DashboardLayout() {
 
         {/* Main Content scrollable area */}
         <main className="flex-1 overflow-auto bg-muted/10 p-4 sm:p-6 lg:p-8">
-          <Outlet />
+          <Outlet context={{ searchQuery }} />
         </main>
       </div>
     </div>

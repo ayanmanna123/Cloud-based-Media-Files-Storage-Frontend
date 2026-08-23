@@ -1,5 +1,5 @@
-import { useState, useRef } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useState, useRef, useMemo } from "react"
+import { useParams, useNavigate, useOutletContext } from "react-router-dom"
 import { 
   FolderOpen, 
   MoreVertical, 
@@ -16,7 +16,8 @@ import {
   Upload,
   UploadCloud,
   Download,
-  FolderInput
+  FolderInput,
+  ArrowUpDown
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -41,6 +42,7 @@ import {
 export function Dashboard() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { searchQuery } = useOutletContext() || { searchQuery: "" }
   const { 
     folder, children, path, loading, error, 
     createFolder, renameFolder, deleteFolder, 
@@ -58,6 +60,7 @@ export function Dashboard() {
   const [allFolders, setAllFolders] = useState([])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [sortMethod, setSortMethod] = useState("name-asc") // "name-asc", "name-desc", "date-desc", "date-asc", "size-desc"
 
   const fileInputRef = useRef(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -183,10 +186,44 @@ export function Dashboard() {
   const getFileIcon = (fileName) => {
     if (!fileName) return FileText
     if (fileName.match(/\.(jpg|jpeg|png|gif|svg)$/i)) return FileImage
-    if (fileName.match(/\.(mp4|mov|avi|wmv)$/i)) return FileVideo
-    if (fileName.match(/\.(xls|xlsx|csv)$/i)) return FileSpreadsheet
+    if (fileName.match(/\.(mp4|webm|ogg)$/i)) return FileVideo
+    if (fileName.match(/\.(csv|xls|xlsx)$/i)) return FileSpreadsheet
     return FileText
   }
+
+  // Filter and sort logic
+  const filteredFolders = useMemo(() => {
+    if (!children?.folders) return []
+    let result = children.folders.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    
+    result.sort((a, b) => {
+      switch (sortMethod) {
+        case "name-asc": return a.name.localeCompare(b.name)
+        case "name-desc": return b.name.localeCompare(a.name)
+        case "date-desc": return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)
+        case "date-asc": return new Date(a.updatedAt || a.createdAt) - new Date(b.updatedAt || b.createdAt)
+        default: return 0
+      }
+    })
+    return result
+  }, [children?.folders, searchQuery, sortMethod])
+
+  const filteredFiles = useMemo(() => {
+    if (!children?.files) return []
+    let result = children.files.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    
+    result.sort((a, b) => {
+      switch (sortMethod) {
+        case "name-asc": return a.name.localeCompare(b.name)
+        case "name-desc": return b.name.localeCompare(a.name)
+        case "date-desc": return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)
+        case "date-asc": return new Date(a.updatedAt || a.createdAt) - new Date(b.updatedAt || b.createdAt)
+        case "size-desc": return (b.sizeBytes || 0) - (a.sizeBytes || 0)
+        default: return 0
+      }
+    })
+    return result
+  }, [children?.files, searchQuery, sortMethod])
 
   if (loading) {
     return (
@@ -259,9 +296,25 @@ export function Dashboard() {
       </nav>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">{folder?.name || "My Drive"}</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <ArrowUpDown className="w-4 h-4" />
+                Sort
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setSortMethod("name-asc")}>Name (A-Z) {sortMethod === "name-asc" && "✓"}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortMethod("name-desc")}>Name (Z-A) {sortMethod === "name-desc" && "✓"}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortMethod("date-desc")}>Newest First {sortMethod === "date-desc" && "✓"}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortMethod("date-asc")}>Oldest First {sortMethod === "date-asc" && "✓"}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortMethod("size-desc")}>Size (Largest) {sortMethod === "size-desc" && "✓"}</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button 
             onClick={() => fileInputRef.current?.click()} 
             variant="outline" 
@@ -279,11 +332,11 @@ export function Dashboard() {
       </div>
 
       {/* Folders Section */}
-      {children.folders.length > 0 && (
+      {filteredFolders.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">Folders</h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">Folders</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {children.folders.map((f) => (
+            {filteredFolders.map((f) => (
               <div 
                 key={f.id} 
                 onClick={() => navigate(`/dashboard/folder/${f.id}`)}
@@ -321,20 +374,21 @@ export function Dashboard() {
       )}
 
       {/* Files Section */}
-      {children.files.length > 0 && (
+      {filteredFiles.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">Files</h2>
-          <div className="border border-border rounded-xl bg-card overflow-hidden">
-            <div className="grid grid-cols-12 gap-4 p-4 border-b border-border text-xs font-medium text-muted-foreground bg-muted/30">
-              <div className="col-span-12 sm:col-span-6 md:col-span-5">Name</div>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">Files</h2>
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            {/* Table Header */}
+            <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-muted/50 text-sm font-medium text-muted-foreground">
+              <div className="col-span-11 sm:col-span-6 md:col-span-5">Name</div>
               <div className="hidden sm:block sm:col-span-3 md:col-span-2">Owner</div>
               <div className="hidden md:block md:col-span-3">Last modified</div>
               <div className="hidden sm:block sm:col-span-2 md:col-span-1">Size</div>
-              <div className="col-span-1 flex justify-end"></div>
+              <div className="col-span-1"></div>
             </div>
-            
-            <div className="flex flex-col divide-y divide-border">
-              {children.files.map((file) => {
+            {/* Table Body */}
+            <div className="divide-y divide-border">
+              {filteredFiles.map((file) => {
                 const Icon = getFileIcon(file.name)
                 return (
                   <div 
@@ -384,7 +438,8 @@ export function Dashboard() {
         </section>
       )}
 
-      {children.folders.length === 0 && children.files.length === 0 && (
+      {/* Empty State */}
+      {filteredFolders.length === 0 && filteredFiles.length === 0 && !loading && (
         <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border rounded-xl">
           <FolderOpen className="w-16 h-16 text-muted-foreground/30 mb-4" />
           <h3 className="text-lg font-medium text-foreground">This folder is empty</h3>
