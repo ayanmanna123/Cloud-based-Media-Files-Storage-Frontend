@@ -46,8 +46,9 @@ export function FileCard({
   const Icon = getFileIcon(file.name)
   const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
   const isPdf = file.name.match(/\.(pdf)$/i)
+  const isVideo = file.name.match(/\.(mp4|mov|avi|mkv|webm)$/i)
   const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-400,h-300,c-at_max`
-  const pdfPreviewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-400,h-300,c-at_max`
+  const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-400,h-300,c-at_max`
   const isStarred = starredItems.includes(`file_${file.id}`)
 
   const DropdownActions = () => (
@@ -129,18 +130,29 @@ export function FileCard({
   return (
     <div className="group border border-border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48">
       <div className="flex-1 bg-muted/30 flex items-center justify-center overflow-hidden relative">
-        {(isImage || isPdf) ? (
-          <img 
-            src={isPdf ? pdfPreviewUrl : previewUrl} 
-            alt={file.name} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
+        {(isImage || isPdf || isVideo) ? (
+          <>
+            <img 
+              src={(isPdf || isVideo) ? thumbnailUrl : previewUrl} 
+              alt={file.name} 
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                if (e.target.nextElementSibling) {
+                  e.target.nextElementSibling.style.display = 'flex';
+                }
+              }}
+            />
+            {isVideo && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="bg-black/50 rounded-full p-2">
+                  <FileVideo className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            )}
+          </>
         ) : null}
-        <div className={`flex flex-col items-center justify-center text-muted-foreground w-full h-full absolute inset-0 ${(isImage || isPdf) ? 'hidden' : 'flex'}`}>
+        <div className={`flex flex-col items-center justify-center text-muted-foreground w-full h-full absolute inset-0 ${(isImage || isPdf || isVideo) ? 'hidden' : 'flex'}`}>
           <Icon className="w-12 h-12 mb-2 opacity-50" />
         </div>
       </div>
