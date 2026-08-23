@@ -119,7 +119,7 @@ export function useDrive(folderId = null) {
     }
   };
 
-  const uploadFile = async (file) => {
+  const uploadFile = async (file, abortSignal = null) => {
     try {
       // 1. Initialize upload on backend
       const initRes = await fetch(`${import.meta.env.VITE_API_URL}/api/files/init`, {
@@ -132,6 +132,7 @@ export function useDrive(folderId = null) {
           sizeBytes: file.size, 
           folderId 
         }),
+        signal: abortSignal
       });
 
       if (!initRes.ok) {
@@ -141,26 +142,26 @@ export function useDrive(folderId = null) {
       
       const initData = await initRes.json();
       
-      // 2. Upload directly to ImageKit
-      const imagekit = new ImageKit({
-        publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY,
-        urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT,
+      // 2. Upload directly to ImageKit using fetch (supports aborting)
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('publicKey', import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY);
+      formData.append('signature', initData.upload.auth.signature);
+      formData.append('expire', initData.upload.auth.expire);
+      formData.append('token', initData.upload.auth.token);
+      formData.append('fileName', initData.storageKey.split('/').pop() || file.name);
+      formData.append('folder', initData.storageKey.split('/').slice(0, -1).join('/') || "/");
+      formData.append('useUniqueFileName', 'false');
+
+      const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+        method: 'POST',
+        body: formData,
+        signal: abortSignal
       });
 
-      await new Promise((resolve, reject) => {
-        imagekit.upload({
-          file: file,
-          fileName: initData.storageKey.split('/').pop() || file.name,
-          useUniqueFileName: false,
-          token: initData.upload.auth.token,
-          signature: initData.upload.auth.signature,
-          expire: initData.upload.auth.expire,
-          folder: initData.storageKey.split('/').slice(0, -1).join('/') || "/"
-        }, function(err, result) {
-          if (err) reject(err);
-          else resolve(result);
-        });
-      });
+      if (!uploadRes.ok) {
+        throw new Error('Failed to upload to ImageKit');
+      }
 
       // 3. Complete upload on backend
       const completeRes = await fetch(`${import.meta.env.VITE_API_URL}/api/files/complete`, {
@@ -168,6 +169,7 @@ export function useDrive(folderId = null) {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ fileId: initData.fileId }),
+        signal: abortSignal
       });
 
       if (!completeRes.ok) {
@@ -179,6 +181,10 @@ export function useDrive(folderId = null) {
       await fetchFolder();
       
     } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log("Upload aborted by user");
+        throw err;
+      }
       console.error("Upload error:", err);
       throw err;
     }

@@ -17,7 +17,14 @@ import {
   UploadCloud,
   Download,
   FolderInput,
-  ArrowUpDown
+  ArrowUpDown,
+  CheckCircle2,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
+  X,
+  LayoutGrid,
+  List
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -66,6 +73,13 @@ export function Dashboard() {
   const [isUploading, setIsUploading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
 
+  // Upload Progress State
+  const [uploadTasks, setUploadTasks] = useState([])
+  const [isUploadToastExpanded, setIsUploadToastExpanded] = useState(true)
+  const abortControllersRef = useRef({})
+
+  const [viewMode, setViewMode] = useState("grid") // "list" or "grid"
+
   const handleCreateFolder = async (e) => {
     e.preventDefault()
     if (!newFolderName.trim()) return
@@ -108,15 +122,45 @@ export function Dashboard() {
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return
     setIsUploading(true)
+    
+    const newTasks = Array.from(files).map(f => ({ 
+      id: Math.random().toString(36).substring(2, 9), 
+      name: f.name, 
+      status: 'uploading' 
+    }))
+    
+    setUploadTasks(prev => [...prev, ...newTasks])
+    setIsUploadToastExpanded(true)
+
     try {
-      // For MVP, just upload the first file, or loop through all
       for (let i = 0; i < files.length; i++) {
-        await uploadFile(files[i])
+        const file = files[i]
+        const taskId = newTasks[i].id
+        const controller = new AbortController()
+        abortControllersRef.current[taskId] = controller
+
+        try {
+          await uploadFile(file, controller.signal)
+          setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t))
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'cancelled' } : t))
+          } else {
+            console.error(err)
+            setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'error' } : t))
+          }
+        } finally {
+          delete abortControllersRef.current[taskId]
+        }
       }
-    } catch (err) {
-      alert("Error uploading file: " + err.message)
     } finally {
       setIsUploading(false)
+    }
+  }
+
+  const cancelUpload = (taskId) => {
+    if (abortControllersRef.current[taskId]) {
+      abortControllersRef.current[taskId].abort()
     }
   }
 
@@ -243,7 +287,7 @@ export function Dashboard() {
 
   return (
     <div 
-      className="max-w-6xl mx-auto space-y-6 pb-8 relative"
+      className="max-w-6xl mx-auto space-y-6 pb-8 relative min-h-[80vh]"
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
@@ -256,6 +300,51 @@ export function Dashboard() {
             <h3 className="text-2xl font-bold text-foreground">Drop files to upload</h3>
             <p className="text-muted-foreground mt-2">to {folder?.name || "My Drive"}</p>
           </div>
+        </div>
+      )}
+
+      {/* Upload Progress Toast */}
+      {uploadTasks.length > 0 && (
+        <div className="fixed bottom-6 right-6 w-80 sm:w-96 bg-card border border-border shadow-2xl rounded-xl overflow-hidden z-50 flex flex-col transition-all duration-300 ease-in-out">
+          <div className="flex items-center justify-between px-4 py-3 bg-muted/80 backdrop-blur-sm border-b border-border">
+            <span className="font-semibold text-sm text-foreground">
+              {uploadTasks.filter(t => t.status === 'uploading').length > 0 
+                ? `Uploading ${uploadTasks.filter(t => t.status === 'uploading').length} item${uploadTasks.filter(t => t.status === 'uploading').length > 1 ? 's' : ''}` 
+                : `${uploadTasks.filter(t => t.status === 'completed').length} upload${uploadTasks.filter(t => t.status === 'completed').length > 1 ? 's' : ''} complete`}
+            </span>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-full hover:bg-background/80" onClick={() => setIsUploadToastExpanded(!isUploadToastExpanded)}>
+                {isUploadToastExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </Button>
+              <Button variant="ghost" size="icon" className="w-7 h-7 rounded-full hover:bg-background/80 text-muted-foreground hover:text-foreground" onClick={() => setUploadTasks([])}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+          
+          {isUploadToastExpanded && (
+            <div className="max-h-72 overflow-y-auto p-2 space-y-0.5">
+              {uploadTasks.map(task => (
+                <div key={task.id} className="flex items-center justify-between p-2 hover:bg-muted/50 rounded-lg transition-colors group">
+                  <div className="flex items-center gap-3 truncate pr-4">
+                    <FileText className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                    <span className="text-sm font-medium truncate text-foreground/90">{task.name}</span>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center justify-end min-w-[60px] gap-2">
+                    {task.status === 'uploading' && (
+                      <>
+                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-blue-600 hover:bg-blue-50/50" onClick={() => cancelUpload(task.id)}>Cancel</Button>
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                      </>
+                    )}
+                    {task.status === 'completed' && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                    {task.status === 'error' && <XCircle className="w-4 h-4 text-red-500" />}
+                    {task.status === 'cancelled' && <span className="text-xs text-muted-foreground font-medium">Cancelled</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -299,6 +388,23 @@ export function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">{folder?.name || "My Drive"}</h1>
         <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex bg-muted/50 p-1 rounded-md border border-border/50 items-center mr-1">
+            <button 
+              onClick={() => setViewMode("list")} 
+              className={`p-1.5 rounded-sm transition-all ${viewMode === 'list' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              title="List view"
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setViewMode("grid")} 
+              className={`p-1.5 rounded-sm transition-all ${viewMode === 'grid' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              title="Grid view"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -377,39 +483,106 @@ export function Dashboard() {
       {filteredFiles.length > 0 && (
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">Files</h2>
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-muted/50 text-sm font-medium text-muted-foreground">
-              <div className="col-span-11 sm:col-span-6 md:col-span-5">Name</div>
-              <div className="hidden sm:block sm:col-span-3 md:col-span-2">Owner</div>
-              <div className="hidden md:block md:col-span-3">Last modified</div>
-              <div className="hidden sm:block sm:col-span-2 md:col-span-1">Size</div>
-              <div className="col-span-1"></div>
+          
+          {viewMode === "list" ? (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              {/* Table Header */}
+              <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-muted/50 text-sm font-medium text-muted-foreground">
+                <div className="col-span-11 sm:col-span-6 md:col-span-5">Name</div>
+                <div className="hidden sm:block sm:col-span-3 md:col-span-2">Owner</div>
+                <div className="hidden md:block md:col-span-3">Last modified</div>
+                <div className="hidden sm:block sm:col-span-2 md:col-span-1">Size</div>
+                <div className="col-span-1"></div>
+              </div>
+              {/* Table Body */}
+              <div className="divide-y divide-border">
+                {filteredFiles.map((file) => {
+                  const Icon = getFileIcon(file.name)
+                  return (
+                    <div 
+                      key={file.id} 
+                      className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer"
+                    >
+                      <div className="col-span-11 sm:col-span-6 md:col-span-5 flex items-center gap-3">
+                        <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                        <span className="text-sm font-medium truncate">{file.name}</span>
+                      </div>
+                      <div className="hidden sm:block sm:col-span-3 md:col-span-2 text-sm text-muted-foreground">me</div>
+                      <div className="hidden md:block md:col-span-3 text-sm text-muted-foreground">
+                        {new Date(file.updatedAt || file.createdAt).toLocaleDateString()}
+                      </div>
+                      <div className="hidden sm:block sm:col-span-2 md:col-span-1 text-sm text-muted-foreground">
+                        {file.sizeBytes ? `${(file.sizeBytes / (1024 * 1024)).toFixed(1)} MB` : '--'}
+                      </div>
+                      <div className="col-span-1 flex justify-end">
+                        <div onClick={e => e.stopPropagation()}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                              <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
+                                <Download className="w-4 h-4 mr-2" /> Download
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
+                                <Edit2 className="w-4 h-4 mr-2" /> Rename
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openMoveFileModal(file.id, file.name)}>
+                                <FolderInput className="w-4 h-4 mr-2" /> Move
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleDeleteFile(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-            {/* Table Body */}
-            <div className="divide-y divide-border">
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filteredFiles.map((file) => {
                 const Icon = getFileIcon(file.name)
+                const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                const isPdf = file.name.match(/\.(pdf)$/i)
+                const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-400,h-300,c-at_max`
+                // ImageKit requires appending /ik-thumbnail.jpg to the PDF path to extract the first page as an image
+                const pdfPreviewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-400,h-300,c-at_max`
+
                 return (
-                  <div 
-                    key={file.id} 
-                    className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer"
-                  >
-                    <div className="col-span-11 sm:col-span-6 md:col-span-5 flex items-center gap-3">
-                      <Icon className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-sm font-medium truncate">{file.name}</span>
+                  <div key={file.id} className="group border border-border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48">
+                    {/* Preview Area */}
+                    <div className="flex-1 bg-muted/30 flex items-center justify-center overflow-hidden relative">
+                       {(isImage || isPdf) ? (
+                         <img 
+                           src={isPdf ? pdfPreviewUrl : previewUrl} 
+                           alt={file.name} 
+                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                           onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                           }}
+                         />
+                       ) : null}
+                       <div className={`flex flex-col items-center justify-center text-muted-foreground w-full h-full absolute inset-0 ${(isImage || isPdf) ? 'hidden' : 'flex'}`}>
+                         <Icon className="w-12 h-12 mb-2 opacity-50" />
+                       </div>
                     </div>
-                    <div className="hidden sm:block sm:col-span-3 md:col-span-2 text-sm text-muted-foreground">me</div>
-                    <div className="hidden md:block md:col-span-3 text-sm text-muted-foreground">
-                      {new Date(file.updatedAt || file.createdAt).toLocaleDateString()}
-                    </div>
-                    <div className="hidden sm:block sm:col-span-2 md:col-span-1 text-sm text-muted-foreground">
-                      {file.sizeBytes ? `${(file.sizeBytes / (1024 * 1024)).toFixed(1)} MB` : '--'}
-                    </div>
-                    <div className="col-span-1 flex justify-end">
+                    {/* Details Area */}
+                    <div className="p-3 border-t border-border flex items-center justify-between bg-card z-10">
+                      <div className="flex items-center gap-2 truncate pr-2">
+                        <Icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <span className="text-sm font-medium truncate">{file.name}</span>
+                      </div>
+                      
+                      {/* Context Menu */}
                       <div onClick={e => e.stopPropagation()}>
                         <DropdownMenu>
-                          <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                          <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0 -mr-2">
                             <MoreVertical className="w-4 h-4 text-muted-foreground" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -434,7 +607,7 @@ export function Dashboard() {
                 )
               })}
             </div>
-          </div>
+          )}
         </section>
       )}
 
