@@ -35,13 +35,11 @@ export function Navbar() {
           
           {user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full border border-border">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.image_url} alt={user.name} />
-                    <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                </Button>
+              <DropdownMenuTrigger className="relative h-8 w-8 rounded-full border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                <Avatar className="h-8 w-8 cursor-pointer">
+                  <AvatarImage src={user.image_url} alt={user.name} />
+                  <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="px-2 py-1.5 text-sm font-normal">
