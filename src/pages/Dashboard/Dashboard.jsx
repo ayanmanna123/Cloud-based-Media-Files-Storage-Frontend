@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { 
   FolderOpen, 
@@ -12,7 +12,11 @@ import {
   Trash2,
   Edit2,
   ChevronRight,
-  Home
+  Home,
+  Upload,
+  UploadCloud,
+  Download,
+  FolderInput
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -37,13 +41,27 @@ import {
 export function Dashboard() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { folder, children, path, loading, error, createFolder, renameFolder, deleteFolder } = useDrive(id)
+  const { 
+    folder, children, path, loading, error, 
+    createFolder, renameFolder, deleteFolder, 
+    uploadFile, renameFile, deleteFile, moveFile, downloadFile, fetchAllFolders 
+  } = useDrive(id)
 
+  // Folder Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState("")
+  const [renameModalData, setRenameModalData] = useState({ isOpen: false, id: null, currentName: "" })
+  
+  // File Modals
+  const [renameFileModalData, setRenameFileModalData] = useState({ isOpen: false, id: null, currentName: "" })
+  const [moveFileModalData, setMoveFileModalData] = useState({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })
+  const [allFolders, setAllFolders] = useState([])
+
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const [renameModalData, setRenameModalData] = useState({ isOpen: false, id: null, currentName: "" })
+  const fileInputRef = useRef(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
 
   const handleCreateFolder = async (e) => {
     e.preventDefault()
@@ -84,6 +102,84 @@ export function Dashboard() {
     }
   }
 
+  const handleFileUpload = async (files) => {
+    if (!files || files.length === 0) return
+    setIsUploading(true)
+    try {
+      // For MVP, just upload the first file, or loop through all
+      for (let i = 0; i < files.length; i++) {
+        await uploadFile(files[i])
+      }
+    } catch (err) {
+      alert("Error uploading file: " + err.message)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const onDragOver = (e) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const onDragLeave = (e) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const onDrop = (e) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files)
+    }
+  }
+
+  const handleRenameFile = async (e) => {
+    e.preventDefault()
+    if (!renameFileModalData.currentName.trim()) return
+    setIsSubmitting(true)
+    try {
+      await renameFile(renameFileModalData.id, renameFileModalData.currentName)
+      setRenameFileModalData({ isOpen: false, id: null, currentName: "" })
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteFile = async (fileId) => {
+    if (confirm("Are you sure you want to delete this file?")) {
+      try {
+        await deleteFile(fileId)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+  }
+
+  const openMoveFileModal = async (fileId, fileName) => {
+    setMoveFileModalData({ isOpen: true, id: fileId, currentName: fileName, selectedFolderId: "root" })
+    const folders = await fetchAllFolders()
+    // Filter out current folder if we are in one
+    setAllFolders(folders.filter(f => f.id !== id))
+  }
+
+  const handleMoveFile = async (e) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    try {
+      const targetFolderId = moveFileModalData.selectedFolderId === "root" ? null : moveFileModalData.selectedFolderId
+      await moveFile(moveFileModalData.id, targetFolderId)
+      setMoveFileModalData({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const getFileIcon = (fileName) => {
     if (!fileName) return FileText
     if (fileName.match(/\.(jpg|jpeg|png|gif|svg)$/i)) return FileImage
@@ -109,7 +205,32 @@ export function Dashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-8">
+    <div 
+      className="max-w-6xl mx-auto space-y-6 pb-8 relative"
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
+      {/* Drag & Drop Overlay */}
+      {isDragging && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm border-2 border-dashed border-blue-500 rounded-2xl pointer-events-none">
+          <div className="text-center">
+            <UploadCloud className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-bounce" />
+            <h3 className="text-2xl font-bold text-foreground">Drop files to upload</h3>
+            <p className="text-muted-foreground mt-2">to {folder?.name || "My Drive"}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden File Input */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={(e) => handleFileUpload(e.target.files)} 
+        className="hidden" 
+        multiple
+      />
+
       {/* Breadcrumbs */}
       <nav className="flex items-center text-sm font-medium text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 scrollbar-none">
         <Link 
@@ -141,6 +262,15 @@ export function Dashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">{folder?.name || "My Drive"}</h1>
         <div className="flex items-center gap-2">
+          <Button 
+            onClick={() => fileInputRef.current?.click()} 
+            variant="outline" 
+            className="gap-2"
+            disabled={isUploading}
+          >
+            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            Upload File
+          </Button>
           <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="w-4 h-4" />
             New Folder
@@ -220,12 +350,31 @@ export function Dashboard() {
                       {new Date(file.updatedAt || file.createdAt).toLocaleDateString()}
                     </div>
                     <div className="hidden sm:block sm:col-span-2 md:col-span-1 text-sm text-muted-foreground">
-                      {file.size ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : '--'}
+                      {file.sizeBytes ? `${(file.sizeBytes / (1024 * 1024)).toFixed(1)} MB` : '--'}
                     </div>
                     <div className="col-span-1 flex justify-end">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                      </Button>
+                      <div onClick={e => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                            <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => downloadFile(file.id, file.name)}>
+                              <Download className="w-4 h-4 mr-2" /> Download
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
+                              <Edit2 className="w-4 h-4 mr-2" /> Rename
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openMoveFileModal(file.id, file.name)}>
+                              <FolderInput className="w-4 h-4 mr-2" /> Move
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDeleteFile(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+                              <Trash2 className="w-4 h-4 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </div>
                 )
@@ -303,6 +452,74 @@ export function Dashboard() {
               <Button type="submit" disabled={!renameModalData.currentName.trim() || isSubmitting}>
                 {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                 Rename
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rename File Modal */}
+      <Dialog open={renameFileModalData.isOpen} onOpenChange={(open) => !open && setRenameFileModalData({ isOpen: false, id: null, currentName: "" })}>
+        <DialogContent>
+          <form onSubmit={handleRenameFile}>
+            <DialogHeader>
+              <DialogTitle>Rename file</DialogTitle>
+              <DialogDescription>
+                Enter a new name for the file.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Input 
+                autoFocus
+                placeholder="File name" 
+                value={renameFileModalData.currentName}
+                onChange={(e) => setRenameFileModalData(prev => ({ ...prev, currentName: e.target.value }))}
+                disabled={isSubmitting}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setRenameFileModalData({ isOpen: false, id: null, currentName: "" })} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!renameFileModalData.currentName.trim() || isSubmitting}>
+                {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                Rename
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move File Modal */}
+      <Dialog open={moveFileModalData.isOpen} onOpenChange={(open) => !open && setMoveFileModalData({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })}>
+        <DialogContent>
+          <form onSubmit={handleMoveFile}>
+            <DialogHeader>
+              <DialogTitle>Move file</DialogTitle>
+              <DialogDescription>
+                Select a destination folder for '{moveFileModalData.currentName}'
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <select 
+                value={moveFileModalData.selectedFolderId}
+                onChange={(e) => setMoveFileModalData(prev => ({ ...prev, selectedFolderId: e.target.value }))}
+                disabled={isSubmitting}
+                className="w-full h-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background"
+              >
+                <option value="root">My Drive (Root)</option>
+                {allFolders.map(f => (
+                  <option key={f.id} value={f.id}>{f.name}</option>
+                ))}
+              </select>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setMoveFileModalData({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                Move
               </Button>
             </DialogFooter>
           </form>
