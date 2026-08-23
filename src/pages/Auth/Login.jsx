@@ -35,7 +35,7 @@ export function Login() {
       }
 
       login(data.user)
-      navigate("/")
+      navigate("/dashboard")
       
     } catch (err) {
       setError(err.message)
@@ -62,7 +62,7 @@ export function Login() {
       }
 
       login(data.user)
-      navigate("/")
+      navigate("/dashboard")
     } catch (err) {
       setError(err.message)
     } finally {

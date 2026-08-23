@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
 import { Button } from "../components/ui/button"
 import { 
   Cloud, 
@@ -17,6 +18,7 @@ import {
 } from "lucide-react"
 
 export function Home() {
+  const { user } = useAuth()
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -49,9 +51,9 @@ export function Home() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Link to="/signup">
+                <Link to={user ? "/dashboard" : "/signup"}>
                   <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-lg text-base h-12 px-8">
-                    Get Started Free
+                    {user ? "Go to Dashboard" : "Get Started Free"}
                   </Button>
                 </Link>
                 <Link to="#features">

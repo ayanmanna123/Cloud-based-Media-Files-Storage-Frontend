@@ -1,28 +1,49 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom"
 import { Navbar } from "./layouts/Navbar"
 import { Login } from "./pages/Auth/Login"
 import { Register } from "./pages/Auth/Register"
 import { VerifyEmail } from "./pages/Auth/VerifyEmail"
 import { ForgotPassword } from "./pages/Auth/ForgotPassword"
 import { ResetPassword } from "./pages/Auth/ResetPassword"
+import { ProtectedRoute } from "./components/ProtectedRoute"
+import { DashboardLayout } from "./layouts/DashboardLayout"
+import { Dashboard } from "./pages/Dashboard/Dashboard"
 
 import { Home } from "./pages/Home"
+const PublicLayout = () => (
+  <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <Navbar />
+    <main className="flex-1">
+      <Outlet />
+    </main>
+  </div>
+)
+
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <Navbar />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Register />} />
-            <Route path="/verify" element={<VerifyEmail />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-          </Routes>
-        </main>
-      </div>
+      <Routes>
+        {/* Public Routes with Navbar */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/verify" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Route>
+
+        {/* Dashboard Routes (uses its own layout) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="recent" element={<Dashboard />} />
+            <Route path="starred" element={<Dashboard />} />
+            <Route path="shared" element={<Dashboard />} />
+            <Route path="trash" element={<Dashboard />} />
+          </Route>
+        </Route>
+      </Routes>
     </Router>
   )
 }
