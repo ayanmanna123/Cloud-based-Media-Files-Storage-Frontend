@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { ChevronDown, Cloud } from "lucide-react"
 import { ThemeToggle } from "../components/ThemeToggle"
 import { Button } from "../components/ui/button"
 import { useAuth } from "../context/AuthContext"
@@ -18,53 +19,72 @@ export function Navbar() {
       <div className="container mx-auto max-w-7xl flex h-16 items-center justify-between px-4">
         {/* Left Side - Brand/Logo */}
         <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+          <Link to="/" className="flex items-center space-x-2 group">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm group-hover:bg-blue-700 transition-colors">
+              <Cloud className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-xl tracking-tight text-foreground">
               CloudBox
             </span>
           </Link>
         </div>
 
-        {/* Right Side - Links & Theme Toggle */}
-        <div className="flex items-center space-x-4">
-          <Link to="/">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-              Home
-            </Button>
+        {/* Center - Links (Desktop Only) */}
+        <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-muted-foreground">
+          <Link to="#" className="hover:text-foreground transition-colors">Features</Link>
+          <Link to="#" className="flex items-center hover:text-foreground transition-colors group">
+            Solutions <ChevronDown className="ml-1 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
           </Link>
-          
+          <Link to="#" className="hover:text-foreground transition-colors">Pricing</Link>
+          <Link to="#" className="flex items-center hover:text-foreground transition-colors group">
+            Resources <ChevronDown className="ml-1 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+          </Link>
+          <Link to="#" className="hover:text-foreground transition-colors">About Us</Link>
+        </div>
+
+        {/* Right Side - Auth & Theme */}
+        <div className="flex items-center space-x-4">
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger className="relative h-8 w-8 rounded-full border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                <Avatar className="h-8 w-8 cursor-pointer">
-                  <AvatarImage src={user.image_url} alt={user.name} />
-                  <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="px-2 py-1.5 text-sm font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
+            <>
+              <Link to="/dashboard" className="hidden sm:block">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                  Dashboard
+                </Button>
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="relative h-8 w-8 rounded-full border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                  <Avatar className="h-8 w-8 cursor-pointer">
+                    <AvatarImage src={user.image_url} alt={user.name} />
+                    <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="px-2 py-1.5 text-sm font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="text-red-500 cursor-pointer">
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="text-red-500 cursor-pointer">
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <>
-              <Link to="/login">
-                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-                  Login
+              <Link to="/login" className="hidden sm:block">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-medium">
+                  Sign in
                 </Button>
               </Link>
               <Link to="/signup">
-                <Button>Sign Up</Button>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md font-medium px-6">
+                  Get Started Free
+                </Button>
               </Link>
             </>
           )}

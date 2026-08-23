@@ -6,16 +6,7 @@ import { VerifyEmail } from "./pages/Auth/VerifyEmail"
 import { ForgotPassword } from "./pages/Auth/ForgotPassword"
 import { ResetPassword } from "./pages/Auth/ResetPassword"
 
-// Temporary Placeholder Home Page
-const Home = () => (
-  <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] space-y-4 text-center">
-    <h1 className="text-4xl font-bold tracking-tight">Cloud Media Storage</h1>
-    <p className="text-muted-foreground max-w-lg">
-      Securely store, share, and manage your media files in the cloud.
-    </p>
-  </div>
-)
-
+import { Home } from "./pages/Home"
 function App() {
   return (
     <Router>
