@@ -353,6 +353,50 @@ export function useDrive(folderId = null) {
     }
   };
 
+  const fetchLinkShare = async (resourceType, resourceId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/link-shares/resource/${resourceType}/${resourceId}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch link share');
+      return await response.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const createLinkShare = async (resourceType, resourceId, expiresAt, password) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/link-shares`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ resourceType, resourceId, expiresAt, password })
+      });
+      if (!response.ok) throw new Error('Failed to create public link');
+      return await response.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const deleteLinkShare = async (linkId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/link-shares/${linkId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to delete public link');
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
   return {
     ...data,
     loading,
@@ -369,6 +413,9 @@ export function useDrive(folderId = null) {
     fetchShares,
     shareResource,
     revokeShare,
+    fetchLinkShare,
+    createLinkShare,
+    deleteLinkShare,
     refresh: fetchFolder
   };
 }

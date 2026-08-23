@@ -8,6 +8,7 @@ import { ResetPassword } from "./pages/Auth/ResetPassword"
 import { ProtectedRoute } from "./components/ProtectedRoute"
 import { DashboardLayout } from "./layouts/DashboardLayout"
 import { Dashboard } from "./pages/Dashboard/Dashboard"
+import { PublicShare } from "./pages/PublicShare"
 
 import { Home } from "./pages/Home"
 const PublicLayout = () => (
@@ -32,6 +33,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
+
+        {/* Public Share Route (No Navbar, No Auth) */}
+        <Route path="/share/:token" element={<PublicShare />} />
 
         {/* Dashboard Routes (uses its own layout) */}
         <Route element={<ProtectedRoute />}>

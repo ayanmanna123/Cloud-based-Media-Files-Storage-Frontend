@@ -61,7 +61,8 @@ export function Dashboard() {
     folder, children, path, loading, error, 
     createFolder, renameFolder, deleteFolder, 
     uploadFile, renameFile, deleteFile, moveFile, downloadFile, fetchAllFolders,
-    fetchShares, shareResource, revokeShare
+    fetchShares, shareResource, revokeShare,
+    fetchLinkShare, createLinkShare, deleteLinkShare
   } = useDrive(driveId)
 
   // Folder Modals
@@ -482,6 +483,9 @@ export function Dashboard() {
                         <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
                           <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'folder', resourceId: f.id, resourceName: f.name })}>
+                          <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setRenameModalData({ isOpen: true, id: f.id, currentName: f.name })}>
                           <Edit2 className="w-4 h-4 mr-2" /> Rename
                         </DropdownMenuItem>
@@ -551,6 +555,9 @@ export function Dashboard() {
                               <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
                                 <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
+                                <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
                                 <Edit2 className="w-4 h-4 mr-2" /> Rename
                               </DropdownMenuItem>
@@ -618,6 +625,9 @@ export function Dashboard() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
                               <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setShareModalData({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name })}>
+                              <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setRenameFileModalData({ isOpen: true, id: file.id, currentName: file.name })}>
                               <Edit2 className="w-4 h-4 mr-2" /> Rename
@@ -790,7 +800,7 @@ export function Dashboard() {
         resourceType={shareModalData.resourceType}
         resourceId={shareModalData.resourceId}
         resourceName={shareModalData.resourceName}
-        useDrive={{ fetchShares, shareResource, revokeShare }}
+        useDrive={{ fetchShares, shareResource, revokeShare, fetchLinkShare, createLinkShare, deleteLinkShare }}
       />
     </div>
   )
