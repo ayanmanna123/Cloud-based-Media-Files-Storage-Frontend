@@ -49,6 +49,7 @@ import { CreateFolderModal } from "./components/CreateFolderModal"
 import { RenameFolderModal } from "./components/RenameFolderModal"
 import { RenameFileModal } from "./components/RenameFileModal"
 import { MoveFileModal } from "./components/MoveFileModal"
+import { VersionHistoryModal } from "./components/VersionHistoryModal"
 
 export function Dashboard() {
   const { id } = useParams()
@@ -79,6 +80,7 @@ export function Dashboard() {
   const [allFolders, setAllFolders] = useState([])
   
   const [shareModalData, setShareModalData] = useState({ isOpen: false, resourceType: null, resourceId: null, resourceName: "" })
+  const [versionHistoryModalData, setVersionHistoryModalData] = useState({ isOpen: false, fileId: null, fileName: "", currentVersionId: null })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sortMethod, setSortMethod] = useState(() => {
@@ -608,20 +610,24 @@ export function Dashboard() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filteredFiles.map((file) => {
                 return (
-                  <FileCard
-                    key={file.id}
+                  <FileCard 
+                    key={file.id} 
                     file={file}
-                    viewMode="grid"
+                    viewMode={viewMode}
                     currentView={currentView}
                     starredItems={starredItems}
                     onToggleStar={toggleStar}
                     onShare={setShareModalData}
                     onRename={setRenameFileModalData}
-                    onMove={openMoveFileModal}
+                    onMove={(id, name) => fetchAllFolders().then(folders => {
+                      setAllFolders(folders);
+                      setMoveFileModalData({ isOpen: true, id, currentName: name, selectedFolderId: "root" });
+                    })}
                     onDelete={handleDeleteFile}
                     onDownload={downloadFile}
                     onRestore={restoreItem}
                     onDeleteForever={deleteForever}
+                    onOpenVersionHistory={setVersionHistoryModalData}
                   />
                 )
               })}
@@ -662,6 +668,18 @@ export function Dashboard() {
         setRenameFileModalData={setRenameFileModalData}
         onSubmit={handleRenameFile}
         isSubmitting={isSubmitting}
+      />
+      
+      <VersionHistoryModal 
+        isOpen={versionHistoryModalData.isOpen}
+        onClose={() => setVersionHistoryModalData({ isOpen: false, fileId: null, fileName: "", currentVersionId: null })}
+        fileId={versionHistoryModalData.fileId}
+        fileName={versionHistoryModalData.fileName}
+        currentVersionId={versionHistoryModalData.currentVersionId}
+        onRestore={() => {
+          // Refresh the folder to show the restored version
+          window.location.reload(); 
+        }}
       />
 
       <MoveFileModal

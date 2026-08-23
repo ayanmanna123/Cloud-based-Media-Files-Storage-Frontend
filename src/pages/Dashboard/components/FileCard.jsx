@@ -10,7 +10,8 @@ import {
   FileText,
   FileImage,
   FileSpreadsheet,
-  FileVideo
+  FileVideo,
+  Clock
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -41,7 +42,8 @@ export function FileCard({
   onDelete,
   onDownload,
   onRestore,
-  onDeleteForever
+  onDeleteForever,
+  onOpenVersionHistory
 }) {
   const Icon = getFileIcon(file.name)
   const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
@@ -72,6 +74,12 @@ export function FileCard({
             <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
           </DropdownMenuItem>
         </>
+      ) : currentView === 'shared' ? (
+        <>
+          <DropdownMenuItem onClick={() => onDownload(file.id, file.name)}>
+            <Download className="w-4 h-4 mr-2" /> Download
+          </DropdownMenuItem>
+        </>
       ) : (
         <>
           <DropdownMenuItem onClick={() => onDownload(file.id, file.name)}>
@@ -88,6 +96,9 @@ export function FileCard({
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTimeout(() => onMove(file.id, file.name), 0)}>
             <FolderInput className="w-4 h-4 mr-2" /> Move
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
+            <Clock className="w-4 h-4 mr-2" /> Version History
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => onDelete(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">

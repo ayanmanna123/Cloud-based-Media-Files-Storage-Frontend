@@ -80,11 +80,9 @@ export function DashboardLayout() {
 
         <div className="p-4">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="w-full justify-start gap-2 h-12 bg-blue-600 hover:bg-blue-700 text-white shadow-md">
-                <Plus className="w-5 h-5" />
-                <span className="font-medium text-base">New</span>
-              </Button>
+            <DropdownMenuTrigger className="w-full flex items-center justify-start gap-2 h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md focus-visible:outline-none">
+              <Plus className="w-5 h-5" />
+              <span className="font-medium text-base">New</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('openCreateFolder'))}>

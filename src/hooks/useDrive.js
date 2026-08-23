@@ -223,7 +223,12 @@ export function useDrive(folderId = null) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ fileId: initData.fileId }),
+        body: JSON.stringify({ 
+          fileId: initData.fileId,
+          isNewVersion: initData.isNewVersion,
+          storageKey: initData.storageKey,
+          sizeBytes: file.size
+        }),
         signal: abortSignal
       });
 
