@@ -209,7 +209,9 @@ export function FileCard({
           <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
           <span className="text-sm font-medium truncate">{file.name}</span>
         </div>
-        <div className="hidden sm:block w-32 shrink-0 text-sm text-muted-foreground truncate">me</div>
+        <div className="hidden sm:block w-32 shrink-0 text-sm text-muted-foreground truncate">
+          {currentView === 'shared' ? (file.ownerName || 'Unknown') : 'me'}
+        </div>
         <div className="hidden md:block w-32 shrink-0 text-sm text-muted-foreground truncate">
           {new Date(file.updatedAt || file.createdAt).toLocaleDateString()}
         </div>
