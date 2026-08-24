@@ -41,7 +41,7 @@ export function CreateFolderModal({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!newFolderName.trim() || isSubmitting}>
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white" disabled={!newFolderName.trim() || isSubmitting}>
               {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               Create
             </Button>
