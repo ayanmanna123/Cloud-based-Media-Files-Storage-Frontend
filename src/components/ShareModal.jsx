@@ -16,13 +16,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog"
+import { QRCodeSVG } from "qrcode.react"
 
 export function ShareModal({ isOpen, onClose, resourceType, resourceId, resourceName, useDrive }) {
-  const { fetchShares, shareResource, revokeShare, fetchLinkShare, createLinkShare, deleteLinkShare } = useDrive
+  const { fetchShares, shareResource, revokeShare, fetchLinkShare, createLinkShare, deleteLinkShare, createBundleShare } = useDrive
   const [shares, setShares] = useState([])
   const [activeLink, setActiveLink] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState("people") // "people" | "link"
+  const [activeTab, setActiveTab] = useState(resourceType === "bundle" ? "link" : "people") // "people" | "link"
+  const [showQR, setShowQR] = useState(false)
   
   // Form state
   const [email, setEmail] = useState("")
@@ -45,13 +47,14 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
       setMessage("")
       setError("")
       setSuccess("")
-      setActiveTab("people")
+      setActiveTab(resourceType === "bundle" ? "link" : "people")
       setExpiresAt("")
     }
-  }, [isOpen, resourceId])
+  }, [isOpen, resourceId, resourceType])
 
   const loadLinkShare = async () => {
     try {
+      if (resourceType === 'bundle') return; // Cannot fetch pre-existing bundle link in this UI right now
       const link = await fetchLinkShare(resourceType, resourceId)
       setActiveLink(link) // will be null if not found
     } catch (err) {
@@ -63,7 +66,12 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
     setIsSubmitting(true)
     setError("")
     try {
-      const link = await createLinkShare(resourceType, resourceId, expiresAt || null, null)
+      let link;
+      if (resourceType === 'bundle') {
+        link = await createBundleShare(resourceId, expiresAt || null, null);
+      } else {
+        link = await createLinkShare(resourceType, resourceId, expiresAt || null, null);
+      }
       setActiveLink(link)
     } catch (err) {
       setError(err.message || "Failed to create link")
@@ -82,15 +90,12 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
     }
   }
 
-  const copyLink = () => {
-    if (!activeLink) return
-    const url = `${window.location.origin}/share/${activeLink.token}`
-    navigator.clipboard.writeText(url)
-    setLinkCopied(true)
-    setTimeout(() => setLinkCopied(false), 2000)
-  }
-
   const loadShares = async () => {
+    if (resourceType === 'bundle') {
+      setShares([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true)
     const data = await fetchShares(resourceType, resourceId)
     setShares(data)
@@ -144,12 +149,14 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
 
           {/* Tabs */}
           <div className="flex border-b border-border mt-4">
-            <button
-              onClick={() => setActiveTab("people")}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "people" ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-            >
-              Share with people
-            </button>
+            {resourceType !== "bundle" && (
+              <button
+                onClick={() => setActiveTab("people")}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "people" ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              >
+                Share with people
+              </button>
+            )}
             <button
               onClick={() => setActiveTab("link")}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "link" ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}
@@ -212,10 +219,15 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
               {activeLink ? (
                 <div className="space-y-4">
                   <div className="bg-muted/50 p-3 rounded-md grid grid-cols-[1fr_auto] items-center gap-3 border border-border w-full">
-                    <p className="text-sm truncate text-foreground font-medium select-all" title={`${window.location.origin}/share/${activeLink.token}`}>
-                      {`${window.location.origin}/share/${activeLink.token}`}
+                    <p className="text-sm truncate text-foreground font-medium select-all" title={resourceType === 'bundle' ? `${window.location.origin}/share/bundle/${activeLink.token}` : `${window.location.origin}/share/${activeLink.token}`}>
+                      {resourceType === 'bundle' ? `${window.location.origin}/share/bundle/${activeLink.token}` : `${window.location.origin}/share/${activeLink.token}`}
                     </p>
-                    <Button onClick={copyLink} variant="secondary" size="sm" className="w-full">
+                    <Button onClick={() => {
+                      const url = resourceType === 'bundle' ? `${window.location.origin}/share/bundle/${activeLink.token}` : `${window.location.origin}/share/${activeLink.token}`;
+                      navigator.clipboard.writeText(url);
+                      setLinkCopied(true);
+                      setTimeout(() => setLinkCopied(false), 2000);
+                    }} variant="secondary" size="sm" className="w-full">
                       {linkCopied ? "Copied!" : "Copy"}
                     </Button>
                   </div>
@@ -224,9 +236,17 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                       Expires: {new Date(activeLink.expiresAt).toLocaleString()}
                     </p>
                   )}
-                  <Button onClick={handleRevokeLink} variant="destructive" size="sm" className="w-full">
-                    Revoke Public Link
-                  </Button>
+                  
+                  <div className="flex gap-2">
+                    <Button onClick={handleRevokeLink} variant="destructive" size="sm" className="w-full">
+                      Revoke Link
+                    </Button>
+                  </div>
+                  
+                  <div className="flex flex-col items-center justify-center p-4 bg-white rounded-md mt-4 border border-border">
+                    <QRCodeSVG value={resourceType === 'bundle' ? `${window.location.origin}/share/bundle/${activeLink.token}?auto_download=true` : `${window.location.origin}/share/${activeLink.token}?auto_download=true`} size={200} />
+                    <p className="text-xs text-muted-foreground mt-4 text-center">Scan to open and instantly download on your phone.</p>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -247,6 +267,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                     {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                     Create Public Link
                   </Button>
+                  {error && <p className="text-sm text-red-500 font-medium text-center mt-2">{error}</p>}
                 </div>
               )}
             </div>

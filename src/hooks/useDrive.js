@@ -511,15 +511,46 @@ export function useDrive(folderId = null) {
     }
   };
 
-  const deleteLinkShare = async (linkId) => {
+  const deleteLinkShare = async (id) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/link-shares/${linkId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/link-shares/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to delete public link');
+      if (!response.ok) throw new Error('Failed to delete link');
     } catch (err) {
-      console.error(err);
+      console.error('Failed to delete link share:', err);
+      throw err;
+    }
+  };
+
+  const createBundleShare = async (fileIds, expiresAt, password) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/link-shares/bundle`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ fileIds, expiresAt, password })
+      });
+      if (!response.ok) throw new Error('Failed to create bundle share');
+      return await response.json();
+    } catch (err) {
+      console.error('Failed to create bundle share:', err);
+      throw err;
+    }
+  };
+
+  const fetchBundleShare = async (token, password) => {
+    try {
+      let url = `${import.meta.env.VITE_API_URL}/api/link-shares/bundle/${token}`;
+      if (password) url += `?password=${encodeURIComponent(password)}`;
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch bundle link');
+      return await response.json();
+    } catch (err) {
+      console.error('Failed to fetch bundle share:', err);
       throw err;
     }
   };
@@ -626,6 +657,8 @@ export function useDrive(folderId = null) {
     fetchLinkShare,
     createLinkShare,
     deleteLinkShare,
+    createBundleShare,
+    fetchBundleShare,
     toggleStar,
     restoreItem,
     deleteForever,

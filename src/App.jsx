@@ -36,6 +36,7 @@ function App() {
 
         {/* Public Share Route (No Navbar, No Auth) */}
         <Route path="/share/:token" element={<PublicShare />} />
+        <Route path="/share/bundle/:token" element={<PublicShare isBundle={true} />} />
 
         {/* Dashboard Routes (uses its own layout) */}
         <Route element={<ProtectedRoute />}>

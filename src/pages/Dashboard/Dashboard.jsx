@@ -31,6 +31,7 @@ import {
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
+import JSZip from "jszip"
 import { useDrive } from "../../hooks/useDrive"
 import { Link } from "react-router-dom"
 import {
@@ -69,7 +70,7 @@ export function Dashboard() {
     fetchShares, shareResource, revokeShare,
     fetchLinkShare, createLinkShare, deleteLinkShare, toggleStar,
     restoreItem, deleteForever,
-    trackOpen
+    trackOpen, createBundleShare
   } = useDrive(driveId)
 
   // Folder Modals
@@ -221,15 +222,84 @@ export function Dashboard() {
   }
 
   const handleBulkDownload = async () => {
-    const fileIds = selectedItems.filter(id => id.startsWith('file_')).map(id => id.replace('file_', ''));
-    if (fileIds.length === 0) return;
-    for (const fileId of fileIds) {
-      const file = children.files.find(f => f.id === fileId);
-      if (file) {
-        downloadFile(file.id, file.name);
+    if (selectedItems.length === 0) return;
+    
+    setIsSubmitting(true);
+    try {
+      const zip = new JSZip();
+      let hasFiles = false;
+
+      // Helper function to recursively add folder contents to zip
+      const addFolderToZip = async (folderId, folderZipPath) => {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/folders/${folderId}`, { credentials: 'include' });
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        // Add immediate files
+        if (data.children && data.children.files) {
+          for (const file of data.children.files) {
+            const url = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`;
+            const fileRes = await fetch(url);
+            if (fileRes.ok) {
+              const blob = await fileRes.blob();
+              folderZipPath.file(file.name, blob);
+              hasFiles = true;
+            }
+          }
+        }
+        
+        // Add subfolders (recursive)
+        if (data.children && data.children.folders) {
+          for (const subfolder of data.children.folders) {
+            const subZipPath = folderZipPath.folder(subfolder.name);
+            await addFolderToZip(subfolder.id, subZipPath);
+          }
+        }
+      };
+
+      // Process selected items
+      for (const itemId of selectedItems) {
+        const [type, actualId] = itemId.split('_');
+        
+        if (type === 'file') {
+          const file = children.files.find(f => f.id === actualId);
+          if (file) {
+            const url = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`;
+            const fileRes = await fetch(url);
+            if (fileRes.ok) {
+              const blob = await fileRes.blob();
+              zip.file(file.name, blob);
+              hasFiles = true;
+            }
+          }
+        } else if (type === 'folder') {
+          const folder = children.folders.find(f => f.id === actualId);
+          if (folder) {
+            const folderZipPath = zip.folder(folder.name);
+            await addFolderToZip(actualId, folderZipPath);
+          }
+        }
       }
+
+      if (hasFiles) {
+        const content = await zip.generateAsync({ type: "blob" });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = `CloudBox_Download_${new Date().getTime()}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 100);
+      } else {
+        alert("No files found to download.");
+      }
+    } catch (err) {
+      console.error("Bulk download failed", err);
+      alert("Failed to create ZIP archive. Some files may be inaccessible.");
+    } finally {
+      setIsSubmitting(false);
+      setSelectedItems([]);
     }
-    setSelectedItems([]);
   }
 
   const handleBulkDelete = async () => {
@@ -881,8 +951,24 @@ export function Dashboard() {
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" onClick={handleBulkDownload} disabled={selectedItems.every(id => id.startsWith('folder_'))} title="Download (Shift+D)">
-                <Download className="w-4 h-4 mr-2" /> Download
+              <Button variant="ghost" size="sm" onClick={handleBulkDownload} title="Download as ZIP (Shift+D)">
+                {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />} Download
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => {
+                if (selectedItems.length === 1) {
+                  const id = selectedItems[0];
+                  const type = id.startsWith('folder_') ? 'folder' : 'file';
+                  const actualId = id.split('_')[1];
+                  const item = (type === 'folder' ? children.folders : children.files).find(f => f.id === actualId);
+                  setShareModalData({ isOpen: true, resourceType: type, resourceId: actualId, resourceName: item?.name });
+                } else {
+                  const fileIds = selectedItems.filter(id => id.startsWith('file_')).map(id => id.split('_')[1]);
+                  if (fileIds.length > 0) {
+                    setShareModalData({ isOpen: true, resourceType: 'bundle', resourceId: fileIds, resourceName: `${fileIds.length} items` });
+                  }
+                }
+              }} disabled={selectedItems.length > 1 && selectedItems.every(id => id.startsWith('folder_'))}>
+                <Users className="w-4 h-4 mr-2" /> Share
               </Button>
               <Button variant="ghost" size="sm" onClick={handleBulkMove} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
                 <FolderInput className="w-4 h-4 mr-2" /> Move
@@ -959,7 +1045,7 @@ export function Dashboard() {
         resourceType={shareModalData.resourceType}
         resourceId={shareModalData.resourceId}
         resourceName={shareModalData.resourceName}
-        useDrive={{ fetchShares, shareResource, revokeShare, fetchLinkShare, createLinkShare, deleteLinkShare }}
+        useDrive={{ fetchShares, shareResource, revokeShare, fetchLinkShare, createLinkShare, deleteLinkShare, createBundleShare }}
       />
     </div>
   )
