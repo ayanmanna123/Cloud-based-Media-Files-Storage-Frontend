@@ -50,6 +50,7 @@ import { RenameFolderModal } from "./components/RenameFolderModal"
 import { RenameFileModal } from "./components/RenameFileModal"
 import { MoveFileModal } from "./components/MoveFileModal"
 import { VersionHistoryModal } from "./components/VersionHistoryModal"
+import { EditFileModal } from "./components/EditFileModal"
 
 export function Dashboard() {
   const { id } = useParams()
@@ -82,6 +83,7 @@ export function Dashboard() {
   
   const [shareModalData, setShareModalData] = useState({ isOpen: false, resourceType: null, resourceId: null, resourceName: "" })
   const [versionHistoryModalData, setVersionHistoryModalData] = useState({ isOpen: false, fileId: null, fileName: "", currentVersionId: null })
+  const [editFileModalData, setEditFileModalData] = useState({ isOpen: false, file: null })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sortMethod, setSortMethod] = useState(() => {
@@ -278,7 +280,7 @@ export function Dashboard() {
     }
   }
 
-  const handleFileUpload = async (files) => {
+  const handleFileUpload = async (files, targetFolderIdOverride = undefined, targetFileIdOverride = null) => {
     if (!files || files.length === 0) return
     setIsUploading(true)
     
@@ -317,7 +319,7 @@ export function Dashboard() {
           const onProgress = (stats) => {
             setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...stats } : t));
           };
-          await uploadFile(file, controller.signal, undefined, onProgress)
+          await uploadFile(file, controller.signal, targetFolderIdOverride, targetFileIdOverride, onProgress)
           setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t))
         } catch (err) {
           if (err.name === 'AbortError') {
@@ -737,6 +739,8 @@ export function Dashboard() {
                       onDownload={downloadFile}
                       onRestore={restoreItem}
                       onDeleteForever={deleteForever}
+                      onOpenVersionHistory={setVersionHistoryModalData}
+                      onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
                     />
                   )
                 })}
@@ -766,6 +770,7 @@ export function Dashboard() {
                     onRestore={restoreItem}
                     onDeleteForever={deleteForever}
                     onOpenVersionHistory={setVersionHistoryModalData}
+                    onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
                   />
                 )
               })}
@@ -841,6 +846,13 @@ export function Dashboard() {
         isSubmitting={isSubmitting}
       />
       
+      <EditFileModal 
+        isOpen={editFileModalData.isOpen}
+        onClose={() => setEditFileModalData({ isOpen: false, file: null })}
+        file={editFileModalData.file}
+        onSave={(file, folderId, fileId) => handleFileUpload([file], folderId, fileId)}
+      />
+
       <VersionHistoryModal 
         isOpen={versionHistoryModalData.isOpen}
         onClose={() => setVersionHistoryModalData({ isOpen: false, fileId: null, fileName: "", currentVersionId: null })}

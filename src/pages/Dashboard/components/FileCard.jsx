@@ -44,10 +44,12 @@ export function FileCard({
   onRestore,
   onDeleteForever,
   onOpenVersionHistory,
+  onEdit,
   isSelected,
   onClick
 }) {
   const Icon = getFileIcon(file.name)
+  const isEditable = file.name.match(/\.(txt|md|csv|json|js|jsx|ts|tsx|html|css|xml|yml|yaml|ini|env|log)$/i)
   const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
   const isPdf = file.name.match(/\.(pdf)$/i)
   const isVideo = file.name.match(/\.(mp4|mov|avi|mkv|webm)$/i)
@@ -78,12 +80,22 @@ export function FileCard({
         </>
       ) : currentView === 'shared' ? (
         <>
+          {isEditable && file.permission === 'editor' && (
+            <DropdownMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
+              <Edit2 className="w-4 h-4 mr-2" /> Edit
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => onDownload(file.id, file.name)}>
             <Download className="w-4 h-4 mr-2" /> Download
           </DropdownMenuItem>
         </>
       ) : (
         <>
+          {isEditable && (
+            <DropdownMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
+              <Edit2 className="w-4 h-4 mr-2" /> Edit
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => onDownload(file.id, file.name)}>
             <Download className="w-4 h-4 mr-2" /> Download
           </DropdownMenuItem>

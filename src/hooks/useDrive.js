@@ -174,7 +174,7 @@ export function useDrive(folderId = null) {
     }
   };
 
-  const uploadFile = async (file, abortSignal = null, targetFolderId = folderId, onProgress = null) => {
+  const uploadFile = async (file, abortSignal = null, targetFolderId = folderId, targetFileId = null, onProgress = null) => {
     try {
       // 1. Initialize upload on backend
       const initRes = await fetch(`${import.meta.env.VITE_API_URL}/api/files/init`, {
@@ -185,7 +185,8 @@ export function useDrive(folderId = null) {
           name: file.name, 
           mimeType: file.type || 'application/octet-stream', 
           sizeBytes: file.size, 
-          folderId: targetFolderId 
+          folderId: targetFolderId,
+          targetFileId: targetFileId
         }),
         signal: abortSignal
       });
