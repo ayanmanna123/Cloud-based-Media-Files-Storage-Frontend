@@ -33,6 +33,7 @@ import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import JSZip from "jszip"
 import { useDrive } from "../../hooks/useDrive"
+import { useProgress } from "../../context/ProgressContext"
 import { Link } from "react-router-dom"
 import {
   DropdownMenu,
@@ -72,6 +73,8 @@ export function Dashboard() {
     restoreItem, deleteForever,
     trackOpen, createBundleShare
   } = useDrive(driveId)
+
+  const { startUpload, updateProgress, completeUpload } = useProgress()
 
   // Folder Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -139,6 +142,24 @@ export function Dashboard() {
   useEffect(() => {
     localStorage.setItem("drive_viewMode", viewMode)
   }, [viewMode])
+
+  useEffect(() => {
+    if (isUploading) {
+      startUpload();
+    } else {
+      completeUpload();
+    }
+  }, [isUploading]);
+
+  useEffect(() => {
+    if (isUploading && uploadTasks.length > 0) {
+      const totalSize = uploadTasks.reduce((sum, t) => sum + (t.totalSize || 0), 0);
+      const totalLoaded = uploadTasks.reduce((sum, t) => sum + (t.loaded || 0), 0);
+      if (totalSize > 0) {
+        updateProgress((totalLoaded / totalSize) * 100);
+      }
+    }
+  }, [uploadTasks, isUploading]);
 
   const handleSelectAll = useCallback(() => {
     const allFolderIds = (children?.folders || []).map(f => `folder_${f.id}`);

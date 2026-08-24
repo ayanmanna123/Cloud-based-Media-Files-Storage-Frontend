@@ -16,7 +16,7 @@ export function Navbar() {
   const { user, logout } = useAuth()
   return (
     <nav className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto max-w-7xl flex h-16 items-center justify-between px-4">
+      <div className="w-full px-4 md:px-12 lg:px-20 mx-auto max-w-[1600px] flex h-16 items-center justify-between">
         {/* Left Side - Brand/Logo */}
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center space-x-2 group">
@@ -31,15 +31,10 @@ export function Navbar() {
 
         {/* Center - Links (Desktop Only) */}
         <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-muted-foreground">
-          <Link to="#" className="hover:text-foreground transition-colors">Features</Link>
-          <Link to="#" className="flex items-center hover:text-foreground transition-colors group">
-            Solutions <ChevronDown className="ml-1 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </Link>
-          <Link to="#" className="hover:text-foreground transition-colors">Pricing</Link>
-          <Link to="#" className="flex items-center hover:text-foreground transition-colors group">
-            Resources <ChevronDown className="ml-1 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </Link>
-          <Link to="#" className="hover:text-foreground transition-colors">About Us</Link>
+          <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
+          <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
+           
+          <Link to="/about" className="hover:text-foreground transition-colors">About Us</Link>
         </div>
 
         {/* Right Side - Auth & Theme */}

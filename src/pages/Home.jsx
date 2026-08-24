@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import { useProgress } from "../context/ProgressContext"
 import { Button } from "../components/ui/button"
 import { 
   Cloud, 
@@ -19,8 +20,25 @@ import {
 
 export function Home() {
   const { user } = useAuth()
+  const { startUpload, updateProgress, completeUpload, isUploading } = useProgress()
+
+  const simulateUpload = () => {
+    if (isUploading) return;
+    startUpload();
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += Math.random() * 15; // Simulate chunk uploads
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        completeUpload();
+      } else {
+        updateProgress(currentProgress);
+      }
+    }, 300);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col">
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 md:pt-24 lg:pt-32 pb-16 md:pb-24">
         {/* Subtle Background Gradients */}
@@ -31,7 +49,7 @@ export function Home() {
           <div className="w-[500px] h-[500px] rounded-full bg-indigo-100/50 dark:bg-indigo-900/20 blur-3xl" />
         </div>
 
-        <div className="container px-4 mx-auto max-w-7xl">
+        <div className="w-full px-4 md:px-12 lg:px-20 mx-auto max-w-[1600px]">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
             
             {/* Left Column: Copy & CTAs */}
@@ -141,7 +159,11 @@ export function Home() {
                       <div className="text-lg font-semibold flex items-center gap-2">
                         My Drive
                       </div>
-                      <div className="w-8 h-8 rounded bg-blue-600 text-white flex items-center justify-center">
+                      <div 
+                        onClick={simulateUpload}
+                        className={`w-8 h-8 rounded bg-blue-600 text-white flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title="Simulate Upload"
+                      >
                         <span className="text-lg leading-none">+</span>
                       </div>
                     </div>
@@ -206,7 +228,7 @@ export function Home() {
 
       {/* Features Grid Section */}
       <section id="features" className="py-20 bg-muted/30 border-y border-border">
-        <div className="container px-4 mx-auto max-w-7xl">
+        <div className="w-full px-4 md:px-12 lg:px-20 mx-auto max-w-[1600px]">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl font-bold mb-4">Everything you need to manage files</h2>
             <p className="text-lg text-muted-foreground">

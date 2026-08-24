@@ -11,12 +11,17 @@ import { Dashboard } from "./pages/Dashboard/Dashboard"
 import { PublicShare } from "./pages/PublicShare"
 
 import { Home } from "./pages/Home"
+import { Features } from "./pages/Features"
+import { AboutUs } from "./pages/AboutUs"
+import { Footer } from "./layouts/Footer"
+
 const PublicLayout = () => (
-  <div className="min-h-screen bg-background text-foreground flex flex-col">
+  <div className="bg-background text-foreground">
     <Navbar />
-    <main className="flex-1">
+    <main className="min-h-[calc(100vh-64px)]">
       <Outlet />
     </main>
+    <Footer />
   </div>
 )
 
@@ -27,6 +32,8 @@ function App() {
         {/* Public Routes with Navbar */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/about" element={<AboutUs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Register />} />
           <Route path="/verify" element={<VerifyEmail />} />
