@@ -44,7 +44,7 @@ export function FolderCard({
     <div 
       onClick={onClick}
       onDoubleClick={onDoubleClick}
-      className={`group p-4 border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col gap-3 relative ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
+      className={`group p-4 border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col gap-3 relative select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
     >
       <div className="flex justify-between items-start">
         <FolderOpen className="w-8 h-8 text-blue-500" />

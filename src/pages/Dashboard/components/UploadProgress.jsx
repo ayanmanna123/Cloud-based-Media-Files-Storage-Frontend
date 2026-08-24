@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import {
   X,
   ChevronUp,
@@ -32,7 +33,17 @@ export function UploadProgress({
 
   const inProgressCount = tasks.filter(t => t.status === 'uploading' || t.status === 'pending').length
   const completedCount = tasks.filter(t => t.status === 'completed').length
-  const allDone = inProgressCount === 0
+  const allDone = inProgressCount === 0 && tasks.length > 0;
+
+  useEffect(() => {
+    let timeout;
+    if (allDone) {
+      timeout = setTimeout(() => {
+        onClose();
+      }, 3000); // auto-close after 3 seconds
+    }
+    return () => clearTimeout(timeout);
+  }, [allDone, onClose]);
 
   return (
     <div className="fixed bottom-4 right-4 w-80 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden flex flex-col max-h-[60vh]">

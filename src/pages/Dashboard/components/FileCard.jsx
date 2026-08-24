@@ -136,7 +136,7 @@ export function FileCard({
   if (viewMode === "list") {
     return (
       <div 
-        className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
+        className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer select-none ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
         onClick={onClick}
         onDoubleClick={handleOpen}
       >
@@ -178,7 +178,7 @@ export function FileCard({
 
   return (
     <div 
-      className={`group border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48 ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
+      className={`group border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48 select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
       onClick={onClick}
       onDoubleClick={handleOpen}
     >
