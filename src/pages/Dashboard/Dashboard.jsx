@@ -67,7 +67,8 @@ export function Dashboard() {
     uploadFile, renameFile, deleteFile, moveFile, downloadFile, fetchAllFolders,
     fetchShares, shareResource, revokeShare,
     fetchLinkShare, createLinkShare, deleteLinkShare, toggleStar,
-    restoreItem, deleteForever
+    restoreItem, deleteForever,
+    trackOpen
   } = useDrive(driveId)
 
   // Folder Modals
@@ -553,6 +554,8 @@ export function Dashboard() {
     if (!children?.folders) return []
     let result = children.folders.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
     
+    if (currentView === 'recent') return result;
+
     result.sort((a, b) => {
       switch (sortMethod) {
         case "name-asc": return a.name.localeCompare(b.name)
@@ -563,12 +566,14 @@ export function Dashboard() {
       }
     })
     return result
-  }, [children.folders, searchQuery, sortMethod])
+  }, [children.folders, searchQuery, sortMethod, currentView])
 
   const filteredFiles = useMemo(() => {
     if (!children?.files) return []
     let result = children.files.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
     
+    if (currentView === 'recent') return result;
+
     result.sort((a, b) => {
       switch (sortMethod) {
         case "name-asc": return a.name.localeCompare(b.name)
@@ -580,7 +585,7 @@ export function Dashboard() {
       }
     })
     return result
-  }, [children.files, searchQuery, sortMethod])
+  }, [children.files, searchQuery, sortMethod, currentView])
 
   if (loading) {
     return (
@@ -744,8 +749,14 @@ export function Dashboard() {
                 starredItems={starredItems}
                 isSelected={selectedItems.includes(`folder_${f.id}`)}
                 onClick={(e) => handleItemClick(e, f.id, 'folder')}
-                onDoubleClick={() => navigate(`/dashboard/folder/${f.id}`)}
-                onNavigate={(id) => navigate(`/dashboard/folder/${id}`)}
+                onDoubleClick={() => {
+                  trackOpen(f.id, 'folder');
+                  navigate(`/dashboard/folder/${f.id}`);
+                }}
+                onNavigate={(id) => {
+                  trackOpen(id, 'folder');
+                  navigate(`/dashboard/folder/${id}`);
+                }}
                 onToggleStar={toggleStar}
                 onShare={setShareModalData}
                 onRename={setRenameModalData}
@@ -786,6 +797,7 @@ export function Dashboard() {
                       starredItems={starredItems}
                       isSelected={selectedItems.includes(`file_${file.id}`)}
                       onClick={(e) => handleItemClick(e, file.id, 'file')}
+                      onOpen={() => trackOpen(file.id, 'file')}
                       onToggleStar={toggleStar}
                       onShare={setShareModalData}
                       onRename={setRenameFileModalData}
@@ -813,6 +825,7 @@ export function Dashboard() {
                     starredItems={starredItems}
                     isSelected={selectedItems.includes(`file_${file.id}`)}
                     onClick={(e) => handleItemClick(e, file.id, 'file')}
+                    onOpen={() => trackOpen(file.id, 'file')}
                     onToggleStar={toggleStar}
                     onShare={setShareModalData}
                     onRename={setRenameFileModalData}

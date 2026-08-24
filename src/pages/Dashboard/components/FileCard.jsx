@@ -54,7 +54,8 @@ export function FileCard({
   onOpenVersionHistory,
   onEdit,
   isSelected,
-  onClick
+  onClick,
+  onOpen
 }) {
   const Icon = getFileIcon(file.name)
   const isEditable = file.name.match(/\.(txt|md|csv|json|js|jsx|ts|tsx|html|css|xml|yml|yaml|ini|env|log)$/i)
@@ -68,6 +69,7 @@ export function FileCard({
   const isStarred = starredItems.includes(`file_${file.id}`)
 
   const handleOpen = () => {
+    if (onOpen) onOpen();
     if (isOfficeDoc) {
       window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`, '_blank')
     } else {

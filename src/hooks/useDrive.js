@@ -36,7 +36,7 @@ export function useDrive(folderId = null) {
       if (folderId === 'shared') {
         endpoint = `${import.meta.env.VITE_API_URL}/api/shares/me`;
       } else if (folderId === 'recent') {
-        endpoint = `${import.meta.env.VITE_API_URL}/api/files/recent`;
+        endpoint = `${import.meta.env.VITE_API_URL}/api/tracking/recent`;
       } else if (folderId === 'starred') {
         endpoint = `${import.meta.env.VITE_API_URL}/api/search?starred=true`;
       } else if (folderId === 'trash') {
@@ -70,7 +70,10 @@ export function useDrive(folderId = null) {
       } else if (folderId === 'recent') {
         setData({
           folder: { id: 'recent', name: 'Recent' },
-          children: { folders: [], files: result || [] },
+          children: { 
+            folders: result.filter(r => r.itemType === 'folder') || [], 
+            files: result.filter(r => r.itemType === 'file') || [] 
+          },
           path: [{ id: 'recent', name: 'Recent' }]
         });
       } else if (folderId === 'starred' || folderId === 'trash') {
@@ -394,7 +397,7 @@ export function useDrive(folderId = null) {
 
   const fetchRecentFiles = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/files/recent`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tracking/recent`, {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to fetch recent files');
@@ -402,6 +405,19 @@ export function useDrive(folderId = null) {
     } catch (err) {
       console.error(err);
       throw err;
+    }
+  };
+
+  const trackOpen = async (id, type) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/tracking/open`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id, type })
+      });
+    } catch (err) {
+      console.error('Failed to track open:', err);
     }
   };
 
@@ -604,6 +620,7 @@ export function useDrive(folderId = null) {
     fetchAllFolders,
     fetchShares,
     fetchRecentFiles,
+    trackOpen,
     shareResource,
     revokeShare,
     fetchLinkShare,
