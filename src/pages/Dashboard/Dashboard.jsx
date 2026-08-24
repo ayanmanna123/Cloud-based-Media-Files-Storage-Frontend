@@ -144,15 +144,62 @@ export function Dashboard() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      // Select All: Ctrl+A / Cmd+A
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         e.preventDefault();
         handleSelectAll();
       }
+      
+      // Upload File: Shift+U
+      if (e.shiftKey && e.key.toLowerCase() === 'u') {
+        e.preventDefault();
+        if (currentView !== 'shared' && currentView !== 'recent' && currentView !== 'starred' && currentView !== 'trash') {
+          fileInputRef.current?.click();
+        }
+      }
+
+      // New Folder: Shift+N
+      if (e.shiftKey && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        if (currentView !== 'shared' && currentView !== 'recent' && currentView !== 'starred' && currentView !== 'trash') {
+          setIsCreateModalOpen(true);
+        }
+      }
+
+      // Upload Folder: Shift+F
+      if (e.shiftKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        if (currentView !== 'shared' && currentView !== 'recent' && currentView !== 'starred' && currentView !== 'trash') {
+          folderInputRef.current?.click();
+        }
+      }
+
+      // Download Selected: Shift+D
+      if (e.shiftKey && e.key.toLowerCase() === 'd') {
+        if (selectedItems.length > 0 && currentView !== 'trash') {
+          e.preventDefault();
+          handleBulkDownload();
+        }
+      }
+
+      // Delete Selected: Delete / Backspace
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedItems.length > 0) {
+          e.preventDefault();
+          if (currentView === 'trash') {
+            handleBulkDeleteForever();
+          } else {
+            handleBulkDelete();
+          }
+        }
+      }
     };
+    
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSelectAll]);
+  }, [handleSelectAll, currentView, selectedItems]);
 
   const handleItemClick = (e, id, type) => {
     e.stopPropagation();
@@ -666,11 +713,16 @@ export function Dashboard() {
                 variant="outline" 
                 className="gap-2"
                 disabled={isUploading}
+                title="Upload File (Shift+U)"
               >
                 {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                 Upload File
               </Button>
-              <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+              <Button 
+                onClick={() => setIsCreateModalOpen(true)} 
+                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                title="New Folder (Shift+N)"
+              >
                 <Plus className="w-4 h-4" />
                 New Folder
               </Button>
@@ -797,26 +849,26 @@ export function Dashboard() {
       {selectedItems.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground border shadow-xl rounded-full px-4 py-2 flex items-center gap-4 z-50 animate-in slide-in-from-bottom-5">
           <span className="text-sm font-medium pr-2 border-r border-border">{selectedItems.length} selected</span>
-          <Button variant="ghost" size="sm" onClick={handleSelectAll}>Select All</Button>
+          <Button variant="ghost" size="sm" onClick={handleSelectAll} title="Select All (Ctrl+A)">Select All</Button>
           <div className="w-px h-4 bg-border mx-1"></div>
           {currentView === 'trash' ? (
             <>
               <Button variant="ghost" size="sm" onClick={handleBulkRestore}>
                 <RotateCcw className="w-4 h-4 mr-2" /> Restore
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleBulkDeleteForever} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+              <Button variant="ghost" size="sm" onClick={handleBulkDeleteForever} className="text-red-500 hover:text-red-600 hover:bg-red-50" title="Delete Forever (Delete)">
                 <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
               </Button>
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" onClick={handleBulkDownload} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
+              <Button variant="ghost" size="sm" onClick={handleBulkDownload} disabled={selectedItems.every(id => id.startsWith('folder_'))} title="Download (Shift+D)">
                 <Download className="w-4 h-4 mr-2" /> Download
               </Button>
               <Button variant="ghost" size="sm" onClick={handleBulkMove} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
                 <FolderInput className="w-4 h-4 mr-2" /> Move
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+              <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50" title="Delete (Delete / Backspace)">
                 <Trash2 className="w-4 h-4 mr-2" /> Delete
               </Button>
             </>

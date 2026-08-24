@@ -93,14 +93,14 @@ export function DashboardLayout() {
               <span className="font-medium text-base">New</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
-              <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('openCreateFolder'))}>
+              <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('openCreateFolder'))} title="Create folder (Shift+N)">
                 <FolderPlus className="w-4 h-4 mr-2 text-muted-foreground" /> Create folder
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('triggerFileUpload'))}>
+              <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('triggerFileUpload'))} title="File upload (Shift+U)">
                 <FileUp className="w-4 h-4 mr-2 text-muted-foreground" /> File upload
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('triggerFolderUpload'))}>
+              <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('triggerFolderUpload'))} title="Folder upload (Shift+F)">
                 <FolderUp className="w-4 h-4 mr-2 text-muted-foreground" /> Folder upload
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -147,7 +147,7 @@ export function DashboardLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
-        <header className="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-border bg-background">
+        <header className="relative z-50 h-16 flex items-center justify-between px-4 sm:px-6 border-b border-border bg-background">
           <div className="flex items-center flex-1 gap-4">
             <Button 
               variant="ghost" 
