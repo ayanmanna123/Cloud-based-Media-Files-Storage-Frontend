@@ -30,6 +30,14 @@ const getFileIcon = (filename) => {
   return FileText
 }
 
+const formatBytes = (bytes) => {
+  if (!bytes || bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
 export function FileCard({
   file,
   viewMode,
@@ -139,7 +147,7 @@ export function FileCard({
           {new Date(file.updatedAt || file.createdAt).toLocaleDateString()}
         </div>
         <div className="hidden sm:block sm:col-span-2 md:col-span-1 text-sm text-muted-foreground">
-          {file.sizeBytes ? `${(file.sizeBytes / (1024 * 1024)).toFixed(1)} MB` : '--'}
+          {file.sizeBytes ? formatBytes(file.sizeBytes) : '--'}
         </div>
         <div className="col-span-1 flex justify-end gap-1">
           {currentView !== 'trash' && (
@@ -201,8 +209,11 @@ export function FileCard({
       </div>
       <div className="p-3 border-t border-border flex items-center justify-between bg-card z-10">
         <div className="flex items-center gap-2 truncate pr-2">
-          <Icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          <span className="text-sm font-medium truncate">{file.name}</span>
+          <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+          <div className="flex flex-col truncate">
+            <span className="text-sm font-medium truncate">{file.name}</span>
+            <span className="text-xs text-muted-foreground mt-0.5">{file.sizeBytes ? formatBytes(file.sizeBytes) : 'Unknown size'}</span>
+          </div>
         </div>
         <div className="flex items-center gap-1">
           {currentView !== 'trash' && (

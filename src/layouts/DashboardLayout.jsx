@@ -34,6 +34,14 @@ export function DashboardLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
+  const formatBytes = (bytes) => {
+    if (bytes === 0 || bytes === undefined) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const navItems = [
     { name: "My Drive", path: "/dashboard", icon: FolderOpen },
     { name: "Recent", path: "/dashboard/recent", icon: Clock },
@@ -124,7 +132,7 @@ export function DashboardLayout() {
           <div className="mb-2 flex justify-between text-xs font-medium text-muted-foreground">
             <span>Storage</span>
             <span>
-              {user?.storageUsed !== undefined ? (user.storageUsed / (1024 * 1024 * 1024)).toFixed(2) : "0.00"} GB / {user?.storageLimit ? Math.round(user.storageLimit / (1024 * 1024 * 1024)) : "100"} GB
+              {formatBytes(user?.storageUsed || 0)} / {formatBytes(user?.storageLimit || 100 * 1024 * 1024 * 1024)}
             </span>
           </div>
           <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-1">

@@ -31,6 +31,14 @@ export function FolderCard({
   onDoubleClick
 }) {
   const isStarred = starredItems.includes(`folder_${folder.id}`)
+  
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   return (
     <div 
@@ -87,7 +95,13 @@ export function FolderCard({
       </div>
       <div>
         <div className="font-medium truncate pr-6">{folder.name}</div>
-        <div className="text-xs text-muted-foreground mt-0.5">Folder</div>
+        <div className="text-xs text-muted-foreground mt-0.5">
+          {folder.fileCount === undefined 
+            ? 'Folder' 
+            : folder.fileCount === 0 
+              ? 'Empty' 
+              : `${folder.fileCount} file${folder.fileCount > 1 ? 's' : ''}${folder.totalSize ? ` • ${formatBytes(folder.totalSize)}` : ''}`}
+        </div>
       </div>
     </div>
   )

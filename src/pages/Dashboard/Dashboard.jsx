@@ -303,13 +303,12 @@ export function Dashboard() {
     setIsUploadToastExpanded(true)
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
+      const uploadPromises = Array.from(files).map(async (file, i) => {
         const task = newTasks[i]
         const taskId = task.id
         
         if (task.status === 'error') {
-          continue; // Skip uploading this file since it's too large
+          return; // Skip uploading this file since it's too large
         }
 
         const controller = new AbortController()
@@ -331,7 +330,9 @@ export function Dashboard() {
         } finally {
           delete abortControllersRef.current[taskId]
         }
-      }
+      });
+      
+      await Promise.all(uploadPromises);
     } finally {
       setIsUploading(false)
     }
@@ -379,13 +380,12 @@ export function Dashboard() {
     setIsUploadToastExpanded(true)
 
     try {
-      for (let i = 0; i < filesList.length; i++) {
-        const file = filesList[i]
+      const uploadPromises = Array.from(filesList).map(async (file, i) => {
         const task = newTasks[i]
         const taskId = task.id
         
         if (task.status === 'error') {
-          continue; // Skip uploading this file since it's too large
+          return; // Skip uploading this file since it's too large
         }
 
         const controller = new AbortController()
@@ -396,7 +396,7 @@ export function Dashboard() {
           const onProgress = (stats) => {
             setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...stats } : t));
           };
-          await uploadFile(file, controller.signal, targetFolderId, onProgress)
+          await uploadFile(file, controller.signal, targetFolderId, null, onProgress)
           setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t))
         } catch (err) {
           if (err.name === 'AbortError') {
@@ -408,7 +408,9 @@ export function Dashboard() {
         } finally {
           delete abortControllersRef.current[taskId]
         }
-      }
+      });
+
+      await Promise.all(uploadPromises);
     } finally {
       setIsUploading(false)
     }
@@ -555,6 +557,7 @@ export function Dashboard() {
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
+      onClick={handleBackgroundClick}
     >
       {/* Drag & Drop Overlay */}
       {isDragging && (
@@ -793,11 +796,9 @@ export function Dashboard() {
       {/* Bulk Action Bar */}
       {selectedItems.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground border shadow-xl rounded-full px-4 py-2 flex items-center gap-4 z-50 animate-in slide-in-from-bottom-5">
-          <span className="text-sm font-medium">{selectedItems.length} selected</span>
-          <div className="h-4 w-px bg-border"></div>
-          <Button variant="ghost" size="sm" onClick={() => setSelectedItems([])}>Clear</Button>
+          <span className="text-sm font-medium pr-2 border-r border-border">{selectedItems.length} selected</span>
           <Button variant="ghost" size="sm" onClick={handleSelectAll}>Select All</Button>
-          <div className="h-4 w-px bg-border"></div>
+          <div className="w-px h-4 bg-border mx-1"></div>
           {currentView === 'trash' ? (
             <>
               <Button variant="ghost" size="sm" onClick={handleBulkRestore}>
