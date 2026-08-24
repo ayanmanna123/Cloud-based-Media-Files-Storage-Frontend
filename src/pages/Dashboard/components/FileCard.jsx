@@ -20,6 +20,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "../../../components/ui/context-menu"
 
 const getFileIcon = (filename) => {
   if (!filename) return FileText
@@ -55,7 +62,8 @@ export function FileCard({
   onEdit,
   isSelected,
   onClick,
-  onOpen
+  onOpen,
+  onPreview
 }) {
   const Icon = getFileIcon(file.name)
   const isEditable = file.name.match(/\.(txt|md|csv|json|js|jsx|ts|tsx|html|css|xml|yml|yaml|ini|env|log)$/i)
@@ -70,7 +78,9 @@ export function FileCard({
 
   const handleOpen = () => {
     if (onOpen) onOpen();
-    if (isOfficeDoc) {
+    if ((isImage || isVideo) && onPreview) {
+      onPreview(file);
+    } else if (isOfficeDoc) {
       window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`, '_blank')
     } else {
       window.open(fileUrl, '_blank')
@@ -133,25 +143,80 @@ export function FileCard({
     </DropdownMenuContent>
   );
 
+  const ContextActions = () => (
+    <ContextMenuContent className="w-48">
+      {currentView === 'trash' ? (
+        <>
+          <ContextMenuItem onClick={() => onRestore(file.id, 'file')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
+            <RotateCcw className="w-4 h-4 mr-2" /> Restore
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => onDeleteForever(file.id, 'file')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+            <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+          </ContextMenuItem>
+        </>
+      ) : currentView === 'shared' ? (
+        <>
+          {isEditable && file.permission === 'editor' && (
+            <ContextMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
+              <Edit2 className="w-4 h-4 mr-2" /> Edit
+            </ContextMenuItem>
+          )}
+          <ContextMenuItem onClick={() => onDownload(file.id, file.name)}>
+            <Download className="w-4 h-4 mr-2" /> Download
+          </ContextMenuItem>
+        </>
+      ) : (
+        <>
+          {isEditable && (
+            <ContextMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
+              <Edit2 className="w-4 h-4 mr-2" /> Edit
+            </ContextMenuItem>
+          )}
+          <ContextMenuItem onClick={() => onDownload(file.id, file.name)}>
+            <Download className="w-4 h-4 mr-2" /> Download
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
+            <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
+            <Edit2 className="w-4 h-4 mr-2" /> Rename
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => setTimeout(() => onMove(file.id, file.name), 0)}>
+            <FolderInput className="w-4 h-4 mr-2" /> Move
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
+            <Clock className="w-4 h-4 mr-2" /> Version History
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => onDelete(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+            <Trash2 className="w-4 h-4 mr-2" /> Delete
+          </ContextMenuItem>
+        </>
+      )}
+    </ContextMenuContent>
+  );
+
   if (viewMode === "list") {
     return (
-      <div 
-        className={`grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer select-none ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
-        onClick={onClick}
-        onDoubleClick={handleOpen}
-      >
-        <div className="col-span-11 sm:col-span-6 md:col-span-5 flex items-center gap-3">
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div 
+            className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group cursor-pointer select-none ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
+            onClick={onClick}
+            onDoubleClick={handleOpen}
+          >
+        <div className="flex-1 min-w-0 flex items-center gap-3">
           <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
           <span className="text-sm font-medium truncate">{file.name}</span>
         </div>
-        <div className="hidden sm:block sm:col-span-3 md:col-span-2 text-sm text-muted-foreground">me</div>
-        <div className="hidden md:block md:col-span-3 text-sm text-muted-foreground">
+        <div className="hidden sm:block w-32 shrink-0 text-sm text-muted-foreground truncate">me</div>
+        <div className="hidden md:block w-32 shrink-0 text-sm text-muted-foreground truncate">
           {new Date(file.updatedAt || file.createdAt).toLocaleDateString()}
         </div>
-        <div className="hidden sm:block sm:col-span-2 md:col-span-1 text-sm text-muted-foreground">
+        <div className="hidden sm:block w-20 shrink-0 text-sm text-muted-foreground truncate">
           {file.sizeBytes ? formatBytes(file.sizeBytes) : '--'}
         </div>
-        <div className="col-span-1 flex justify-end gap-1">
+        <div className="w-8 shrink-0 flex justify-end">
           {currentView !== 'trash' && (
             <button 
               onClick={(e) => {
@@ -173,15 +238,20 @@ export function FileCard({
           </div>
         </div>
       </div>
+        </ContextMenuTrigger>
+        <ContextActions />
+      </ContextMenu>
     );
   }
 
   return (
-    <div 
-      className={`group border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48 select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
-      onClick={onClick}
-      onDoubleClick={handleOpen}
-    >
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div 
+          className={`group border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48 select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
+          onClick={onClick}
+          onDoubleClick={handleOpen}
+        >
       <div className="flex-1 bg-muted/30 flex items-center justify-center overflow-hidden relative">
         {(isImage || isPdf || isVideo) ? (
           <>
@@ -239,6 +309,9 @@ export function FileCard({
           </div>
         </div>
       </div>
-    </div>
+        </div>
+      </ContextMenuTrigger>
+      <ContextActions />
+    </ContextMenu>
   )
 }

@@ -167,10 +167,11 @@ export function Home() {
 
                     {/* Files List */}
                     <div className="flex-1 border border-border rounded-lg bg-muted/5 overflow-hidden flex flex-col">
-                      <div className="grid grid-cols-12 gap-2 p-3 border-b border-border text-xs font-medium text-muted-foreground">
-                        <div className="col-span-6">Name</div>
-                        <div className="col-span-3">Owner</div>
-                        <div className="col-span-3">Size</div>
+                      <div className="flex items-center gap-2 p-3 border-b border-border text-xs font-medium text-muted-foreground">
+                        <div className="flex-1 min-w-0">Name</div>
+                        <div className="hidden sm:block w-12 shrink-0">Owner</div>
+                        <div className="hidden sm:block w-12 shrink-0">Size</div>
+                        <div className="w-4 shrink-0"></div>
                       </div>
                       
                       {/* File Items */}
@@ -181,14 +182,14 @@ export function Home() {
                           { icon: FileImage, color: "text-blue-500", name: "Design_Assets.zip" },
                           { icon: FileVideo, color: "text-purple-500", name: "Demo_Recording.mp4" },
                         ].map((file, i) => (
-                          <div key={i} className="grid grid-cols-12 gap-2 p-3 items-center hover:bg-muted/30 transition-colors">
-                            <div className="col-span-6 flex items-center gap-2">
-                              <file.icon className={`w-4 h-4 ${file.color}`} />
+                          <div key={i} className="flex items-center gap-2 p-3 hover:bg-muted/30 transition-colors">
+                            <div className="flex-1 min-w-0 flex items-center gap-2">
+                              <file.icon className={`w-4 h-4 ${file.color} flex-shrink-0`} />
                               <span className="text-sm truncate">{file.name}</span>
                             </div>
-                            <div className="col-span-3 text-xs text-muted-foreground">me</div>
-                            <div className="col-span-2 text-xs text-muted-foreground">{2.4 * (i+1)} MB</div>
-                            <div className="col-span-1 flex justify-end">
+                            <div className="hidden sm:block w-12 shrink-0 text-xs text-muted-foreground truncate">me</div>
+                            <div className="hidden sm:block w-12 shrink-0 text-xs text-muted-foreground truncate">{2.4 * (i+1)} MB</div>
+                            <div className="w-4 shrink-0 flex justify-end">
                               <MoreVertical className="w-4 h-4 text-muted-foreground" />
                             </div>
                           </div>

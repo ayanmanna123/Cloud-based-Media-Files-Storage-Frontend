@@ -46,8 +46,8 @@ export function Navbar() {
         <div className="flex items-center space-x-4">
           {user ? (
             <>
-              <Link to="/dashboard" className="hidden sm:block">
-                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+              <Link to="/dashboard">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground hidden sm:inline-flex">
                   Dashboard
                 </Button>
               </Link>
@@ -76,8 +76,8 @@ export function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/login" className="hidden sm:block">
-                <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-medium">
+              <Link to="/login">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-medium hidden sm:inline-flex">
                   Sign in
                 </Button>
               </Link>

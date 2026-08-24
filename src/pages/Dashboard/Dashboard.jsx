@@ -51,6 +51,7 @@ import { RenameFileModal } from "./components/RenameFileModal"
 import { MoveFileModal } from "./components/MoveFileModal"
 import { VersionHistoryModal } from "./components/VersionHistoryModal"
 import { EditFileModal } from "./components/EditFileModal"
+import { LightboxModal } from "./components/LightboxModal"
 
 export function Dashboard() {
   const { id } = useParams()
@@ -85,6 +86,7 @@ export function Dashboard() {
   const [shareModalData, setShareModalData] = useState({ isOpen: false, resourceType: null, resourceId: null, resourceName: "" })
   const [versionHistoryModalData, setVersionHistoryModalData] = useState({ isOpen: false, fileId: null, fileName: "", currentVersionId: null })
   const [editFileModalData, setEditFileModalData] = useState({ isOpen: false, file: null })
+  const [lightboxData, setLightboxData] = useState({ isOpen: false, file: null })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sortMethod, setSortMethod] = useState(() => {
@@ -723,7 +725,7 @@ export function Dashboard() {
                 title="Upload File (Shift+U)"
               >
                 {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                Upload File
+                <span className="hidden sm:inline">Upload File</span>
               </Button>
               <Button 
                 onClick={() => setIsCreateModalOpen(true)} 
@@ -731,7 +733,7 @@ export function Dashboard() {
                 title="New Folder (Shift+N)"
               >
                 <Plus className="w-4 h-4" />
-                New Folder
+                <span className="hidden sm:inline">New Folder</span>
               </Button>
             </>
           )}
@@ -779,12 +781,12 @@ export function Dashboard() {
           {viewMode === "list" ? (
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 p-4 border-b border-border bg-muted/50 text-sm font-medium text-muted-foreground">
-                <div className="col-span-11 sm:col-span-6 md:col-span-5">Name</div>
-                <div className="hidden sm:block sm:col-span-3 md:col-span-2">Owner</div>
-                <div className="hidden md:block md:col-span-3">Last modified</div>
-                <div className="hidden sm:block sm:col-span-2 md:col-span-1">Size</div>
-                <div className="col-span-1"></div>
+              <div className="flex items-center gap-4 p-4 border-b border-border bg-muted/50 text-sm font-medium text-muted-foreground">
+                <div className="flex-1 min-w-0">Name</div>
+                <div className="hidden sm:block w-32 shrink-0">Owner</div>
+                <div className="hidden md:block w-32 shrink-0">Last modified</div>
+                <div className="hidden sm:block w-20 shrink-0">Size</div>
+                <div className="w-8 shrink-0"></div>
               </div>
               {/* Table Body */}
               <div className="divide-y divide-border">
@@ -810,6 +812,7 @@ export function Dashboard() {
                       onDeleteForever={deleteForever}
                       onOpenVersionHistory={setVersionHistoryModalData}
                       onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
+                      onPreview={(file) => setLightboxData({ isOpen: true, file })}
                     />
                   )
                 })}
@@ -841,6 +844,7 @@ export function Dashboard() {
                     onDeleteForever={deleteForever}
                     onOpenVersionHistory={setVersionHistoryModalData}
                     onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
+                    onPreview={(file) => setLightboxData({ isOpen: true, file })}
                   />
                 )
               })}
@@ -919,6 +923,14 @@ export function Dashboard() {
         onClose={() => setEditFileModalData({ isOpen: false, file: null })}
         file={editFileModalData.file}
         onSave={(file, folderId, fileId) => handleFileUpload([file], folderId, fileId)}
+      />
+
+      <LightboxModal
+        isOpen={lightboxData.isOpen}
+        onClose={() => setLightboxData({ isOpen: false, file: null })}
+        file={lightboxData.file}
+        files={filteredFiles}
+        onNavigate={(file) => setLightboxData({ isOpen: true, file })}
       />
 
       <VersionHistoryModal 

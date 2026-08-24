@@ -14,6 +14,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "../../../components/ui/context-menu"
 
 export function FolderCard({ 
   folder, 
@@ -40,12 +47,49 @@ export function FolderCard({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const ContextActions = () => (
+    <ContextMenuContent className="w-48">
+      {currentView === 'trash' ? (
+        <>
+          <ContextMenuItem onClick={() => onRestore(folder.id, 'folder')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
+            <RotateCcw className="w-4 h-4 mr-2" /> Restore
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => onDeleteForever(folder.id, 'folder')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+            <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+          </ContextMenuItem>
+        </>
+      ) : (
+        <>
+          <ContextMenuItem onClick={() => onToggleStar(folder.id, 'folder', isStarred)}>
+            <Star className={`w-4 h-4 mr-2 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
+            {isStarred ? 'Unstar' : 'Star'}
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
+            <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
+            <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
+            <Edit2 className="w-4 h-4 mr-2" /> Rename
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => onDelete(folder.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+            <Trash2 className="w-4 h-4 mr-2" /> Delete
+          </ContextMenuItem>
+        </>
+      )}
+    </ContextMenuContent>
+  );
+
   return (
-    <div 
-      onClick={onClick}
-      onDoubleClick={onDoubleClick}
-      className={`group p-4 border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col gap-3 relative select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
-    >
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div 
+          onClick={onClick}
+          onDoubleClick={onDoubleClick}
+          className={`group p-4 border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col gap-3 relative select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
+        >
       <div className="flex justify-between items-start">
         <FolderOpen className="w-8 h-8 text-blue-500" />
         
@@ -103,6 +147,9 @@ export function FolderCard({
               : `${folder.fileCount} file${folder.fileCount > 1 ? 's' : ''}${folder.totalSize ? ` • ${formatBytes(folder.totalSize)}` : ''}`}
         </div>
       </div>
-    </div>
+        </div>
+      </ContextMenuTrigger>
+      {currentView !== 'shared' && <ContextActions />}
+    </ContextMenu>
   )
 }

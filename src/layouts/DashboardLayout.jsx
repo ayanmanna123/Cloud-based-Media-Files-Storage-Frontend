@@ -107,6 +107,19 @@ export function DashboardLayout() {
           </DropdownMenu>
         </div>
 
+        <div className="px-4 pb-4 md:hidden">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input 
+              type="text" 
+              placeholder="Search..." 
+              className="pl-9 bg-muted/50 border-border h-9 text-sm focus-visible:ring-1"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path
@@ -171,7 +184,7 @@ export function DashboardLayout() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="hidden sm:block">
+            <div className="block">
               <ThemeToggle />
             </div>
             
