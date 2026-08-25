@@ -451,7 +451,7 @@ export function useDrive(folderId = null) {
 
   const shareResource = async (resourceType, resourceId, email, role, message) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/shares`, {
+      const response = await fetch(`${import.meta.env.VITE_EMAIL_API_URL}/api/shares`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
