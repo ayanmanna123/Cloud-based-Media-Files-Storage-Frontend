@@ -106,7 +106,7 @@ export function ResetPassword() {
               </div>
             </div>
             
-            <Button type="submit" className="w-full" disabled={loading || !token}>
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading || !token}>
               {loading ? "Resetting..." : "Reset Password"}
             </Button>
           </form>
