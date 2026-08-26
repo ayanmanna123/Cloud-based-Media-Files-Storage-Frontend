@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   MoreVertical,
   Star,
@@ -11,7 +12,10 @@ import {
   FileImage,
   FileSpreadsheet,
   FileVideo,
-  Clock
+  Clock,
+  Copy,
+  Link,
+  Check
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -71,10 +75,61 @@ export function FileCard({
   const isPdf = file.name.match(/\.(pdf)$/i)
   const isVideo = file.name.match(/\.(mp4|mov|avi|mkv|webm)$/i)
   const isOfficeDoc = file.name.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i)
-  const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-400,h-300,c-at_max`
-  const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-400,h-300,c-at_max`
-  const fileUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`
+  const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-600,h-800,c-at_max`
+  const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-600,h-800,c-at_max`
   const isStarred = starredItems.includes(`file_${file.id}`)
+  const [dimensions, setDimensions] = useState(file.width && file.height ? `${file.width}x${file.height}` : null)
+  const [copied, setCopied] = useState(false)
+
+  const rawStorageKey = (file.storageKey || '').replace(/^\//, '')
+  const endpoint = (import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT || '').replace(/\/$/, '')
+  let fileUrl = file.url || `${endpoint}/${rawStorageKey}`
+  if (fileUrl && !fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
+    fileUrl = `https://${fileUrl}`
+  }
+
+  const handleCopyUrl = async (e) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(fileUrl);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = fileUrl;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Copy URL failed:", err);
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = fileUrl;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (fallbackErr) {
+        console.error("Fallback copy failed:", fallbackErr);
+      }
+    }
+  }
 
   const handleOpen = () => {
     if (onOpen) onOpen();
@@ -118,6 +173,9 @@ export function FileCard({
           )}
           <DropdownMenuItem onClick={() => onDownload(file.id, file.name)}>
             <Download className="w-4 h-4 mr-2" /> Download
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleCopyUrl}>
+            <Copy className="w-4 h-4 mr-2" /> Copy Link
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
@@ -175,6 +233,9 @@ export function FileCard({
           <ContextMenuItem onClick={() => onDownload(file.id, file.name)}>
             <Download className="w-4 h-4 mr-2" /> Download
           </ContextMenuItem>
+          <ContextMenuItem onClick={handleCopyUrl}>
+            <Copy className="w-4 h-4 mr-2" /> Copy Link
+          </ContextMenuItem>
           <ContextMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
           </ContextMenuItem>
@@ -225,14 +286,14 @@ export function FileCard({
                 e.stopPropagation();
                 onToggleStar(file.id, 'file', isStarred);
               }}
-              className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${isStarred ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
+              className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${isStarred ? 'text-yellow-400' : 'text-muted-foreground'}`}
             >
-              <Star className={`w-4 h-4 ${isStarred ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
+              <Star className={`w-4 h-4 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
             </button>
           )}
           <div onClick={e => e.stopPropagation()}>
             <DropdownMenu>
-              <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+              <DropdownMenuTrigger className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-muted-foreground">
                 <MoreVertical className="w-4 h-4 text-muted-foreground" />
               </DropdownMenuTrigger>
               <DropdownActions />
@@ -250,7 +311,7 @@ export function FileCard({
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <div 
-          className={`group border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-48 select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
+          className={`group border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-[340px] select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
           onClick={onClick}
           onDoubleClick={handleOpen}
         >
@@ -260,7 +321,12 @@ export function FileCard({
             <img 
               src={(isPdf || isVideo) ? thumbnailUrl : previewUrl} 
               alt={file.name} 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+              onLoad={(e) => {
+                if (e.target.naturalWidth && e.target.naturalHeight) {
+                  setDimensions(`${e.target.naturalWidth}x${e.target.naturalHeight}`);
+                }
+              }}
               onError={(e) => {
                 e.target.style.display = 'none';
                 if (e.target.nextElementSibling) {
@@ -281,34 +347,55 @@ export function FileCard({
           <Icon className="w-12 h-12 mb-2 opacity-50" />
         </div>
       </div>
-      <div className="p-3 border-t border-border flex items-center justify-between bg-card z-10">
-        <div className="flex items-center gap-2 truncate pr-2">
-          <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-          <div className="flex flex-col truncate">
-            <span className="text-sm font-medium truncate">{file.name}</span>
-            <span className="text-xs text-muted-foreground mt-0.5">{file.sizeBytes ? formatBytes(file.sizeBytes) : 'Unknown size'}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          {currentView !== 'trash' && (
+      <div className="px-3 py-2.5 border-t border-border flex flex-col justify-center bg-card z-10">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <span className="text-sm font-bold text-foreground truncate flex-1 min-w-0" title={file.name}>
+            {file.name}
+          </span>
+          <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={handleCopyUrl}
+              className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
+              title="Copy URL"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
             <button 
               onClick={(e) => {
                 e.stopPropagation();
-                onToggleStar(file.id, 'file', isStarred);
+                window.open(fileUrl, '_blank', 'noopener,noreferrer');
               }}
-              className={`h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors ${isStarred ? 'opacity-100 text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-muted-foreground'}`}
+              className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
+              title="Open URL"
             >
-              <Star className={`w-4 h-4 ${isStarred ? 'fill-yellow-400 text-yellow-400 opacity-100' : ''}`} />
+              <Link className="w-3.5 h-3.5" />
             </button>
-          )}
-          <div onClick={e => e.stopPropagation()}>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring flex-shrink-0 -mr-2">
-                <MoreVertical className="w-4 h-4 text-muted-foreground" />
-              </DropdownMenuTrigger>
-              <DropdownActions />
-            </DropdownMenu>
+            {currentView !== 'trash' && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleStar(file.id, 'file', isStarred);
+                }}
+                className={`p-1 hover:bg-accent rounded transition-colors ${isStarred ? 'text-yellow-400' : 'text-muted-foreground hover:text-foreground'}`}
+                title="Star file"
+              >
+                <Star className={`w-3.5 h-3.5 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+              </button>
+            )}
+            <div onClick={e => e.stopPropagation()}>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground focus-visible:outline-none flex-shrink-0">
+                  <MoreVertical className="w-3.5 h-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownActions />
+              </DropdownMenu>
+            </div>
           </div>
+        </div>
+        <div className="text-[11px] text-muted-foreground font-normal tracking-wide mt-0.5 truncate">
+          {file.name.split('.').pop()?.toUpperCase() || 'FILE'}
+          {file.sizeBytes ? ` • ${formatBytes(file.sizeBytes)}` : ''}
+          {dimensions ? ` • ${dimensions}` : ''}
         </div>
       </div>
         </div>
