@@ -71,7 +71,8 @@ export function Dashboard() {
     fetchShares, shareResource, revokeShare,
     fetchLinkShare, createLinkShare, deleteLinkShare, toggleStar,
     restoreItem, deleteForever,
-    trackOpen, createBundleShare
+    trackOpen, createBundleShare,
+    copyFile, moveFolder, copyFolder, refresh
   } = useDrive(driveId)
 
   const { startUpload, updateProgress, completeUpload } = useProgress()
@@ -96,6 +97,22 @@ export function Dashboard() {
   const [sortMethod, setSortMethod] = useState(() => {
     return localStorage.getItem("drive_sortMethod") || "name-asc"
   })
+
+  // Clipboard & Toast State
+  const [clipboard, setClipboard] = useState(() => {
+    const saved = localStorage.getItem("drive_clipboard")
+    return saved ? JSON.parse(saved) : { action: null, items: [] }
+  })
+  const [toastMessage, setToastMessage] = useState(null)
+
+  useEffect(() => {
+    localStorage.setItem("drive_clipboard", JSON.stringify(clipboard))
+  }, [clipboard])
+
+  const showToast = (message) => {
+    setToastMessage(message)
+    setTimeout(() => setToastMessage(null), 3000)
+  }
 
   const fileInputRef = useRef(null)
   const folderInputRef = useRef(null)
@@ -209,6 +226,24 @@ export function Dashboard() {
         }
       }
 
+      // Copy: Ctrl+C / Cmd+C
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+        if (selectedItems.length > 0 && currentView !== 'trash') {
+          e.preventDefault();
+          setClipboard({ action: 'copy', items: selectedItems });
+          showToast(`Copied ${selectedItems.length} items to clipboard`);
+        }
+      }
+
+      // Cut: Ctrl+X / Cmd+X
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
+        if (selectedItems.length > 0 && currentView !== 'trash') {
+          e.preventDefault();
+          setClipboard({ action: 'cut', items: selectedItems });
+          showToast(`Cut ${selectedItems.length} items to clipboard`);
+        }
+      }
+
       // Delete Selected: Delete / Backspace
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedItems.length > 0) {
@@ -222,9 +257,57 @@ export function Dashboard() {
       }
     };
     
+    // Paste handler needs current state of clipboard, so we define it below and attach it separately or just use an effect that has dependencies.
+    // However, the event listener here has clipboard as a dependency now.
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSelectAll, currentView, selectedItems]);
+  }, [handleSelectAll, currentView, selectedItems, clipboard]);
+
+  useEffect(() => {
+    const handlePasteKey = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+        if (currentView !== 'trash' && currentView !== 'recent' && currentView !== 'starred' && currentView !== 'shared') {
+          e.preventDefault();
+          handlePaste();
+        }
+      }
+    };
+    window.addEventListener('keydown', handlePasteKey);
+    return () => window.removeEventListener('keydown', handlePasteKey);
+  }, [clipboard, id, currentView]);
+
+  const handlePaste = async () => {
+    if (!clipboard.action || clipboard.items.length === 0) return;
+    
+    setIsSubmitting(true);
+    const targetFolderId = id === "root" || !id ? null : id; 
+    
+    try {
+      const promises = clipboard.items.map(item => {
+        const [type, itemId] = item.split('_');
+        if (clipboard.action === 'copy') {
+          return type === 'file' ? copyFile(itemId, targetFolderId) : copyFolder(itemId, targetFolderId);
+        } else if (clipboard.action === 'cut') {
+          return type === 'file' ? moveFile(itemId, targetFolderId) : moveFolder(itemId, targetFolderId);
+        }
+      });
+      
+      await Promise.all(promises);
+      showToast(`Successfully pasted ${clipboard.items.length} items`);
+      
+      if (clipboard.action === 'cut') {
+        setClipboard({ action: null, items: [] });
+      }
+      
+      refresh();
+    } catch (err) {
+      console.error("Paste failed", err);
+      showToast("Failed to paste some items");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   const handleItemClick = (e, id, type) => {
     e.stopPropagation();
@@ -999,6 +1082,14 @@ export function Dashboard() {
               </Button>
             </>
           )}
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-in slide-in-from-bottom-2 fade-in flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4" />
+          {toastMessage}
         </div>
       )}
 

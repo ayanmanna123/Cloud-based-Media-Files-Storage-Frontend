@@ -364,6 +364,76 @@ export function useDrive(folderId = null) {
     } catch (err) { throw err; }
   };
 
+  const copyFile = async (id, targetFolderId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/files/${id}/copy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ folderId: targetFolderId }),
+      });
+      if (!response.ok) throw new Error('Failed to copy file');
+      const newFile = await response.json();
+      
+      // If we copied to the current folder view, add it to the state
+      if ((targetFolderId || null) === (folderId || null)) {
+        setData(prev => ({
+          ...prev,
+          children: {
+            ...prev.children,
+            files: [...prev.children.files, newFile]
+          }
+        }));
+      }
+      return newFile;
+    } catch (err) { throw err; }
+  };
+
+  const moveFolder = async (id, targetFolderId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/folders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ parentId: targetFolderId }),
+      });
+      if (!response.ok) throw new Error('Failed to move folder');
+      // Remove from current view
+      setData(prev => ({
+        ...prev,
+        children: {
+          ...prev.children,
+          folders: prev.children.folders.filter(f => f.id !== id)
+        }
+      }));
+    } catch (err) { throw err; }
+  };
+
+  const copyFolder = async (id, targetFolderId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/folders/${id}/copy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ parentId: targetFolderId }),
+      });
+      if (!response.ok) throw new Error('Failed to copy folder');
+      const newFolder = await response.json();
+      
+      // If we copied to the current folder view, add it to the state
+      if ((targetFolderId || null) === (folderId || null)) {
+        setData(prev => ({
+          ...prev,
+          children: {
+            ...prev.children,
+            folders: [...prev.children.folders, newFolder]
+          }
+        }));
+      }
+      return newFolder;
+    } catch (err) { throw err; }
+  };
+
   const downloadFile = async (id, fileName) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/files/${id}`, {
@@ -647,6 +717,9 @@ export function useDrive(folderId = null) {
     renameFile,
     deleteFile,
     moveFile,
+    copyFile,
+    moveFolder,
+    copyFolder,
     downloadFile,
     fetchAllFolders,
     fetchShares,
