@@ -124,6 +124,13 @@ export function Dashboard() {
   const [isUploadToastExpanded, setIsUploadToastExpanded] = useState(true)
   const abortControllersRef = useRef({})
 
+  // Marquee Drag Selection State & Refs
+  const containerRef = useRef(null)
+  const [selectionBox, setSelectionBox] = useState(null)
+  const isMouseDownRef = useRef(false)
+  const dragStartPosRef = useRef({ x: 0, y: 0, clientX: 0, clientY: 0 })
+  const initialSelectedItemsRef = useRef([])
+
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem("drive_viewMode") || "grid"
   })
@@ -324,6 +331,103 @@ export function Dashboard() {
   const handleBackgroundClick = () => {
     setSelectedItems([]);
   }
+
+  const handleMarqueeMouseDown = (e) => {
+    if (e.button !== 0) return;
+    if (e.target.closest('button, input, textarea, a, [role="menuitem"], [role="dialog"], [data-no-drag]')) {
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    const startX = e.clientX - rect.left + container.scrollLeft;
+    const startY = e.clientY - rect.top + container.scrollTop;
+
+    isMouseDownRef.current = true;
+    dragStartPosRef.current = { x: startX, y: startY, clientX: e.clientX, clientY: e.clientY };
+
+    if (e.ctrlKey || e.metaKey || e.shiftKey) {
+      initialSelectedItemsRef.current = [...selectedItems];
+    } else {
+      if (!e.target.closest('[data-item-key]')) {
+        setSelectedItems([]);
+        initialSelectedItemsRef.current = [];
+      } else {
+        initialSelectedItemsRef.current = [...selectedItems];
+      }
+    }
+  };
+
+  const handleMarqueeMouseMove = useCallback((e) => {
+    if (!isMouseDownRef.current || !containerRef.current) return;
+
+    const container = containerRef.current;
+    
+    const rect = container.getBoundingClientRect();
+    const currentX = e.clientX - rect.left + container.scrollLeft;
+    const currentY = e.clientY - rect.top + container.scrollTop;
+
+    const startX = dragStartPosRef.current.x;
+    const startY = dragStartPosRef.current.y;
+
+    const width = Math.abs(currentX - startX);
+    const height = Math.abs(currentY - startY);
+
+    if (width < 4 && height < 4 && !selectionBox) {
+      return;
+    }
+
+    const left = Math.min(startX, currentX);
+    const top = Math.min(startY, currentY);
+
+    setSelectionBox({ left, top, width, height });
+
+    const boxViewportLeft = Math.min(dragStartPosRef.current.clientX, e.clientX);
+    const boxViewportTop = Math.min(dragStartPosRef.current.clientY, e.clientY);
+    const boxViewportRight = Math.max(dragStartPosRef.current.clientX, e.clientX);
+    const boxViewportBottom = Math.max(dragStartPosRef.current.clientY, e.clientY);
+
+    const itemElements = container.querySelectorAll('[data-item-key]');
+    const selectedKeys = new Set(initialSelectedItemsRef.current);
+
+    itemElements.forEach((el) => {
+      const itemKey = el.getAttribute('data-item-key');
+      const itemRect = el.getBoundingClientRect();
+
+      const isIntersecting = !(
+        itemRect.right < boxViewportLeft ||
+        itemRect.left > boxViewportRight ||
+        itemRect.bottom < boxViewportTop ||
+        itemRect.top > boxViewportBottom
+      );
+
+      if (isIntersecting) {
+        selectedKeys.add(itemKey);
+      } else if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        selectedKeys.delete(itemKey);
+      }
+    });
+
+    setSelectedItems(Array.from(selectedKeys));
+  }, [selectionBox]);
+
+  const handleMarqueeMouseUp = useCallback(() => {
+    isMouseDownRef.current = false;
+    setSelectionBox(null);
+  }, []);
+
+  useEffect(() => {
+    const onGlobalMouseUp = () => {
+      if (isMouseDownRef.current) {
+        isMouseDownRef.current = false;
+        setSelectionBox(null);
+      }
+    };
+    window.addEventListener('mouseup', onGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', onGlobalMouseUp);
+  }, []);
 
   const handleBulkDownload = async () => {
     if (selectedItems.length === 0) return;
@@ -781,12 +885,27 @@ export function Dashboard() {
 
   return (
     <div 
-      className="max-w-6xl mx-auto space-y-6 pb-8 relative min-h-[80vh]"
+      ref={containerRef}
+      className="max-w-6xl mx-auto space-y-6 pb-8 relative min-h-[80vh] select-none"
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      onClick={handleBackgroundClick}
+      onMouseDown={handleMarqueeMouseDown}
+      onMouseMove={handleMarqueeMouseMove}
+      onMouseUp={handleMarqueeMouseUp}
     >
+      {/* Marquee Drag Selection Box */}
+      {selectionBox && (
+        <div 
+          className="absolute bg-blue-500/20 border border-blue-500/80 rounded pointer-events-none z-40 transition-none"
+          style={{
+            left: `${selectionBox.left}px`,
+            top: `${selectionBox.top}px`,
+            width: `${selectionBox.width}px`,
+            height: `${selectionBox.height}px`,
+          }}
+        />
+      )}
       {/* Drag & Drop Overlay */}
       {isDragging && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm border-2 border-dashed border-blue-500 rounded-2xl pointer-events-none">

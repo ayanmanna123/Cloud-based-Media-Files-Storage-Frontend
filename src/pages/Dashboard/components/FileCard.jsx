@@ -75,8 +75,8 @@ export function FileCard({
   const isPdf = file.name.match(/\.(pdf)$/i)
   const isVideo = file.name.match(/\.(mp4|mov|avi|mkv|webm)$/i)
   const isOfficeDoc = file.name.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i)
-  const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-600,h-800,c-at_max`
-  const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-600,h-800,c-at_max`
+  const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-600,h-800,c-at_max,bg-FFFFFF`
+  const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-600,h-800,c-at_max,bg-FFFFFF`
   const isStarred = starredItems.includes(`file_${file.id}`)
   const [dimensions, setDimensions] = useState(file.width && file.height ? `${file.width}x${file.height}` : null)
   const [copied, setCopied] = useState(false)
@@ -262,6 +262,7 @@ export function FileCard({
       <ContextMenu>
         <ContextMenuTrigger asChild>
           <div 
+            data-item-key={`file_${file.id}`}
             className={`flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group cursor-pointer select-none ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
             onClick={onClick}
             onDoubleClick={handleOpen}
@@ -311,6 +312,7 @@ export function FileCard({
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <div 
+          data-item-key={`file_${file.id}`}
           className={`group border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col relative overflow-hidden h-[340px] select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
           onClick={onClick}
           onDoubleClick={handleOpen}
@@ -321,7 +323,7 @@ export function FileCard({
             <img 
               src={(isPdf || isVideo) ? thumbnailUrl : previewUrl} 
               alt={file.name} 
-              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+              className={`w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 ${isPdf ? 'bg-white p-1 rounded-sm shadow-xs' : ''}`}
               onLoad={(e) => {
                 if (e.target.naturalWidth && e.target.naturalHeight) {
                   setDimensions(`${e.target.naturalWidth}x${e.target.naturalHeight}`);

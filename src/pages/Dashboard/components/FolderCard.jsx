@@ -86,6 +86,7 @@ export function FolderCard({
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <div 
+          data-item-key={`folder_${folder.id}`}
           onClick={onClick}
           onDoubleClick={onDoubleClick}
           className={`group p-4 border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col gap-3 relative select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
