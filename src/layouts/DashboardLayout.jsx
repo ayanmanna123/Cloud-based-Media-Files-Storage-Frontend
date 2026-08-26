@@ -16,6 +16,7 @@ import {
   FolderPlus
 } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
+import { startRegistration } from "@simplewebauthn/browser"
 import { ThemeToggle } from "../components/ThemeToggle"
 import { Button } from "../components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
@@ -40,6 +41,47 @@ export function DashboardLayout() {
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleRegisterPasskey = async () => {
+    try {
+      // 1. Get registration options from server
+      const optionsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkeys/register-options`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      const options = await optionsRes.json();
+
+      if (!optionsRes.ok) throw new Error(options.error?.message || "Failed to get passkey options");
+
+      // 2. Pass options to browser to register
+      let asseResp;
+      try {
+        asseResp = await startRegistration(options);
+      } catch (error) {
+        console.error("Passkey error:", error);
+        throw new Error(error.message || "Passkey registration cancelled or failed");
+      }
+
+      // 3. Verify response with server
+      const verificationRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkeys/register-verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(asseResp),
+      });
+      
+      const verification = await verificationRes.json();
+      
+      if (!verificationRes.ok || !verification.verified) {
+        throw new Error(verification.error?.message || verification.error || "Passkey registration failed");
+      }
+
+      alert("Passkey registered successfully! You can now use it to log in.");
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    }
   };
 
   const navItems = [
@@ -205,6 +247,9 @@ export function DashboardLayout() {
                   </div>
                 </div>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleRegisterPasskey} className="cursor-pointer">
+                  Register Passkey
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout} className="text-red-500 cursor-pointer">
                   Log out
                 </DropdownMenuItem>

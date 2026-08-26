@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Fingerprint } from "lucide-react"
 import { GoogleLogin } from "@react-oauth/google"
+import { startAuthentication } from "@simplewebauthn/browser"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
@@ -72,6 +73,56 @@ export function Login() {
     }
   }
 
+  const handlePasskeyLogin = async () => {
+    setLoading(true)
+    setError("")
+
+    try {
+      // 1. Get auth options from server
+      const optionsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkeys/login-options`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: formData.email }), // Send email if typed, else undefined
+      });
+      const options = await optionsRes.json();
+
+      if (!optionsRes.ok) throw new Error(options.error?.message || "Failed to get passkey options");
+
+      // 2. Pass options to browser to authenticate
+      let asseResp;
+      try {
+        asseResp = await startAuthentication(options);
+      } catch (error) {
+        console.error("Passkey error:", error);
+        throw new Error(error.message || "Passkey login cancelled or failed");
+      }
+
+      // 3. Verify response with server
+      const verificationRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkeys/login-verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: formData.email, response: asseResp }),
+      });
+      
+      const verification = await verificationRes.json();
+      
+      if (!verificationRes.ok || !verification.user) {
+        throw new Error(verification.error?.message || verification.error || "Passkey verification failed");
+      }
+
+      login(verification.user);
+      navigate("/dashboard");
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value })
   }
@@ -134,7 +185,12 @@ export function Login() {
               </div>
             </div>
 
-            <div className="flex justify-center">
+            <Button type="button" variant="outline" className="w-full" onClick={handlePasskeyLogin} disabled={loading}>
+              <Fingerprint className="mr-2 h-4 w-4" />
+              Sign in with Passkey
+            </Button>
+
+            <div className="flex justify-center mt-2">
               <GoogleLogin
                 onSuccess={credentialResponse => {
                   handleGoogleSuccess(credentialResponse.credential);
