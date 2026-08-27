@@ -134,20 +134,15 @@ export function FileCard({
 
   const handleOpen = () => {
     if (onOpen) onOpen();
-    if ((isImage || isVideo) && onPreview) {
+    const isSupportedInWebsite = isImage || isVideo || isPdf || isEditable;
+    if (isSupportedInWebsite && onPreview) {
       onPreview(file);
-    } else if (isOfficeDoc) {
-      const isLocalhost = fileUrl.includes('localhost') || fileUrl.includes('127.0.0.1');
-      if (!isLocalhost && fileUrl.startsWith('https://')) {
-        window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`, '_blank');
-      } else {
-        // Direct browser open / download fallback for local environment
-        window.open(fileUrl, '_blank');
-      }
     } else {
       window.open(fileUrl, '_blank');
     }
   }
+
+
 
 
   const DropdownActions = () => (
