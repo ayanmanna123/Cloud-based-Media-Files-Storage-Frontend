@@ -9,8 +9,6 @@ import {
 import { Button } from "../../../components/ui/button"
 import { Loader2 } from "lucide-react"
 
-import { getFileMediaUrl } from "../../../utils/fileUrl"
-
 export function EditFileModal({ 
   isOpen, 
   onClose, 
@@ -26,8 +24,7 @@ export function EditFileModal({
     if (isOpen && file) {
       setLoading(true)
       setError(null)
-      const fileUrl = getFileMediaUrl(file)
-
+      const fileUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`
       
       fetch(fileUrl)
         .then(res => {

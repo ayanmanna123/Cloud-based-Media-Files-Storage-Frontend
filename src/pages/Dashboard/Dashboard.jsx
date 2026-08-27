@@ -1,6 +1,4 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react"
-import { getFileMediaUrl } from "../../utils/fileUrl"
-
 import { useParams, useNavigate, useOutletContext, useLocation } from "react-router-dom"
 import { 
   FolderOpen, 
@@ -448,7 +446,7 @@ export function Dashboard() {
         // Add immediate files
         if (data.children && data.children.files) {
           for (const file of data.children.files) {
-            const url = getFileMediaUrl(file);
+            const url = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`;
             const fileRes = await fetch(url);
             if (fileRes.ok) {
               const blob = await fileRes.blob();
@@ -474,8 +472,7 @@ export function Dashboard() {
         if (type === 'file') {
           const file = children.files.find(f => f.id === actualId);
           if (file) {
-            const url = getFileMediaUrl(file);
-
+            const url = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`;
             const fileRes = await fetch(url);
             if (fileRes.ok) {
               const blob = await fileRes.blob();

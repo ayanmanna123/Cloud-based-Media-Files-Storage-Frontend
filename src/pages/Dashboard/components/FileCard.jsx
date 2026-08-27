@@ -49,8 +49,6 @@ const formatBytes = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-import { getFileMediaUrl, getFileThumbnailUrl } from "../../../utils/fileUrl"
-
 export function FileCard({
   file,
   viewMode,
@@ -77,14 +75,15 @@ export function FileCard({
   const isPdf = file.name.match(/\.(pdf)$/i)
   const isVideo = file.name.match(/\.(mp4|mov|avi|mkv|webm)$/i)
   const isOfficeDoc = file.name.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i)
-  const previewUrl = getFileMediaUrl(file)
-  const thumbnailUrl = getFileThumbnailUrl(file)
+  const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-600,h-800,c-at_max,bg-FFFFFF`
+  const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-600,h-800,c-at_max,bg-FFFFFF`
   const isStarred = starredItems.includes(`file_${file.id}`)
   const [dimensions, setDimensions] = useState(file.width && file.height ? `${file.width}x${file.height}` : null)
   const [copied, setCopied] = useState(false)
 
-  let fileUrl = getFileMediaUrl(file)
-
+  const rawStorageKey = (file.storageKey || '').replace(/^\//, '')
+  const endpoint = (import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT || '').replace(/\/$/, '')
+  let fileUrl = file.url || `${endpoint}/${rawStorageKey}`
   if (fileUrl && !fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
     fileUrl = `https://${fileUrl}`
   }
@@ -134,16 +133,14 @@ export function FileCard({
 
   const handleOpen = () => {
     if (onOpen) onOpen();
-    const isSupportedInWebsite = isImage || isVideo || isPdf || isEditable;
-    if (isSupportedInWebsite && onPreview) {
+    if ((isImage || isVideo) && onPreview) {
       onPreview(file);
+    } else if (isOfficeDoc) {
+      window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`, '_blank')
     } else {
-      window.open(fileUrl, '_blank');
+      window.open(fileUrl, '_blank')
     }
   }
-
-
-
 
   const DropdownActions = () => (
     <DropdownMenuContent align="end">

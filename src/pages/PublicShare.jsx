@@ -3,8 +3,6 @@ import { useParams, useSearchParams } from "react-router-dom"
 import { Loader2, Download, FileText, FileImage, FileVideo, FileSpreadsheet, FolderOpen, AlertCircle, Archive } from "lucide-react"
 import { Button } from "../components/ui/button"
 import JSZip from "jszip"
-import { getFileMediaUrl } from "../utils/fileUrl"
-
 
 export function PublicShare({ isBundle = false }) {
   const { token } = useParams()
@@ -55,7 +53,7 @@ export function PublicShare({ isBundle = false }) {
 
   const handleDownload = (res = data?.resource) => {
     if (!res) return
-    const url = getFileMediaUrl(res)
+    const url = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${res.storageKey}?attachment=true`
     const a = document.createElement('a')
     a.href = url
     a.download = res.name || 'download'
@@ -71,7 +69,7 @@ export function PublicShare({ isBundle = false }) {
       const zip = new JSZip();
       
       const downloadPromises = files.map(async (file) => {
-        const url = getFileMediaUrl(file);
+        const url = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Failed to fetch ${file.name}`);
         const blob = await response.blob();
@@ -124,8 +122,8 @@ export function PublicShare({ isBundle = false }) {
   const Icon = isFile ? getFileIcon(resource?.name) : FolderOpen
   const isImage = isFile && resource?.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
   const isPdf = isFile && resource?.name?.match(/\.(pdf)$/i)
-  const previewUrl = isFile ? getFileMediaUrl(resource) : null
-  const pdfPreviewUrl = isPdf ? previewUrl : null
+  const previewUrl = isFile ? `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${resource.storageKey}` : null
+  const pdfPreviewUrl = isPdf ? `${previewUrl}/ik-thumbnail.jpg` : null
 
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col items-center justify-center p-4 sm:p-8">
