@@ -3,11 +3,14 @@ import { Dialog, DialogContent, DialogTitle } from "../../../components/ui/dialo
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { FileImage, FileVideo, Download, X, ChevronLeft, ChevronRight } from "lucide-react"
 
+import { getFileMediaUrl } from "../../../utils/fileUrl";
+
 export function LightboxModal({ isOpen, file, files = [], onClose, onNavigate }) {
   if (!file) return null;
 
   const isVideo = file.name.match(/\.(mp4|mov|avi|mkv|webm)$/i);
-  const fileUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`;
+  const fileUrl = getFileMediaUrl(file);
+
 
   const mediaFiles = files.filter(f => f.name.match(/\.(jpg|jpeg|png|gif|webp|mp4|mov|avi|mkv|webm)$/i));
   const currentIndex = mediaFiles.findIndex(f => f.id === file.id);

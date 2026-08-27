@@ -48,8 +48,13 @@ export function VersionHistoryModal({ isOpen, onClose, fileId, fileName, current
   };
 
   const getFileUrl = (storageKey) => {
+    if (storageKey && storageKey.startsWith('tg:')) {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      return `${apiUrl}/api/files/${fileId}/view`;
+    }
     return `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${storageKey}`;
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">

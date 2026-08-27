@@ -201,9 +201,76 @@ export function useDrive(folderId = null) {
       
       const initData = await initRes.json();
       
+      // Check if active storage provider is Telegram
+      if (initData.upload?.method === 'telegram') {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('name', file.name);
+        formData.append('fileId', initData.fileId);
+        formData.append('isNewVersion', initData.isNewVersion ? 'true' : 'false');
+        if (targetFolderId) formData.append('folderId', targetFolderId);
+        if (targetFileId) formData.append('targetFileId', targetFileId);
+
+
+
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const startTime = Date.now();
+          let lastReportTime = startTime;
+          let lastLoaded = 0;
+
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable && onProgress) {
+              const currentTime = Date.now();
+              const timeElapsed = (currentTime - lastReportTime) / 1000;
+              if (timeElapsed >= 0.5 || e.loaded === e.total) {
+                const progress = (e.loaded / e.total) * 100;
+                const speed = (e.loaded - lastLoaded) / timeElapsed;
+                const timeRemaining = speed > 0 ? (e.total - e.loaded) / speed : 0;
+                onProgress({ progress, speed, timeRemaining, loaded: e.loaded, totalSize: e.total });
+                lastReportTime = currentTime;
+                lastLoaded = e.loaded;
+              } else {
+                onProgress({ progress: (e.loaded / e.total) * 100, loaded: e.loaded, totalSize: e.total });
+              }
+            }
+          };
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(JSON.parse(xhr.responseText));
+            } else {
+              let errMsg = 'Failed to upload to Telegram Storage';
+              try {
+                const errRes = JSON.parse(xhr.responseText);
+                if (errRes.message) errMsg = errRes.message;
+              } catch (_) {}
+              reject(new Error(errMsg));
+            }
+          };
+
+          xhr.onerror = () => reject(new Error('Network error during upload'));
+
+          if (abortSignal) {
+            abortSignal.addEventListener('abort', () => {
+              xhr.abort();
+              reject(new DOMException('Upload aborted', 'AbortError'));
+            });
+          }
+
+          xhr.open('POST', `${import.meta.env.VITE_API_URL}${initData.upload.endpoint}`);
+          xhr.withCredentials = true;
+          xhr.send(formData);
+        });
+
+        await fetchFolder(false);
+        return;
+      }
+
       // 2. Upload directly to ImageKit using XMLHttpRequest for progress tracking
       const formData = new FormData();
       formData.append('file', file);
+
       formData.append('publicKey', import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY);
       formData.append('signature', initData.upload.auth.signature);
       formData.append('expire', initData.upload.auth.expire);
