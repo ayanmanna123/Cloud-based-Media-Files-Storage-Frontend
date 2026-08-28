@@ -5,6 +5,7 @@ import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
+import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function ResetPassword() {
   const navigate = useNavigate()
@@ -53,8 +54,18 @@ export function ResetPassword() {
 
   if (success) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background">
-        <Card className="w-full max-w-md text-center border border-blue-500/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <GeometricGridBackground
+            gridSpacing={40}
+            proximityRadius={183}
+            maxShapeSize={27}
+            dotSize={3.5}
+          />
+        </div>
+        <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
+
+        <Card className="relative z-10 w-full max-w-md text-center border border-blue-500/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
           <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center ring-8 ring-emerald-500/5 mb-5 animate-in zoom-in duration-300">
             <CheckCircle2 className="w-8 h-8 text-emerald-500" />
           </div>
@@ -77,8 +88,18 @@ export function ResetPassword() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <GeometricGridBackground
+          gridSpacing={40}
+          proximityRadius={183}
+          maxShapeSize={27}
+          dotSize={3.5}
+        />
+      </div>
+      <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
+
+      <Card className="relative z-10 w-full max-w-md border bg-card/95 backdrop-blur-xl shadow-2xl rounded-2xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl">Set New Password</CardTitle>
           <CardDescription>

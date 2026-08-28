@@ -7,6 +7,7 @@ import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import { useAuth } from "../../context/AuthContext"
+import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function Register() {
   const navigate = useNavigate()
@@ -25,14 +26,16 @@ export function Register() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Registration failed")
+        throw new Error(data.error?.message || "Failed to register")
       }
 
       setSuccess(true)
@@ -51,6 +54,7 @@ export function Register() {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ token: credential }),
       })
 
@@ -61,7 +65,7 @@ export function Register() {
       }
 
       login(data.user)
-      navigate("/") // Google auto-verifies, redirect straight to dashboard
+      navigate("/dashboard")
     } catch (err) {
       setError(err.message)
     } finally {
@@ -75,8 +79,17 @@ export function Register() {
 
   if (success) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background">
-        <Card className="w-full max-w-md text-center border border-blue-500/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <GeometricGridBackground
+            gridSpacing={40}
+            proximityRadius={183}
+            maxShapeSize={27}
+            dotSize={3.5}
+          />
+        </div>
+        <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
+        <Card className="relative z-10 w-full max-w-md text-center border border-blue-500/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
           <div className="mx-auto w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center ring-8 ring-blue-500/5 mb-5">
             <Mail className="w-8 h-8" />
           </div>
@@ -108,8 +121,17 @@ export function Register() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <GeometricGridBackground
+          gridSpacing={40}
+          proximityRadius={183}
+          maxShapeSize={27}
+          dotSize={3.5}
+        />
+      </div>
+      <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
+      <Card className="relative z-10 w-full max-w-md border bg-card/95 backdrop-blur-xl shadow-2xl rounded-2xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl">Create an account</CardTitle>
           <CardDescription>

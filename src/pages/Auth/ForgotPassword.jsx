@@ -1,10 +1,11 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Mail, ArrowRight } from "lucide-react"
+import { ArrowLeft, Mail, ArrowRight } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
+import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function ForgotPassword() {
   const [email, setEmail] = useState("")
@@ -27,7 +28,7 @@ export function ForgotPassword() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error?.message || "Failed to process request")
+        throw new Error(data.error?.message || "Failed to request password reset")
       }
 
       setSuccess(true)
@@ -40,8 +41,18 @@ export function ForgotPassword() {
 
   if (success) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background">
-        <Card className="w-full max-w-md text-center border border-blue-500/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <GeometricGridBackground
+            gridSpacing={40}
+            proximityRadius={183}
+            maxShapeSize={27}
+            dotSize={3.5}
+          />
+        </div>
+        <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
+
+        <Card className="relative z-10 w-full max-w-md text-center border border-blue-500/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
           <div className="mx-auto w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center ring-8 ring-blue-500/5 mb-5">
             <Mail className="w-8 h-8" />
           </div>
@@ -70,8 +81,18 @@ export function ForgotPassword() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <GeometricGridBackground
+          gridSpacing={40}
+          proximityRadius={183}
+          maxShapeSize={27}
+          dotSize={3.5}
+        />
+      </div>
+      <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
+
+      <Card className="relative z-10 w-full max-w-md border bg-card/95 backdrop-blur-xl shadow-2xl rounded-2xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl">Reset Password</CardTitle>
           <CardDescription>

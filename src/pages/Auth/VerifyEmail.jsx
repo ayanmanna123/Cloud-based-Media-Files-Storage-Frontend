@@ -1,19 +1,17 @@
-import { useEffect, useState, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useSearchParams, Link } from "react-router-dom"
 import { CheckCircle2, XCircle, Loader2, ArrowRight } from "lucide-react"
 import { Button } from "../../components/ui/button"
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
+import { Card } from "../../components/ui/card"
+import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function VerifyEmail() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token")
   
   const [status, setStatus] = useState("verifying") // verifying, success, error
-  const [message, setMessage] = useState("Please wait while we verify your email...")
+  const [message, setMessage] = useState("Please wait while we verify your email address...")
   
-  // Prevent double-fetching in React Strict Mode
-  const hasAttempted = useRef(false)
-
   useEffect(() => {
     if (!token) {
       setStatus("error")
@@ -21,12 +19,9 @@ export function VerifyEmail() {
       return
     }
 
-    if (hasAttempted.current) return
-    hasAttempted.current = true
-
     const verify = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_EMAIL_API_URL}/api/auth/verify/${token}`)
+        const response = await fetch(`${import.meta.env.VITE_EMAIL_API_URL}/api/auth/verify-email?token=${token}`)
         const data = await response.json()
 
         if (!response.ok) {
@@ -34,7 +29,7 @@ export function VerifyEmail() {
         }
 
         setStatus("success")
-        setMessage(data.message || "Email successfully verified. You can now log in.")
+        setMessage(data.message || "Email verified successfully! You can now log in.")
       } catch (err) {
         setStatus("error")
         setMessage(err.message)
@@ -45,8 +40,18 @@ export function VerifyEmail() {
   }, [token])
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background">
-      <Card className={`w-full max-w-md text-center border bg-card/95 backdrop-blur-xl shadow-2xl rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300 ${
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <GeometricGridBackground
+          gridSpacing={40}
+          proximityRadius={183}
+          maxShapeSize={27}
+          dotSize={3.5}
+        />
+      </div>
+      <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
+
+      <Card className={`relative z-10 w-full max-w-md text-center border bg-card/95 backdrop-blur-xl shadow-2xl rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300 ${
         status === "error" 
           ? "border-red-500/30 shadow-red-500/10" 
           : "border-blue-500/30 shadow-blue-500/10"

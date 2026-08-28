@@ -33,7 +33,6 @@ export function Navbar() {
         <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-muted-foreground">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
           <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
-           
           <Link to="/about" className="hover:text-foreground transition-colors">About Us</Link>
         </div>
 

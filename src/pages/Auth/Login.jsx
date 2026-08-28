@@ -8,6 +8,7 @@ import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import { useAuth } from "../../context/AuthContext"
+import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function Login() {
   const navigate = useNavigate()
@@ -74,62 +75,68 @@ export function Login() {
   }
 
   const handlePasskeyLogin = async () => {
+    if (!formData.email) {
+      setError("Please enter your email first to login with Passkey/Security Key")
+      return
+    }
+
     setLoading(true)
     setError("")
 
     try {
-      // 1. Get auth options from server
-      const optionsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkeys/login-options`, {
+      const optResp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkey/login-options`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      })
+
+      const optData = await optResp.json()
+
+      if (!optResp.ok) {
+        throw new Error(optData.error?.message || "Failed to generate passkey challenge")
+      }
+
+      const authResp = await startAuthentication({ optionsJSON: optData.options })
+
+      const verifyResp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkey/login-verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: formData.email }), // Send email if typed, else undefined
-      });
-      const options = await optionsRes.json();
+        body: JSON.stringify({ email: formData.email, body: authResp }),
+      })
 
-      if (!optionsRes.ok) throw new Error(options.error?.message || "Failed to get passkey options");
+      const verifyData = await verifyResp.json()
 
-      // 2. Pass options to browser to authenticate
-      let asseResp;
-      try {
-        asseResp = await startAuthentication(options);
-      } catch (error) {
-        console.error("Passkey error:", error);
-        throw new Error(error.message || "Passkey login cancelled or failed");
+      if (!verifyResp.ok) {
+        throw new Error(verifyData.error?.message || "Passkey authentication failed")
       }
 
-      // 3. Verify response with server
-      const verificationRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkeys/login-verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email: formData.email, response: asseResp }),
-      });
-      
-      const verification = await verificationRes.json();
-      
-      if (!verificationRes.ok || !verification.user) {
-        throw new Error(verification.error?.message || verification.error || "Passkey verification failed");
-      }
-
-      login(verification.user);
-      navigate("/dashboard");
-
+      login(verifyData.user)
+      navigate("/dashboard")
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
-
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value })
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <GeometricGridBackground
+          gridSpacing={40}
+          proximityRadius={183}
+          maxShapeSize={27}
+          dotSize={3.5}
+        />
+      </div>
+      <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
+
+      <Card className="relative z-10 w-full max-w-md border bg-card/95 backdrop-blur-xl shadow-2xl rounded-2xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl">Welcome back</CardTitle>
           <CardDescription>
