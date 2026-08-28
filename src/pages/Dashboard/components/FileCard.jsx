@@ -15,7 +15,9 @@ import {
   Clock,
   Copy,
   Link,
-  Check
+  Check,
+  Eye,
+  EyeOff
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -64,6 +66,7 @@ export function FileCard({
   onDeleteForever,
   onOpenVersionHistory,
   onEdit,
+  onHide,
   isSelected,
   onClick,
   onOpen,
@@ -192,6 +195,15 @@ export function FileCard({
           <DropdownMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
             <Clock className="w-4 h-4 mr-2" /> Version History
           </DropdownMenuItem>
+          {currentView === 'secret' ? (
+            <DropdownMenuItem onClick={() => onHide(file.id, false)}>
+              <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={() => onHide(file.id, true)}>
+              <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => onDelete(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
             <Trash2 className="w-4 h-4 mr-2" /> Delete
@@ -248,6 +260,15 @@ export function FileCard({
           <ContextMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
             <Clock className="w-4 h-4 mr-2" /> Version History
           </ContextMenuItem>
+          {currentView === 'secret' ? (
+            <ContextMenuItem onClick={() => onHide(file.id, false)}>
+              <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
+            </ContextMenuItem>
+          ) : (
+            <ContextMenuItem onClick={() => onHide(file.id, true)}>
+              <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
+            </ContextMenuItem>
+          )}
           <ContextMenuSeparator />
           <ContextMenuItem onClick={() => onDelete(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
             <Trash2 className="w-4 h-4 mr-2" /> Delete

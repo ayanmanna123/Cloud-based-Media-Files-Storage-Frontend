@@ -35,6 +35,9 @@ import JSZip from "jszip"
 import { useDrive } from "../../hooks/useDrive"
 import { useProgress } from "../../context/ProgressContext"
 import { Link } from "react-router-dom"
+import { useAuth } from "../../context/AuthContext"
+import { SetSecretCodeModal } from "./components/SetSecretCodeModal"
+import { sha256 } from "../../lib/utils"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +63,12 @@ export function Dashboard() {
   const navigate = useNavigate()
   const location = useLocation()
   const { searchQuery } = useOutletContext() || { searchQuery: "" }
+  const { user, login } = useAuth()
+
+  const [isSetCodeModalOpen, setIsSetCodeModalOpen] = useState(false)
+  const [isSubmittingCode, setIsSubmittingCode] = useState(false)
+  const [pendingHideItem, setPendingHideItem] = useState(null)
+  const [secretHash, setSecretHash] = useState(null)
   
   const currentView = location.pathname.split("/").pop()
   const driveId = currentView === "shared" ? "shared" : currentView === "recent" ? "recent" : currentView === "starred" ? "starred" : currentView === "trash" ? "trash" : id
@@ -72,7 +81,8 @@ export function Dashboard() {
     fetchLinkShare, createLinkShare, deleteLinkShare, toggleStar,
     restoreItem, deleteForever,
     trackOpen, createBundleShare,
-    copyFile, moveFolder, copyFolder, refresh
+    copyFile, moveFolder, copyFolder, refresh,
+    hideFolder, hideFile
   } = useDrive(driveId)
 
   const { startUpload, updateProgress, completeUpload } = useProgress()
@@ -113,6 +123,34 @@ export function Dashboard() {
     setToastMessage(message)
     setTimeout(() => setToastMessage(null), 3000)
   }
+
+  useEffect(() => {
+    const computeHash = async () => {
+      if (user?.secretCode) {
+        const hash = await sha256(user.secretCode)
+        setSecretHash(hash)
+      } else {
+        setSecretHash(null)
+      }
+    }
+    computeHash()
+  }, [user?.secretCode])
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (user?.secretCode) {
+        const hash = await sha256(user.secretCode)
+        if (id === hash) {
+          const isUnlocked = sessionStorage.getItem(`secret_unlocked_${hash}`) === 'true'
+          if (!isUnlocked) {
+            showToast("Secret folder is locked. Please enter your secret code in the search bar.")
+            navigate("/dashboard")
+          }
+        }
+      }
+    }
+    checkAccess()
+  }, [id, user?.secretCode, navigate])
 
   const fileInputRef = useRef(null)
   const folderInputRef = useRef(null)
@@ -792,6 +830,73 @@ export function Dashboard() {
     }
   }
 
+  const handleHideFolder = async (folderId, isHidden) => {
+    if (isHidden && !user?.secretCode) {
+      setPendingHideItem({ id: folderId, type: 'folder' })
+      setIsSetCodeModalOpen(true)
+    } else {
+      try {
+        await hideFolder(folderId, isHidden)
+        showToast(isHidden ? "Folder hidden successfully" : "Folder unhidden successfully")
+      } catch (err) {
+        console.error(err)
+        alert("Failed to hide folder: " + err.message)
+      }
+    }
+  }
+
+  const handleHideFile = async (fileId, isHidden) => {
+    if (isHidden && !user?.secretCode) {
+      setPendingHideItem({ id: fileId, type: 'file' })
+      setIsSetCodeModalOpen(true)
+    } else {
+      try {
+        await hideFile(fileId, isHidden)
+        showToast(isHidden ? "File hidden successfully" : "File unhidden successfully")
+      } catch (err) {
+        console.error(err)
+        alert("Failed to hide file: " + err.message)
+      }
+    }
+  }
+
+  const handleSetSecretCode = async (newCode) => {
+    setIsSubmittingCode(true)
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/secret-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ secretCode: newCode })
+      })
+      if (res.ok) {
+        login({ ...user, secretCode: newCode })
+        setIsSetCodeModalOpen(false)
+        showToast("Secret code configured successfully!")
+
+        // Execute pending hide action if any
+        if (pendingHideItem) {
+          const { id, type } = pendingHideItem
+          if (type === 'folder') {
+            await hideFolder(id, true)
+            showToast("Folder hidden successfully")
+          } else {
+            await hideFile(id, true)
+            showToast("File hidden successfully")
+          }
+          setPendingHideItem(null)
+        }
+      } else {
+        alert("Failed to set secret code")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error setting secret code: " + err.message)
+    } finally {
+      setIsSubmittingCode(false)
+    }
+  }
+
   const openMoveFileModal = async (fileId, fileName) => {
     setMoveFileModalData({ isOpen: true, id: fileId, currentName: fileName, selectedFolderId: "root", isBulk: false, items: [] })
     const folders = await fetchAllFolders()
@@ -1008,7 +1113,7 @@ export function Dashboard() {
             </DropdownMenu>
           )}
 
-          {currentView !== "shared" && currentView !== "recent" && currentView !== "starred" && currentView !== "trash" && (
+          {currentView !== "shared" && currentView !== "recent" && currentView !== "starred" && currentView !== "trash" && currentView !== "secret" && currentView !== secretHash && (
             <>
               <Button 
                 onClick={() => fileInputRef.current?.click()} 
@@ -1036,13 +1141,13 @@ export function Dashboard() {
       {/* Folders Section */}
       {filteredFolders.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">Folders</h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">Folders ({filteredFolders.length})</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredFolders.map((f) => (
               <FolderCard
                 key={f.id}
                 folder={f}
-                currentView={currentView}
+                currentView={currentView === secretHash ? 'secret' : currentView}
                 starredItems={starredItems}
                 isSelected={selectedItems.includes(`folder_${f.id}`)}
                 onClick={(e) => handleItemClick(e, f.id, 'folder')}
@@ -1060,6 +1165,7 @@ export function Dashboard() {
                 onDelete={handleDeleteFolder}
                 onRestore={restoreItem}
                 onDeleteForever={deleteForever}
+                onHide={handleHideFolder}
               />
             ))}
           </div>
@@ -1069,7 +1175,7 @@ export function Dashboard() {
       {/* Files Section */}
       {filteredFiles.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">Files</h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">Files ({filteredFiles.length})</h2>
           
           {viewMode === "list" ? (
             <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -1090,7 +1196,7 @@ export function Dashboard() {
                       key={file.id}
                       file={file}
                       viewMode="list"
-                      currentView={currentView}
+                      currentView={currentView === secretHash ? 'secret' : currentView}
                       starredItems={starredItems}
                       isSelected={selectedItems.includes(`file_${file.id}`)}
                       onClick={(e) => handleItemClick(e, file.id, 'file')}
@@ -1106,6 +1212,7 @@ export function Dashboard() {
                       onOpenVersionHistory={setVersionHistoryModalData}
                       onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
                       onPreview={(file) => setLightboxData({ isOpen: true, file })}
+                      onHide={handleHideFile}
                     />
                   )
                 })}
@@ -1119,7 +1226,7 @@ export function Dashboard() {
                     key={file.id} 
                     file={file}
                     viewMode={viewMode}
-                    currentView={currentView}
+                    currentView={currentView === secretHash ? 'secret' : currentView}
                     starredItems={starredItems}
                     isSelected={selectedItems.includes(`file_${file.id}`)}
                     onClick={(e) => handleItemClick(e, file.id, 'file')}
@@ -1138,6 +1245,7 @@ export function Dashboard() {
                     onOpenVersionHistory={setVersionHistoryModalData}
                     onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
                     onPreview={(file) => setLightboxData({ isOpen: true, file })}
+                    onHide={handleHideFile}
                   />
                 )
               })}
@@ -1277,6 +1385,12 @@ export function Dashboard() {
         resourceId={shareModalData.resourceId}
         resourceName={shareModalData.resourceName}
         useDrive={{ fetchShares, shareResource, revokeShare, fetchLinkShare, createLinkShare, deleteLinkShare, createBundleShare }}
+      />
+      <SetSecretCodeModal
+        isOpen={isSetCodeModalOpen}
+        onOpenChange={setIsSetCodeModalOpen}
+        onSubmit={handleSetSecretCode}
+        isSubmitting={isSubmittingCode}
       />
     </div>
   )

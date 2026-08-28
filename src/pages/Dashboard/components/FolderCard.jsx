@@ -5,7 +5,9 @@ import {
   Users,
   Edit2,
   Trash2,
-  RotateCcw
+  RotateCcw,
+  Eye,
+  EyeOff
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -33,6 +35,7 @@ export function FolderCard({
   onDelete, 
   onRestore, 
   onDeleteForever,
+  onHide,
   isSelected,
   onClick,
   onDoubleClick
@@ -73,6 +76,15 @@ export function FolderCard({
           <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
             <Edit2 className="w-4 h-4 mr-2" /> Rename
           </ContextMenuItem>
+          {currentView === 'secret' ? (
+            <ContextMenuItem onClick={() => onHide(folder.id, false)}>
+              <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
+            </ContextMenuItem>
+          ) : (
+            <ContextMenuItem onClick={() => onHide(folder.id, true)}>
+              <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
+            </ContextMenuItem>
+          )}
           <ContextMenuSeparator />
           <ContextMenuItem onClick={() => onDelete(folder.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
             <Trash2 className="w-4 h-4 mr-2" /> Delete
@@ -126,6 +138,15 @@ export function FolderCard({
                       <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
                         <Edit2 className="w-4 h-4 mr-2" /> Rename
                       </DropdownMenuItem>
+                      {currentView === 'secret' ? (
+                        <DropdownMenuItem onClick={() => onHide(folder.id, false)}>
+                          <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => onHide(folder.id, true)}>
+                          <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => onDelete(folder.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
                         <Trash2 className="w-4 h-4 mr-2" /> Delete
@@ -141,11 +162,26 @@ export function FolderCard({
       <div>
         <div className="font-medium truncate pr-6">{folder.name}</div>
         <div className="text-xs text-muted-foreground mt-0.5">
-          {folder.fileCount === undefined 
-            ? 'Folder' 
-            : folder.fileCount === 0 
-              ? 'Empty' 
-              : `${folder.fileCount} file${folder.fileCount > 1 ? 's' : ''}${folder.totalSize ? ` • ${formatBytes(folder.totalSize)}` : ''}`}
+          {(() => {
+            if (folder.fileCount === undefined && folder.folderCount === undefined) {
+              return 'Folder';
+            }
+            const parts = [];
+            if (folder.folderCount && folder.folderCount > 0) {
+              parts.push(`${folder.folderCount} folder${folder.folderCount > 1 ? 's' : ''}`);
+            }
+            if (folder.fileCount && folder.fileCount > 0) {
+              parts.push(`${folder.fileCount} file${folder.fileCount > 1 ? 's' : ''}`);
+            }
+            if (parts.length === 0) {
+              return 'Empty';
+            }
+            let label = parts.join(', ');
+            if (folder.totalSize) {
+              label += ` • ${formatBytes(folder.totalSize)}`;
+            }
+            return label;
+          })()}
         </div>
       </div>
         </div>

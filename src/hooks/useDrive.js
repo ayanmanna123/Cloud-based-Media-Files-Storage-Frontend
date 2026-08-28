@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import ImageKit from 'imagekit-javascript';
+import { sha256 } from '../lib/utils';
 
 export function useDrive(folderId = null) {
   const { user, logout } = useAuth();
@@ -8,6 +9,19 @@ export function useDrive(folderId = null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [starredItems, setStarredItems] = useState([]);
+  const [secretHash, setSecretHash] = useState(null);
+
+  useEffect(() => {
+    const computeHash = async () => {
+      if (user?.secretCode) {
+        const hash = await sha256(user.secretCode);
+        setSecretHash(hash);
+      } else {
+        setSecretHash(null);
+      }
+    };
+    computeHash();
+  }, [user?.secretCode]);
 
   const fetchStarredItems = useCallback(async () => {
     if (!user) return;
@@ -41,6 +55,13 @@ export function useDrive(folderId = null) {
         endpoint = `${import.meta.env.VITE_API_URL}/api/search?starred=true`;
       } else if (folderId === 'trash') {
         endpoint = `${import.meta.env.VITE_API_URL}/api/trash`;
+      } else if (folderId === 'secret' || (secretHash && folderId === secretHash)) {
+        const key = secretHash ? `secret_unlocked_${secretHash}` : 'secret_unlocked_default';
+        const isUnlocked = sessionStorage.getItem(key) === 'true';
+        if (!isUnlocked) {
+          throw new Error('Secret folder is locked. Please enter your secret code in the search bar.');
+        }
+        endpoint = `${import.meta.env.VITE_API_URL}/api/folders/hidden`;
       } else if (folderId) {
         endpoint = `${import.meta.env.VITE_API_URL}/api/folders/${folderId}`;
       }
@@ -76,6 +97,12 @@ export function useDrive(folderId = null) {
           },
           path: [{ id: 'recent', name: 'Recent' }]
         });
+      } else if (folderId === 'secret' || (secretHash && folderId === secretHash)) {
+        setData({
+          folder: { id: folderId, name: 'Secret Folder' },
+          children: { folders: result.folders || [], files: result.files || [] },
+          path: [{ id: folderId, name: 'Secret Folder' }]
+        });
       } else if (folderId === 'starred' || folderId === 'trash') {
         const title = folderId.charAt(0).toUpperCase() + folderId.slice(1);
         setData({
@@ -94,7 +121,7 @@ export function useDrive(folderId = null) {
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, [folderId, user]);
+  }, [folderId, user, secretHash]);
 
   useEffect(() => {
     fetchFolder();
@@ -164,6 +191,31 @@ export function useDrive(folderId = null) {
       });
 
       if (!response.ok) throw new Error('Failed to delete folder');
+      
+      setData(prev => ({
+        ...prev,
+        children: {
+          ...prev.children,
+          folders: prev.children.folders.filter(f => f.id !== id)
+        }
+      }));
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const hideFolder = async (id, isHidden) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/folders/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ isHidden }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update folder hide state');
       
       setData(prev => ({
         ...prev,
@@ -334,6 +386,25 @@ export function useDrive(folderId = null) {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to delete file');
+      setData(prev => ({
+        ...prev,
+        children: {
+          ...prev.children,
+          files: prev.children.files.filter(f => f.id !== id)
+        }
+      }));
+    } catch (err) { throw err; }
+  };
+
+  const hideFile = async (id, isHidden) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/files/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ isHidden }),
+      });
+      if (!response.ok) throw new Error('Failed to update file hide state');
       setData(prev => ({
         ...prev,
         children: {
@@ -735,6 +806,8 @@ export function useDrive(folderId = null) {
     toggleStar,
     restoreItem,
     deleteForever,
+    hideFolder,
+    hideFile,
     refresh: fetchFolder
   };
 }

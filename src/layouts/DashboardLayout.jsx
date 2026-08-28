@@ -1,5 +1,6 @@
-import { useState } from "react"
-import { Outlet, Link, useLocation } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
+import { SetSecretCodeModal } from "../pages/Dashboard/components/SetSecretCodeModal"
 import { 
   Cloud, 
   FolderOpen, 
@@ -28,12 +29,64 @@ import {
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu"
 import { Input } from "../components/ui/input"
+import { sha256 } from "../lib/utils"
 
 export function DashboardLayout() {
-  const { user, logout } = useAuth()
+  const { user, logout, login } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isSetCodeModalOpen, setIsSetCodeModalOpen] = useState(false)
+  const [isSubmittingCode, setIsSubmittingCode] = useState(false)
+
+  useEffect(() => {
+    if (!searchQuery) return
+
+    const trimmedQuery = searchQuery.trim()
+
+    const checkCode = async () => {
+      // If secret code is set and they entered it correctly in search query
+      if (user?.secretCode && trimmedQuery === user.secretCode) {
+        setSearchQuery("")
+        const hash = await sha256(user.secretCode)
+        sessionStorage.setItem(`secret_unlocked_${hash}`, 'true')
+        navigate(`/dashboard/folder/${hash}`)
+      }
+      // If secret code is NOT set and they type "secret" or "/secret"
+      else if (!user?.secretCode && (trimmedQuery.toLowerCase() === "secret" || trimmedQuery === "/secret")) {
+        setSearchQuery("")
+        setIsSetCodeModalOpen(true)
+      }
+    }
+    checkCode()
+  }, [searchQuery, user?.secretCode, navigate])
+
+  const handleSetSecretCode = async (newCode) => {
+    setIsSubmittingCode(true)
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/secret-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ secretCode: newCode })
+      })
+      if (res.ok) {
+        login({ ...user, secretCode: newCode })
+        setIsSetCodeModalOpen(false)
+        const hash = await sha256(newCode)
+        sessionStorage.setItem(`secret_unlocked_${hash}`, 'true')
+        navigate(`/dashboard/folder/${hash}`)
+      } else {
+        alert("Failed to set secret code")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error setting secret code: " + err.message)
+    } finally {
+      setIsSubmittingCode(false)
+    }
+  }
 
   const formatBytes = (bytes) => {
     if (bytes === 0 || bytes === undefined) return '0 B';
@@ -263,6 +316,13 @@ export function DashboardLayout() {
           <Outlet context={{ searchQuery }} />
         </main>
       </div>
+
+      <SetSecretCodeModal 
+        isOpen={isSetCodeModalOpen}
+        onOpenChange={setIsSetCodeModalOpen}
+        onSubmit={handleSetSecretCode}
+        isSubmitting={isSubmittingCode}
+      />
     </div>
   )
 }
