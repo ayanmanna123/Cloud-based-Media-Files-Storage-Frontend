@@ -16,7 +16,7 @@ export function Navbar() {
   const { user, logout } = useAuth()
   return (
     <nav className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="w-full px-4 md:px-12 lg:px-20 mx-auto max-w-[1600px] flex h-16 items-center justify-between">
+      <div className="relative w-full px-4 md:px-12 lg:px-20 mx-auto max-w-[1600px] flex h-16 items-center justify-between">
         {/* Left Side - Brand/Logo */}
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center space-x-2 group">
@@ -29,8 +29,8 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* Center - Links (Desktop Only) */}
-        <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-muted-foreground">
+        {/* Center - Links (Perfectly Centered) */}
+        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-8 text-sm font-medium text-muted-foreground">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
           <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
           <Link to="/about" className="hover:text-foreground transition-colors">About Us</Link>

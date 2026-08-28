@@ -7,6 +7,7 @@ import {
   Search, 
   Clock, 
   Trash2,
+  EyeOff,
   History,
   FileImage,
   Activity,
@@ -24,6 +25,14 @@ export function Features() {
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20"
+    },
+    {
+      icon: EyeOff,
+      title: "Hidden Media & Secret Vault",
+      description: "Hide sensitive images, videos, and private files behind a personal 4-digit PIN code.",
+      color: "text-violet-500",
+      bgColor: "bg-violet-500/10",
+      borderColor: "border-violet-500/20"
     },
     {
       icon: FolderTree,

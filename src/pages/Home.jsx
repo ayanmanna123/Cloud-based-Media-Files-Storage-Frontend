@@ -9,7 +9,8 @@ import {
   Smartphone,
   FolderOpen,
   Search,
-  Trash2
+  Trash2,
+  EyeOff
 } from "lucide-react"
 
 export function Home() {
@@ -22,8 +23,8 @@ export function Home() {
         {/* Background Gradient Waves */}
         <div className="absolute inset-0 z-0">
           <GradientWaves
-            horizonColor="#5227FF"
-            waveColor="#FF9FFC"
+            horizonColor="#3A00E5"
+            waveColor="#FF1AD9"
             crestColor="#FFFFFF"
             speed={0.4}
             amplitude={2.5}
@@ -34,9 +35,9 @@ export function Home() {
             tilt={1.11}
             zoom={1}
             height={5.5}
-            fogDepth={15}
+            fogDepth={8}
             detail="medium"
-            brightness={1}
+            brightness={1.45}
             opacity={1}
             mouseInteraction
             parallaxStrength={0.5}
@@ -46,7 +47,7 @@ export function Home() {
         </div>
 
         {/* Ambient Dark Overlay */}
-        <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-background/25 z-0 pointer-events-none" />
 
         {/* Hero Content Centered */}
         <div className="relative z-10 w-full px-4 md:px-12 mx-auto max-w-4xl text-center flex flex-col items-center justify-center">
@@ -89,6 +90,10 @@ export function Home() {
               Secure Encryption
             </div>
             <div className="flex items-center gap-2">
+              <EyeOff className="w-4 h-4 text-violet-500" />
+              Secret Vault
+            </div>
+            <div className="flex items-center gap-2">
               <Share2 className="w-4 h-4 text-indigo-500" />
               Easy Sharing
             </div>
@@ -111,35 +116,44 @@ export function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-8">
+          <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-6">
             {/* Feature 1 */}
             <div className="flex flex-col items-center text-center p-4">
               <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
                 <Cloud className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">Secure Cloud Storage</h3>
+              <h3 className="font-semibold mb-2">Secure Storage</h3>
               <p className="text-sm text-muted-foreground">Bank-level encryption ensures your data is always safe and protected.</p>
             </div>
 
-            {/* Feature 2 */}
+            {/* Feature 2 (Hidden Vault) */}
             <div className="flex flex-col items-center text-center p-4">
-              <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 text-green-600 dark:text-green-400">
-                <Share2 className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mb-4 text-violet-600 dark:text-violet-400">
+                <EyeOff className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">Easy Collaboration</h3>
-              <p className="text-sm text-muted-foreground">Share files and folders with team or clients with custom permissions.</p>
+              <h3 className="font-semibold mb-2">Hidden Secret Vault</h3>
+              <p className="text-sm text-muted-foreground">Hide private images and files behind a personal 4-digit PIN code.</p>
             </div>
 
             {/* Feature 3 */}
             <div className="flex flex-col items-center text-center p-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4 text-purple-600 dark:text-purple-400">
-                <Search className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 text-green-600 dark:text-green-400">
+                <Share2 className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">Powerful Search</h3>
-              <p className="text-sm text-muted-foreground">Find files quickly with advanced search, filters, and sorting options.</p>
+              <h3 className="font-semibold mb-2">Easy Sharing</h3>
+              <p className="text-sm text-muted-foreground">Share files and folders with custom permissions and password links.</p>
             </div>
 
             {/* Feature 4 */}
+            <div className="flex flex-col items-center text-center p-4">
+              <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4 text-purple-600 dark:text-purple-400">
+                <Search className="w-6 h-6" />
+              </div>
+              <h3 className="font-semibold mb-2">Smart Search</h3>
+              <p className="text-sm text-muted-foreground">Find files instantly with advanced search, filters, and sorting options.</p>
+            </div>
+
+            {/* Feature 5 */}
             <div className="flex flex-col items-center text-center p-4">
               <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4 text-amber-600 dark:text-amber-400">
                 <Trash2 className="w-6 h-6" />
@@ -148,7 +162,7 @@ export function Home() {
               <p className="text-sm text-muted-foreground">Recover deleted files within 30 days with our smart trash system.</p>
             </div>
 
-            {/* Feature 5 */}
+            {/* Feature 6 */}
             <div className="flex flex-col items-center text-center p-4">
               <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mb-4 text-indigo-600 dark:text-indigo-400">
                 <Smartphone className="w-6 h-6" />
