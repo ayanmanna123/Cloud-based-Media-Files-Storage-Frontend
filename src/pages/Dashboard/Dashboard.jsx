@@ -884,10 +884,6 @@ export function Dashboard() {
   }
 
   const handleHideFolder = async (folderId, isHidden) => {
-    if (folder?.permission === 'viewer') {
-      showToast("you not access to edite this folder")
-      return
-    }
     if (isHidden && !user?.secretCode) {
       setPendingHideItem({ id: folderId, type: 'folder' })
       setIsSetCodeModalOpen(true)
@@ -903,10 +899,6 @@ export function Dashboard() {
   }
 
   const handleHideFile = async (fileId, isHidden) => {
-    if (folder?.permission === 'viewer') {
-      showToast("you not access to edite this folder")
-      return
-    }
     if (isHidden && !user?.secretCode) {
       setPendingHideItem({ id: fileId, type: 'file' })
       setIsSetCodeModalOpen(true)
