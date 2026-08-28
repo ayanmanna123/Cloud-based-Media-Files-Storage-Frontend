@@ -13,6 +13,7 @@ import { PublicShare } from "./pages/PublicShare"
 import { Home } from "./pages/Home"
 import { Features } from "./pages/Features"
 import { AboutUs } from "./pages/AboutUs"
+import { NotFound } from "./pages/NotFound"
 import { Footer } from "./layouts/Footer"
 
 const PublicLayout = () => (
@@ -39,6 +40,7 @@ function App() {
           <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
 
         {/* Public Share Route (No Navbar, No Auth) */}

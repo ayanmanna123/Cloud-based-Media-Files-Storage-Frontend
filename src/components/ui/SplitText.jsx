@@ -51,7 +51,7 @@ const SplitText = ({
       try {
         el._rbsplitInstance.revert();
       } catch (_) {
-        /* noop */
+        /* ignore */
       }
       el._rbsplitInstance = null;
     }
@@ -86,7 +86,7 @@ const SplitText = ({
       reduceWhiteSpace: false,
       onSplit: self => {
         assignTargets(self);
-        const tween = gsap.fromTo(targets, { ...from }, {
+        return gsap.fromTo(targets, { ...from }, {
           ...to,
           duration,
           ease,
@@ -105,10 +105,8 @@ const SplitText = ({
           willChange: 'transform, opacity',
           force3D: true
         });
-        return tween;
       }
     });
-
     el._rbsplitInstance = splitInstance;
 
     return () => {
@@ -118,7 +116,7 @@ const SplitText = ({
       try {
         splitInstance.revert();
       } catch (_) {
-        /* noop */
+        /* ignore */
       }
       el._rbsplitInstance = null;
     };
@@ -141,13 +139,10 @@ const SplitText = ({
   const renderTag = () => {
     const style = {
       textAlign,
-      overflow: 'hidden',
-      display: 'inline-block',
-      whiteSpace: 'normal',
       wordWrap: 'break-word',
       willChange: 'transform, opacity'
     };
-    const classes = `split-parent ${className}`;
+    const classes = `split-parent overflow-hidden inline-block whitespace-normal ${className}`;
     const Tag = tag || 'p';
 
     return (
