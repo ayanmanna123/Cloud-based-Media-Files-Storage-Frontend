@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Mail, ArrowRight } from "lucide-react"
 import { GoogleLogin } from "@react-oauth/google"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -75,19 +75,33 @@ export function Register() {
 
   if (success) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle className="text-2xl text-green-500">Check Your Email</CardTitle>
-            <CardDescription>
-              We've sent a verification link to <strong>{formData.email}</strong>. Please click the link to verify your account before logging in.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex justify-center">
-            <Link to="/login">
-              <Button variant="outline">Go to Login</Button>
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background">
+        <Card className="w-full max-w-md text-center border border-blue-500/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
+          <div className="mx-auto w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center ring-8 ring-blue-500/5 mb-5">
+            <Mail className="w-8 h-8" />
+          </div>
+          <div className="space-y-2 mb-6">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">Check Your Email</h2>
+            <div className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
+              We've sent a verification link to:
+              <span className="block mt-2 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20 py-1.5 px-3 rounded-lg break-all">
+                {formData.email}
+              </span>
+              <span className="block mt-3 text-xs text-muted-foreground">
+                Please check your inbox and click the link to verify your account before logging in.
+              </span>
+            </div>
+          </div>
+          <div className="w-full flex flex-col gap-3">
+            <Link to="/login" className="w-full block">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 rounded-xl h-11 gap-2 transition-all">
+                Go to Login <ArrowRight className="w-4 h-4" />
+              </Button>
             </Link>
-          </CardFooter>
+            <p className="text-[11px] text-muted-foreground">
+              Didn't receive the email? Check your spam folder.
+            </p>
+          </div>
         </Card>
       </div>
     )
@@ -121,7 +135,9 @@ export function Register() {
               <div className="relative">
                 <Input 
                   id="password" 
+                  name="password"
                   type={showPassword ? "text" : "password"} 
+                  autoComplete="new-password"
                   required 
                   value={formData.password} 
                   onChange={handleChange} 

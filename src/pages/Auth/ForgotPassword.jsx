@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import { Mail, ArrowRight } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
@@ -39,19 +40,30 @@ export function ForgotPassword() {
 
   if (success) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle className="text-2xl text-green-500">Check Your Email</CardTitle>
-            <CardDescription>
-              If an account exists for <strong>{email}</strong>, we have sent a password reset link.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex justify-center">
-            <Link to="/login">
-              <Button variant="outline">Return to Login</Button>
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background">
+        <Card className="w-full max-w-md text-center border border-blue-500/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
+          <div className="mx-auto w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center ring-8 ring-blue-500/5 mb-5">
+            <Mail className="w-8 h-8" />
+          </div>
+          <div className="space-y-2 mb-6">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">Check Your Email</h2>
+            <div className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
+              If an account exists for:
+              <span className="block mt-2 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20 py-1.5 px-3 rounded-lg break-all">
+                {email}
+              </span>
+              <span className="block mt-3 text-xs text-muted-foreground">
+                We have sent a password reset link to your email address.
+              </span>
+            </div>
+          </div>
+          <div className="w-full flex flex-col gap-3">
+            <Link to="/login" className="w-full block">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 rounded-xl h-11 gap-2 transition-all">
+                Return to Login <ArrowRight className="w-4 h-4" />
+              </Button>
             </Link>
-          </CardFooter>
+          </div>
         </Card>
       </div>
     )

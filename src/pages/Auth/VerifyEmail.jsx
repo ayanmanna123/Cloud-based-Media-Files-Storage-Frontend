@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react"
 import { useSearchParams, Link } from "react-router-dom"
+import { CheckCircle2, XCircle, Loader2, ArrowRight } from "lucide-react"
 import { Button } from "../../components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 
 export function VerifyEmail() {
   const [searchParams] = useSearchParams()
@@ -33,7 +34,7 @@ export function VerifyEmail() {
         }
 
         setStatus("success")
-        setMessage(data.message || "Your email has been successfully verified!")
+        setMessage(data.message || "Email successfully verified. You can now log in.")
       } catch (err) {
         setStatus("error")
         setMessage(err.message)
@@ -44,30 +45,55 @@ export function VerifyEmail() {
   }, [token])
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-      <Card className="w-full max-w-md text-center">
-        <CardHeader>
-          <CardTitle className="text-2xl">
-            {status === "verifying" && "Verifying Email"}
-            {status === "success" && <span className="text-green-500">Verification Successful</span>}
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background">
+      <Card className={`w-full max-w-md text-center border bg-card/95 backdrop-blur-xl shadow-2xl rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300 ${
+        status === "error" 
+          ? "border-red-500/30 shadow-red-500/10" 
+          : "border-blue-500/30 shadow-blue-500/10"
+      }`}>
+        {status === "verifying" && (
+          <div className="mx-auto w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center ring-8 ring-blue-500/5 mb-5">
+            <Loader2 className="w-8 h-8 animate-spin" />
+          </div>
+        )}
+        {status === "success" && (
+          <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center ring-8 ring-emerald-500/5 mb-5 animate-in zoom-in duration-300">
+            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+          </div>
+        )}
+        {status === "error" && (
+          <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center ring-8 ring-red-500/5 mb-5 animate-in zoom-in duration-300">
+            <XCircle className="w-8 h-8 text-red-500" />
+          </div>
+        )}
+
+        <div className="space-y-2 mb-6">
+          <h2 className="text-2xl font-bold tracking-tight">
+            {status === "verifying" && <span className="text-foreground">Verifying Email...</span>}
+            {status === "success" && <span className="text-foreground">Verification Successful</span>}
             {status === "error" && <span className="text-red-500">Verification Failed</span>}
-          </CardTitle>
-          <CardDescription className="pt-2 text-base">
+          </h2>
+          <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
             {message}
-          </CardDescription>
-        </CardHeader>
-        <CardFooter className="flex justify-center">
+          </p>
+        </div>
+
+        <div className="w-full">
           {status === "success" && (
-            <Link to="/login">
-              <Button>Go to Login</Button>
+            <Link to="/login" className="w-full block">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 rounded-xl h-11 gap-2 transition-all">
+                Go to Login <ArrowRight className="w-4 h-4" />
+              </Button>
             </Link>
           )}
           {status === "error" && (
-            <Link to="/signup">
-              <Button variant="outline">Back to Sign Up</Button>
+            <Link to="/signup" className="w-full block">
+              <Button variant="outline" className="w-full rounded-xl h-11 border-border font-medium hover:bg-accent">
+                Back to Sign Up
+              </Button>
             </Link>
           )}
-        </CardFooter>
+        </div>
       </Card>
     </div>
   )

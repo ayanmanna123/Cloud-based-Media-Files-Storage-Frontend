@@ -155,7 +155,9 @@ export function Login() {
               <div className="relative">
                 <Input 
                   id="password" 
+                  name="password"
                   type={showPassword ? "text" : "password"} 
+                  autoComplete="current-password"
                   required 
                   value={formData.password} 
                   onChange={handleChange} 

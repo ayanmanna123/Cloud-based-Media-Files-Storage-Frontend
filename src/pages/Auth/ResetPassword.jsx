@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useSearchParams, Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, CheckCircle2, ArrowRight } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
@@ -53,19 +53,24 @@ export function ResetPassword() {
 
   if (success) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle className="text-2xl text-green-500">Password Reset Successful</CardTitle>
-            <CardDescription>
-              Your password has been successfully updated.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex justify-center">
-            <Link to="/login">
-              <Button>Go to Login</Button>
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background">
+        <Card className="w-full max-w-md text-center border border-blue-500/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
+          <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center ring-8 ring-emerald-500/5 mb-5 animate-in zoom-in duration-300">
+            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+          </div>
+          <div className="space-y-2 mb-6">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">Password Reset Successful</h2>
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
+              Your password has been successfully updated. You can now log in with your new password.
+            </p>
+          </div>
+          <div className="w-full">
+            <Link to="/login" className="w-full block">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 rounded-xl h-11 gap-2 transition-all">
+                Go to Login <ArrowRight className="w-4 h-4" />
+              </Button>
             </Link>
-          </CardFooter>
+          </div>
         </Card>
       </div>
     )
@@ -89,7 +94,9 @@ export function ResetPassword() {
               <div className="relative">
                 <Input 
                   id="password" 
+                  name="password"
                   type={showPassword ? "text" : "password"} 
+                  autoComplete="new-password"
                   required 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)} 
