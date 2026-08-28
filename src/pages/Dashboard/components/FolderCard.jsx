@@ -139,16 +139,16 @@ export function FolderCard({
                         <Edit2 className="w-4 h-4 mr-2" /> Rename
                       </DropdownMenuItem>
                       {currentView === 'secret' ? (
-                        <DropdownMenuItem onClick={() => onHide(folder.id, false)}>
+                        <DropdownMenuItem onClick={() => setTimeout(() => onHide(folder.id, false), 0)}>
                           <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
                         </DropdownMenuItem>
                       ) : (
-                        <DropdownMenuItem onClick={() => onHide(folder.id, true)}>
+                        <DropdownMenuItem onClick={() => setTimeout(() => onHide(folder.id, true), 0)}>
                           <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onDelete(folder.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+                      <DropdownMenuItem onClick={() => setTimeout(() => onDelete(folder.id), 0)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
                         <Trash2 className="w-4 h-4 mr-2" /> Delete
                       </DropdownMenuItem>
                     </>

@@ -196,16 +196,16 @@ export function FileCard({
             <Clock className="w-4 h-4 mr-2" /> Version History
           </DropdownMenuItem>
           {currentView === 'secret' ? (
-            <DropdownMenuItem onClick={() => onHide(file.id, false)}>
+            <DropdownMenuItem onClick={() => setTimeout(() => onHide(file.id, false), 0)}>
               <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem onClick={() => onHide(file.id, true)}>
+            <DropdownMenuItem onClick={() => setTimeout(() => onHide(file.id, true), 0)}>
               <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onDelete(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+          <DropdownMenuItem onClick={() => setTimeout(() => onDelete(file.id), 0)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
             <Trash2 className="w-4 h-4 mr-2" /> Delete
           </DropdownMenuItem>
         </>

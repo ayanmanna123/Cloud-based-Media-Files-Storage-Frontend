@@ -242,6 +242,10 @@ export function Dashboard() {
       // Upload File: Shift+U
       if (e.shiftKey && e.key.toLowerCase() === 'u') {
         e.preventDefault();
+        if (folder?.permission === 'viewer') {
+          showToast("you not access to edite this folder");
+          return;
+        }
         if (currentView !== 'shared' && currentView !== 'recent' && currentView !== 'starred' && currentView !== 'trash') {
           fileInputRef.current?.click();
         }
@@ -250,6 +254,10 @@ export function Dashboard() {
       // New Folder: Shift+N
       if (e.shiftKey && e.key.toLowerCase() === 'n') {
         e.preventDefault();
+        if (folder?.permission === 'viewer') {
+          showToast("you not access to edite this folder");
+          return;
+        }
         if (currentView !== 'shared' && currentView !== 'recent' && currentView !== 'starred' && currentView !== 'trash') {
           setIsCreateModalOpen(true);
         }
@@ -258,6 +266,10 @@ export function Dashboard() {
       // Upload Folder: Shift+F
       if (e.shiftKey && e.key.toLowerCase() === 'f') {
         e.preventDefault();
+        if (folder?.permission === 'viewer') {
+          showToast("you not access to edite this folder");
+          return;
+        }
         if (currentView !== 'shared' && currentView !== 'recent' && currentView !== 'starred' && currentView !== 'trash') {
           folderInputRef.current?.click();
         }
@@ -312,6 +324,11 @@ export function Dashboard() {
     const handlePasteKey = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+        if (folder?.permission === 'viewer') {
+          e.preventDefault();
+          showToast("you not access to edite this folder");
+          return;
+        }
         if (currentView !== 'trash' && currentView !== 'recent' && currentView !== 'starred' && currentView !== 'shared') {
           e.preventDefault();
           handlePaste();
@@ -323,6 +340,10 @@ export function Dashboard() {
   }, [clipboard, id, currentView]);
 
   const handlePaste = async () => {
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (!clipboard.action || clipboard.items.length === 0) return;
     
     setIsSubmitting(true);
@@ -549,6 +570,10 @@ export function Dashboard() {
   }
 
   const handleBulkDelete = async () => {
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (!confirm(`Are you sure you want to delete ${selectedItems.length} items?`)) return;
     setIsSubmitting(true);
     try {
@@ -609,6 +634,10 @@ export function Dashboard() {
 
   const handleCreateFolder = async (e) => {
     e.preventDefault()
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (!newFolderName.trim()) return
     setIsSubmitting(true)
     try {
@@ -624,6 +653,10 @@ export function Dashboard() {
 
   const handleRenameFolder = async (e) => {
     e.preventDefault()
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (!renameModalData.currentName.trim()) return
     setIsSubmitting(true)
     try {
@@ -637,6 +670,10 @@ export function Dashboard() {
   }
 
   const handleDeleteFolder = async (folderId) => {
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (confirm("Are you sure you want to delete this folder?")) {
       try {
         await deleteFolder(folderId)
@@ -647,6 +684,10 @@ export function Dashboard() {
   }
 
   const handleFileUpload = async (files, targetFolderIdOverride = undefined, targetFileIdOverride = null) => {
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (!files || files.length === 0) return
     setIsUploading(true)
     
@@ -705,6 +746,10 @@ export function Dashboard() {
   }
 
   const handleFolderUploadSubmit = async (filesList) => {
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (!filesList || filesList.length === 0) return
     setIsUploading(true)
 
@@ -808,6 +853,10 @@ export function Dashboard() {
 
   const handleRenameFile = async (e) => {
     e.preventDefault()
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (!renameFileModalData.currentName.trim()) return
     setIsSubmitting(true)
     try {
@@ -821,6 +870,10 @@ export function Dashboard() {
   }
 
   const handleDeleteFile = async (fileId) => {
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (confirm("Are you sure you want to delete this file?")) {
       try {
         await deleteFile(fileId)
@@ -831,6 +884,10 @@ export function Dashboard() {
   }
 
   const handleHideFolder = async (folderId, isHidden) => {
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (isHidden && !user?.secretCode) {
       setPendingHideItem({ id: folderId, type: 'folder' })
       setIsSetCodeModalOpen(true)
@@ -846,6 +903,10 @@ export function Dashboard() {
   }
 
   const handleHideFile = async (fileId, isHidden) => {
+    if (folder?.permission === 'viewer') {
+      showToast("you not access to edite this folder")
+      return
+    }
     if (isHidden && !user?.secretCode) {
       setPendingHideItem({ id: fileId, type: 'file' })
       setIsSetCodeModalOpen(true)
@@ -1314,9 +1375,21 @@ export function Dashboard() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-in slide-in-from-bottom-2 fade-in flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4" />
-          {toastMessage}
+        <div className="fixed bottom-6 right-6 bg-card text-card-foreground border border-border px-4 py-3 rounded-lg shadow-lg z-50 animate-in slide-in-from-bottom-5 slide-in-from-right-5 fade-in duration-300 flex items-center gap-3 max-w-sm">
+          {toastMessage.toLowerCase().includes("not access") || toastMessage.toLowerCase().includes("failed") || toastMessage.toLowerCase().includes("unauthorized") ? (
+            <XCircle className="w-5 h-5 text-destructive shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+          )}
+          <div className="flex-1 text-sm font-medium leading-normal">
+            {toastMessage}
+          </div>
+          <button 
+            onClick={() => setToastMessage(null)}
+            className="text-muted-foreground hover:text-foreground transition-colors shrink-0 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
