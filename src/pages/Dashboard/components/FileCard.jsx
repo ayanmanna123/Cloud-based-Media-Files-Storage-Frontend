@@ -183,9 +183,6 @@ export function FileCard({
           <DropdownMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
-            <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
             <Edit2 className="w-4 h-4 mr-2" /> Rename
           </DropdownMenuItem>

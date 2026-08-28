@@ -27,7 +27,8 @@ import {
   List,
   Users,
   Star,
-  RotateCcw
+  RotateCcw,
+  Search
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -62,7 +63,7 @@ export function Dashboard() {
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const { searchQuery } = useOutletContext() || { searchQuery: "" }
+  const { searchQuery, setSearchQuery } = useOutletContext() || { searchQuery: "", setSearchQuery: () => {} }
   const { user, login } = useAuth()
 
   const [isSetCodeModalOpen, setIsSetCodeModalOpen] = useState(false)
@@ -1194,7 +1195,19 @@ export function Dashboard() {
       {/* Folders Section */}
       {filteredFolders.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">Folders ({filteredFolders.length})</h2>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <h2 className="text-sm font-medium text-muted-foreground shrink-0">Folders ({filteredFolders.length})</h2>
+            <div className="relative flex-1 max-w-[200px] sm:hidden">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input 
+                type="text" 
+                placeholder="Search..." 
+                className="pl-8 h-8 text-xs bg-muted/40 border-border rounded-lg"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredFolders.map((f) => (
               <FolderCard
@@ -1228,7 +1241,21 @@ export function Dashboard() {
       {/* Files Section */}
       {filteredFiles.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">Files ({filteredFiles.length})</h2>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <h2 className="text-sm font-medium text-muted-foreground shrink-0">Files ({filteredFiles.length})</h2>
+            {filteredFolders.length === 0 && (
+              <div className="relative flex-1 max-w-[200px] sm:hidden">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <Input 
+                  type="text" 
+                  placeholder="Search..." 
+                  className="pl-8 h-8 text-xs bg-muted/40 border-border rounded-lg"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
           
           {viewMode === "list" ? (
             <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -1320,23 +1347,28 @@ export function Dashboard() {
 
       {/* Bulk Action Bar */}
       {selectedItems.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground border shadow-xl rounded-full px-4 py-2 flex items-center gap-4 z-50 animate-in slide-in-from-bottom-5">
-          <span className="text-sm font-medium pr-2 border-r border-border">{selectedItems.length} selected</span>
-          <Button variant="ghost" size="sm" onClick={handleSelectAll} title="Select All (Ctrl+A)">Select All</Button>
-          <div className="w-px h-4 bg-border mx-1"></div>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 max-w-[calc(100vw-1.5rem)] bg-popover/95 backdrop-blur-md text-popover-foreground border border-border shadow-2xl rounded-2xl sm:rounded-full px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center gap-1 sm:gap-2 md:gap-3 z-50 animate-in slide-in-from-bottom-5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <span className="text-xs sm:text-sm font-semibold pl-1 pr-2 border-r border-border shrink-0 whitespace-nowrap">
+            {selectedItems.length} <span className="hidden sm:inline">selected</span>
+          </span>
+          <Button variant="ghost" size="sm" onClick={handleSelectAll} title="Select All (Ctrl+A)" className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
+            <span className="hidden sm:inline">Select All</span>
+            <span className="sm:hidden">All</span>
+          </Button>
+          <div className="w-px h-4 bg-border shrink-0 hidden sm:block"></div>
           {currentView === 'trash' ? (
             <>
-              <Button variant="ghost" size="sm" onClick={handleBulkRestore}>
-                <RotateCcw className="w-4 h-4 mr-2" /> Restore
+              <Button variant="ghost" size="sm" onClick={handleBulkRestore} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
+                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Restore
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleBulkDeleteForever} className="text-red-500 hover:text-red-600 hover:bg-red-50" title="Delete Forever (Delete)">
-                <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+              <Button variant="ghost" size="sm" onClick={handleBulkDeleteForever} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 whitespace-nowrap" title="Delete Forever (Delete)">
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> <span className="hidden sm:inline">Delete Forever</span><span className="sm:hidden">Delete</span>
               </Button>
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" onClick={handleBulkDownload} title="Download as ZIP (Shift+D)">
-                {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />} Download
+              <Button variant="ghost" size="sm" onClick={handleBulkDownload} title="Download as ZIP (Shift+D)" className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
+                {isSubmitting ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 animate-spin" /> : <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />} Download
               </Button>
               <Button variant="ghost" size="sm" onClick={() => {
                 if (selectedItems.length === 1) {
@@ -1351,14 +1383,14 @@ export function Dashboard() {
                     setShareModalData({ isOpen: true, resourceType: 'bundle', resourceId: fileIds, resourceName: `${fileIds.length} items` });
                   }
                 }
-              }} disabled={selectedItems.length > 1 && selectedItems.every(id => id.startsWith('folder_'))}>
-                <Users className="w-4 h-4 mr-2" /> Share
+              }} disabled={selectedItems.length > 1 && selectedItems.every(id => id.startsWith('folder_'))} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Share
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleBulkMove} disabled={selectedItems.every(id => id.startsWith('folder_'))}>
-                <FolderInput className="w-4 h-4 mr-2" /> Move
+              <Button variant="ghost" size="sm" onClick={handleBulkMove} disabled={selectedItems.every(id => id.startsWith('folder_'))} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
+                <FolderInput className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Move
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50" title="Delete (Delete / Backspace)">
-                <Trash2 className="w-4 h-4 mr-2" /> Delete
+              <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 whitespace-nowrap" title="Delete (Delete / Backspace)">
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Delete
               </Button>
             </>
           )}

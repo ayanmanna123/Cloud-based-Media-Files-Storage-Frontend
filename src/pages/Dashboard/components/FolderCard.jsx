@@ -70,9 +70,6 @@ export function FolderCard({
           <ContextMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
           </ContextMenuItem>
-          <ContextMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
-            <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
-          </ContextMenuItem>
           <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
             <Edit2 className="w-4 h-4 mr-2" /> Rename
           </ContextMenuItem>
@@ -110,7 +107,7 @@ export function FolderCard({
           {currentView !== 'shared' && (
             <div onClick={e => e.stopPropagation()}>
               <DropdownMenu>
-                <DropdownMenuTrigger className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                <DropdownMenuTrigger className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
                   <MoreVertical className="w-4 h-4 text-muted-foreground" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -131,9 +128,6 @@ export function FolderCard({
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
                         <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
-                        <Users className="w-4 h-4 mr-2 text-blue-600" /> Who has access
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
                         <Edit2 className="w-4 h-4 mr-2" /> Rename

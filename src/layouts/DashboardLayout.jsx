@@ -254,20 +254,19 @@ export function DashboardLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Header */}
-        <header className="relative z-50 h-16 flex items-center justify-between px-4 sm:px-6 border-b border-border bg-background">
-          <div className="flex items-center flex-1 gap-4">
+        <header className="relative z-50 h-16 flex items-center justify-between px-3 sm:px-6 border-b border-border bg-background gap-2">
+          <div className="flex items-center flex-1 gap-2 sm:gap-4 min-w-0">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="md:hidden"
+              className="md:hidden shrink-0"
               onClick={() => setMobileMenuOpen(true)}
             >
               <Menu className="w-5 h-5" />
             </Button>
             
             <div className="max-w-xl flex-1 relative hidden sm:block">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               <Input 
                 type="text" 
                 placeholder="Search files and folders..." 
@@ -313,7 +312,7 @@ export function DashboardLayout() {
 
         {/* Main Content scrollable area */}
         <main className="flex-1 overflow-auto bg-muted/10 p-4 sm:p-6 lg:p-8">
-          <Outlet context={{ searchQuery }} />
+          <Outlet context={{ searchQuery, setSearchQuery }} />
         </main>
       </div>
 
