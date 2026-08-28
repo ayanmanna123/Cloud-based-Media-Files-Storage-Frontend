@@ -18,13 +18,15 @@ function ContextMenuPortal({
 
 function ContextMenuTrigger({
   className,
+  asChild,
   ...props
 }) {
+  const { asChild: _, ...cleanProps } = props;
   return (
     <ContextMenuPrimitive.Trigger
       data-slot="context-menu-trigger"
       className={cn("select-none", className)}
-      {...props} />
+      {...cleanProps} />
   );
 }
 

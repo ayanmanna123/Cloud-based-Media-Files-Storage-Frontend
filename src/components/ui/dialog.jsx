@@ -12,9 +12,11 @@ function Dialog({
 }
 
 function DialogTrigger({
+  asChild,
   ...props
 }) {
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
+  const { asChild: _, ...cleanProps } = props;
+  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...cleanProps} />;
 }
 
 function DialogPortal({

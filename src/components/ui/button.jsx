@@ -44,13 +44,15 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  asChild,
   ...props
 }) {
+  const { asChild: _, ...cleanProps } = props;
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
-      {...props} />
+      {...cleanProps} />
   );
 }
 
