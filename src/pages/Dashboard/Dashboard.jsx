@@ -300,7 +300,7 @@ export function Dashboard() {
 
       // Cut: Ctrl+X / Cmd+X
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
-        if (selectedItems.length > 0 && currentView !== 'trash') {
+        if (selectedItems.length > 0 && currentView !== 'trash' && currentView !== 'shared' && !folder?.permission && !folder?.isShared) {
           e.preventDefault();
           setClipboard({ action: 'cut', items: selectedItems });
           showToast(`Cut ${selectedItems.length} items to clipboard`);
@@ -920,16 +920,19 @@ export function Dashboard() {
     }
   }
 
-  const handleRenameFile = async (e) => {
-    e.preventDefault()
+  const handleRenameFile = async (e, overrideName) => {
+    e?.preventDefault()
     if (folder?.permission === 'viewer') {
       showToast("you not access to edite this folder")
       return
     }
-    if (!renameFileModalData.currentName.trim()) return
+    const nameToUse = (typeof overrideName === 'string' && overrideName.trim()) 
+      ? overrideName.trim() 
+      : renameFileModalData.currentName.trim()
+    if (!nameToUse) return
     setIsSubmitting(true)
     try {
-      await renameFile(renameFileModalData.id, renameFileModalData.currentName)
+      await renameFile(renameFileModalData.id, nameToUse)
       setRenameFileModalData({ isOpen: false, id: null, currentName: "" })
     } catch (err) {
       console.error(err)
@@ -1282,6 +1285,7 @@ export function Dashboard() {
                 key={f.id}
                 folder={f}
                 currentView={currentView === secretHash ? 'secret' : currentView}
+                isSharedProp={currentView === 'shared' || !!folder?.permission || !!folder?.isShared}
                 starredItems={starredItems}
                 isSelected={selectedItems.includes(`folder_${f.id}`)}
                 onClick={(e) => handleItemClick(e, f.id, 'folder')}
@@ -1345,6 +1349,7 @@ export function Dashboard() {
                       file={file}
                       viewMode="list"
                       currentView={currentView === secretHash ? 'secret' : currentView}
+                      isSharedProp={currentView === 'shared' || !!folder?.permission || !!folder?.isShared}
                       starredItems={starredItems}
                       isSelected={selectedItems.includes(`file_${file.id}`)}
                       onClick={(e) => handleItemClick(e, file.id, 'file')}
@@ -1375,6 +1380,7 @@ export function Dashboard() {
                     file={file}
                     viewMode={viewMode}
                     currentView={currentView === secretHash ? 'secret' : currentView}
+                    isSharedProp={currentView === 'shared' || !!folder?.permission || !!folder?.isShared}
                     starredItems={starredItems}
                     isSelected={selectedItems.includes(`file_${file.id}`)}
                     onClick={(e) => handleItemClick(e, file.id, 'file')}
@@ -1438,23 +1444,41 @@ export function Dashboard() {
               <Button variant="ghost" size="sm" onClick={handleBulkDownload} title="Download as ZIP (Shift+D)" className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
                 {isSubmitting ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 animate-spin" /> : <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />} Download
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => {
-                if (selectedItems.length === 1) {
-                  const id = selectedItems[0];
-                  const type = id.startsWith('folder_') ? 'folder' : 'file';
-                  const actualId = id.split('_')[1];
-                  const item = (type === 'folder' ? children.folders : children.files).find(f => f.id === actualId);
-                  setShareModalData({ isOpen: true, resourceType: type, resourceId: actualId, resourceName: item?.name });
-                } else {
-                  const fileIds = selectedItems.filter(id => id.startsWith('file_')).map(id => id.split('_')[1]);
-                  if (fileIds.length > 0) {
-                    setShareModalData({ isOpen: true, resourceType: 'bundle', resourceId: fileIds, resourceName: `${fileIds.length} items` });
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                disabled={(currentView === 'shared' || !!folder?.permission || !!folder?.isShared) || (selectedItems.length > 1 && selectedItems.every(id => id.startsWith('folder_')))} 
+                onClick={() => {
+                  if (currentView === 'shared' || folder?.permission || folder?.isShared) return;
+                  if (selectedItems.length === 1) {
+                    const id = selectedItems[0];
+                    const type = id.startsWith('folder_') ? 'folder' : 'file';
+                    const actualId = id.split('_')[1];
+                    const item = (type === 'folder' ? children.folders : children.files).find(f => f.id === actualId);
+                    setShareModalData({ isOpen: true, resourceType: type, resourceId: actualId, resourceName: item?.name });
+                  } else {
+                    const fileIds = selectedItems.filter(id => id.startsWith('file_')).map(id => id.split('_')[1]);
+                    if (fileIds.length > 0) {
+                      setShareModalData({ isOpen: true, resourceType: 'bundle', resourceId: fileIds, resourceName: `${fileIds.length} items` });
+                    }
                   }
-                }
-              }} disabled={selectedItems.length > 1 && selectedItems.every(id => id.startsWith('folder_'))} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
+                }} 
+                className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
+                title={(currentView === 'shared' || folder?.permission || folder?.isShared) ? "Sharing is disabled for shared items" : "Share"}
+              >
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Share
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleBulkMove} disabled={selectedItems.every(id => id.startsWith('folder_'))} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                disabled={currentView === 'shared' || !!folder?.permission || !!folder?.isShared} 
+                onClick={() => {
+                  if (currentView === 'shared' || folder?.permission || folder?.isShared) return;
+                  handleBulkMove();
+                }} 
+                className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
+                title={(currentView === 'shared' || folder?.permission || folder?.isShared) ? "Moving is disabled for shared items" : "Move"}
+              >
                 <FolderInput className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Move
               </Button>
               <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 whitespace-nowrap" title="Delete (Delete / Backspace)">

@@ -39,9 +39,11 @@ function FolderCardComponent({
   onHide,
   isSelected,
   onClick,
-  onDoubleClick
+  onDoubleClick,
+  isSharedProp
 }) {
   const isStarred = starredItems.includes(`folder_${folder.id}`)
+  const isShared = isSharedProp || currentView === 'shared' || folder.isShared || !!folder.permission || !!folder.sharedWithMe || !!folder.sharedBy
   
   const formatBytes = (bytes) => {
     if (!bytes || bytes === 0) return '0 B';
@@ -68,7 +70,7 @@ function FolderCardComponent({
             <Star className={`w-4 h-4 mr-2 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
             {isStarred ? 'Unstar' : 'Star'}
           </ContextMenuItem>
-          <ContextMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
+          <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
           </ContextMenuItem>
           <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
@@ -127,7 +129,7 @@ function FolderCardComponent({
                         <Star className={`w-4 h-4 mr-2 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
                         {isStarred ? 'Unstar' : 'Star'}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
+                      <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
                         <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>

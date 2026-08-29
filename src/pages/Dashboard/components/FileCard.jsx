@@ -70,7 +70,8 @@ function FileCardComponent({
   isSelected,
   onClick,
   onOpen,
-  onPreview
+  onPreview,
+  isSharedProp
 }) {
   const Icon = getFileIcon(file.name)
   const isEditable = file.name.match(/\.(txt|md|csv|json|js|jsx|ts|tsx|html|css|xml|yml|yaml|ini|env|log)$/i)
@@ -81,6 +82,7 @@ function FileCardComponent({
   const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-600,h-800,c-at_max,bg-FFFFFF`
   const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-600,h-800,c-at_max,bg-FFFFFF`
   const isStarred = starredItems.includes(`file_${file.id}`)
+  const isShared = isSharedProp || currentView === 'shared' || file.isShared || !!file.permission || !!file.sharedWithMe || !!file.sharedBy
   const [dimensions, setDimensions] = useState(file.width && file.height ? `${file.width}x${file.height}` : null)
   const [copied, setCopied] = useState(false)
 
@@ -180,13 +182,13 @@ function FileCardComponent({
           <DropdownMenuItem onClick={handleCopyUrl}>
             <Copy className="w-4 h-4 mr-2" /> Copy Link
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
+          <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
             <Edit2 className="w-4 h-4 mr-2" /> Rename
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTimeout(() => onMove(file.id, file.name), 0)}>
+          <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onMove(file.id, file.name), 0)}>
             <FolderInput className="w-4 h-4 mr-2" /> Move
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
@@ -245,13 +247,13 @@ function FileCardComponent({
           <ContextMenuItem onClick={handleCopyUrl}>
             <Copy className="w-4 h-4 mr-2" /> Copy Link
           </ContextMenuItem>
-          <ContextMenuItem onClick={() => setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
+          <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
           </ContextMenuItem>
           <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
             <Edit2 className="w-4 h-4 mr-2" /> Rename
           </ContextMenuItem>
-          <ContextMenuItem onClick={() => setTimeout(() => onMove(file.id, file.name), 0)}>
+          <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onMove(file.id, file.name), 0)}>
             <FolderInput className="w-4 h-4 mr-2" /> Move
           </ContextMenuItem>
           <ContextMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
