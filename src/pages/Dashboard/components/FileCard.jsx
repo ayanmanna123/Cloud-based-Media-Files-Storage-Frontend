@@ -1,5 +1,6 @@
 import { useState, memo } from "react"
 import { useTranslation } from "react-i18next"
+import { FileIcon, FileCardPlaceholder } from "../../../components/FileIcon"
 import {
   MoreVertical,
   Star,
@@ -291,7 +292,7 @@ function FileCardComponent({
             onDoubleClick={handleOpen}
           >
         <div className="flex-1 min-w-0 flex items-center gap-3">
-          <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+          <FileIcon filename={file.name} className="w-5 h-5 flex-shrink-0" />
           <span className="text-sm font-medium truncate">{file.name}</span>
           {(file.isEncrypted || file.is_encrypted) && (
             <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 px-2 py-0.5 rounded-full">
@@ -380,8 +381,8 @@ function FileCardComponent({
             )}
           </>
         ) : null}
-        <div className={`flex flex-col items-center justify-center text-muted-foreground w-full h-full absolute inset-0 ${(isImage || isPdf || isVideo) ? 'hidden' : 'flex'}`}>
-          <Icon className="w-12 h-12 mb-2 opacity-50" />
+        <div className={`flex flex-col items-center justify-center w-full h-full absolute inset-0 ${(isImage || isPdf || isVideo) ? 'hidden' : 'flex'}`}>
+          <FileCardPlaceholder filename={file.name} />
         </div>
       </div>
       <div className="px-3 py-2.5 border-t border-border flex flex-col justify-center bg-card z-10">

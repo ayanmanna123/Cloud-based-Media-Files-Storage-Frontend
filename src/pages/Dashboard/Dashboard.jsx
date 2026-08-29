@@ -36,6 +36,8 @@ import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import JSZip from "jszip"
 import { useDrive } from "../../hooks/useDrive"
+import { UploadIcon } from "../../components/UploadIcon"
+import { SortIcon } from "../../components/SortIcon"
 import { useProgress } from "../../context/ProgressContext"
 import { Link } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
@@ -1219,24 +1221,24 @@ export function Dashboard() {
           <div className="flex bg-muted/50 p-1 rounded-md border border-border/50 items-center mr-1">
             <button 
               onClick={() => setViewMode("list")} 
-              className={`p-1.5 rounded-sm transition-all ${viewMode === 'list' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`group p-1.5 rounded-sm transition-all ${viewMode === 'list' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               title="List view"
             >
-              <List className="w-4 h-4" />
+              <List className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
             </button>
             <button 
               onClick={() => setViewMode("grid")} 
-              className={`p-1.5 rounded-sm transition-all ${viewMode === 'grid' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`group p-1.5 rounded-sm transition-all ${viewMode === 'grid' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               title="Grid view"
             >
-              <LayoutGrid className="w-4 h-4" />
+              <LayoutGrid className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
             </button>
           </div>
 
           {currentView !== "recent" && (
             <DropdownMenu>
-              <DropdownMenuTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 gap-2">
-                <ArrowUpDown className="w-4 h-4" />
+              <DropdownMenuTrigger className="group inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 gap-2">
+                <SortIcon className="w-4 h-4" />
                 {t("dashboard.sort")}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -1255,13 +1257,13 @@ export function Dashboard() {
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="outline" 
-                    className="gap-2 border-emerald-500/40 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 font-medium"
+                    className="group gap-2 border-emerald-500/40 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 font-medium"
                     disabled={isUploading}
                     title="Upload File"
                   >
-                    {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadIcon className="w-4 h-4" />}
                     <span className="hidden sm:inline">{t("dashboard.upload")}</span>
-                    <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                    <ChevronDown className="w-3.5 h-3.5 opacity-70 transition-transform duration-300 group-hover:translate-y-0.5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
@@ -1270,9 +1272,9 @@ export function Dashboard() {
                       setIsNextUploadEncrypted(false);
                       setTimeout(() => fileInputRef.current?.click(), 50);
                     }}
-                    className="cursor-pointer"
+                    className="group/item cursor-pointer"
                   >
-                    <Upload className="w-4 h-4 mr-2" />
+                    <UploadIcon className="w-4 h-4 mr-2" groupHoverClass="group-hover/item:-translate-y-1" />
                     {t("dashboard.standardUpload")}
                   </DropdownMenuItem>
                   <DropdownMenuItem 
@@ -1290,10 +1292,10 @@ export function Dashboard() {
 
               <Button 
                 onClick={() => setIsCreateModalOpen(true)} 
-                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                className="group gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                 title="New Folder (Shift+N)"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" />
                 <span className="hidden sm:inline">{t("dashboard.newFolder")}</span>
               </Button>
             </>

@@ -1,6 +1,8 @@
 import { memo } from "react"
 import { useTranslation } from "react-i18next"
+import { TrashBinIcon } from "../../../components/TrashBinIcon"
 import {
+  Folder,
   FolderOpen,
   MoreVertical,
   Star,
@@ -63,7 +65,7 @@ function FolderCardComponent({
             <RotateCcw className="w-4 h-4 mr-2" /> {t("dashboard.restore")}
           </ContextMenuItem>
           <ContextMenuItem onClick={() => onDeleteForever(folder.id, 'folder')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-            <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.deleteForever")}
+            <TrashBinIcon isOpen={true} className="w-4 h-4 mr-2" /> {t("dashboard.deleteForever")}
           </ContextMenuItem>
         </>
       ) : (
@@ -92,8 +94,8 @@ function FolderCardComponent({
           {folder.permission !== 'viewer' && (
             <>
               <ContextMenuSeparator />
-              <ContextMenuItem onClick={() => onDelete(folder.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
+              <ContextMenuItem onClick={() => onDelete(folder.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50 group/del">
+                <TrashBinIcon className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
               </ContextMenuItem>
             </>
           )}
@@ -112,7 +114,10 @@ function FolderCardComponent({
           className={`group p-4 border rounded-xl bg-card hover:shadow-md transition-all cursor-pointer flex flex-col gap-3 relative select-none ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-border'}`}
         >
       <div className="flex justify-between items-start">
-        <FolderOpen className="w-8 h-8 text-blue-500" />
+        <div className="relative w-8 h-8 flex items-center justify-center">
+          <Folder className="w-8 h-8 text-blue-500 transition-all duration-300 opacity-100 scale-100 group-hover:opacity-0 group-hover:scale-75 absolute inset-0" />
+          <FolderOpen className="w-8 h-8 text-blue-500 transition-all duration-300 opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-110 absolute inset-0" />
+        </div>
         
         <div className="flex items-center gap-1">
           <div onClick={e => e.stopPropagation()}>
@@ -127,7 +132,7 @@ function FolderCardComponent({
                       <RotateCcw className="w-4 h-4 mr-2" /> {t("dashboard.restore")}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onDeleteForever(folder.id, 'folder')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-                      <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.deleteForever")}
+                      <TrashBinIcon isOpen={true} className="w-4 h-4 mr-2" /> {t("dashboard.deleteForever")}
                     </DropdownMenuItem>
                   </>
                 ) : (
@@ -157,7 +162,7 @@ function FolderCardComponent({
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => setTimeout(() => onDelete(folder.id), 0)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                          <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
+                          <TrashBinIcon className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
                         </DropdownMenuItem>
                       </>
                     )}

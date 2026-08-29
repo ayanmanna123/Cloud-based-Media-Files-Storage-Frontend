@@ -4,11 +4,6 @@ import { useTranslation } from "react-i18next"
 import { SetSecretCodeModal } from "../pages/Dashboard/components/SetSecretCodeModal"
 import { 
   Cloud, 
-  FolderOpen, 
-  Clock, 
-  Star, 
-  Users, 
-  Trash2, 
   Search, 
   Plus, 
   Menu,
@@ -17,6 +12,11 @@ import {
   FolderUp,
   FolderPlus
 } from "lucide-react"
+import { TrashBinIcon } from "../components/TrashBinIcon"
+import { FolderOpenIcon } from "../components/FolderOpenIcon"
+import { ClockIcon } from "../components/ClockIcon"
+import { StarIcon } from "../components/StarIcon"
+import { UsersIcon } from "../components/UsersIcon"
 import { useAuth } from "../context/AuthContext"
 import { startRegistration } from "@simplewebauthn/browser"
 import { ThemeToggle } from "../components/ThemeToggle"
@@ -141,11 +141,11 @@ export function DashboardLayout() {
   };
 
   const navItems = [
-    { name: t("dashboard.myDrive"), path: "/dashboard", icon: FolderOpen },
-    { name: t("dashboard.recent"), path: "/dashboard/recent", icon: Clock },
-    { name: t("dashboard.starred"), path: "/dashboard/starred", icon: Star },
-    { name: t("dashboard.shared"), path: "/dashboard/shared", icon: Users },
-    { name: t("dashboard.trash"), path: "/dashboard/trash", icon: Trash2 },
+    { name: t("dashboard.myDrive"), path: "/dashboard", icon: FolderOpenIcon },
+    { name: t("dashboard.recent"), path: "/dashboard/recent", icon: ClockIcon },
+    { name: t("dashboard.starred"), path: "/dashboard/starred", icon: StarIcon },
+    { name: t("dashboard.shared"), path: "/dashboard/shared", icon: UsersIcon },
+    { name: t("dashboard.trash"), path: "/dashboard/trash", icon: TrashBinIcon },
   ]
 
   return (
@@ -221,18 +221,22 @@ export function DashboardLayout() {
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path
+            const IconComponent = item.icon
             return (
               <Link 
                 key={item.path} 
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive 
                     ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
-                <item.icon className={`w-5 h-5 ${isActive ? "text-blue-600 dark:text-blue-400" : ""}`} />
+                <IconComponent 
+                  isOpen={isActive} 
+                  className={`w-5 h-5 ${isActive ? "text-blue-600 dark:text-blue-400" : ""}`} 
+                />
                 {item.name}
               </Link>
             )

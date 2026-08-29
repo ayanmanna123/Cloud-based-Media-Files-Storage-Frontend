@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { ChevronDown, Cloud } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { ThemeToggle } from "../components/ThemeToggle"
@@ -17,6 +17,14 @@ import {
 export function Navbar() {
   const { t } = useTranslation()
   const { user, logout } = useAuth()
+  const location = useLocation()
+
+  const navLinks = [
+    { name: t("nav.home"), path: "/" },
+    { name: t("nav.features"), path: "/features" },
+    { name: t("nav.about"), path: "/about" },
+  ]
+
   return (
     <nav className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="relative w-full px-4 md:px-12 lg:px-20 mx-auto max-w-[1600px] flex h-16 items-center justify-between">
@@ -33,10 +41,26 @@ export function Navbar() {
         </div>
 
         {/* Center - Links (Perfectly Centered) */}
-        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-8 text-sm font-medium text-muted-foreground">
-          <Link to="/" className="hover:text-foreground transition-colors">{t("nav.home")}</Link>
-          <Link to="/features" className="hover:text-foreground transition-colors">{t("nav.features")}</Link>
-          <Link to="/about" className="hover:text-foreground transition-colors">{t("nav.about")}</Link>
+        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-8 text-sm">
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.path
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`relative py-5 transition-colors ${
+                  isActive
+                    ? "text-foreground font-semibold"
+                    : "text-muted-foreground hover:text-foreground font-medium"
+                }`}
+              >
+                {link.name}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 dark:bg-blue-400 rounded-full" />
+                )}
+              </Link>
+            )
+          })}
         </div>
 
         {/* Right Side - Auth & Theme */}
