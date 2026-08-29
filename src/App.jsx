@@ -9,6 +9,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute"
 import { DashboardLayout } from "./layouts/DashboardLayout"
 import { Dashboard } from "./pages/Dashboard/Dashboard"
 import { PublicShare } from "./pages/PublicShare"
+import { GoogleOneTapPrompt } from "./components/GoogleOneTapPrompt"
 
 import { Home } from "./pages/Home"
 import { Features } from "./pages/Features"
@@ -29,6 +30,7 @@ const PublicLayout = () => (
 function App() {
   return (
     <Router>
+      <GoogleOneTapPrompt />
       <Routes>
         {/* Public Routes with Navbar */}
         <Route element={<PublicLayout />}>

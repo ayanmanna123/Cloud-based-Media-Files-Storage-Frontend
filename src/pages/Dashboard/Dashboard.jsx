@@ -59,6 +59,7 @@ import { MoveFileModal } from "./components/MoveFileModal"
 import { VersionHistoryModal } from "./components/VersionHistoryModal"
 import { EditFileModal } from "./components/EditFileModal"
 import { LightboxModal } from "./components/LightboxModal"
+import { LoadingScreen } from "../../components/LoadingScreen"
 
 export function Dashboard() {
   const { id } = useParams()
@@ -1107,9 +1108,7 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
+      <LoadingScreen text="Loading files & folders..." fullScreen={false} />
     )
   }
 
@@ -1444,6 +1443,7 @@ export function Dashboard() {
           )}
         </section>
       )}
+
 
       {/* Empty State */}
       {filteredFolders.length === 0 && filteredFiles.length === 0 && !loading && (

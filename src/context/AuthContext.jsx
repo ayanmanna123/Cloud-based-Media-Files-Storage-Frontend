@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react"
+import { googleLogout } from "@react-oauth/google"
+import { LoadingScreen } from "../components/LoadingScreen"
 
 const AuthContext = createContext()
 
@@ -42,6 +44,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
+      googleLogout()
       await fetch(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include"
@@ -61,7 +64,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {loading ? <LoadingScreen text="Loading website..." /> : children}
     </AuthContext.Provider>
   )
 }
