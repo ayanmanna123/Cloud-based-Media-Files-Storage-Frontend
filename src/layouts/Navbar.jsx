@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom"
 import { ChevronDown, Cloud } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { ThemeToggle } from "../components/ThemeToggle"
+import { LanguageSelector } from "../components/LanguageSelector"
 import { Button } from "../components/ui/button"
 import { useAuth } from "../context/AuthContext"
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
@@ -13,6 +15,7 @@ import {
 } from "../components/ui/dropdown-menu"
 
 export function Navbar() {
+  const { t } = useTranslation()
   const { user, logout } = useAuth()
   return (
     <nav className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -31,18 +34,20 @@ export function Navbar() {
 
         {/* Center - Links (Perfectly Centered) */}
         <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center space-x-8 text-sm font-medium text-muted-foreground">
-          <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-          <Link to="/features" className="hover:text-foreground transition-colors">Features</Link>
-          <Link to="/about" className="hover:text-foreground transition-colors">About Us</Link>
+          <Link to="/" className="hover:text-foreground transition-colors">{t("nav.home")}</Link>
+          <Link to="/features" className="hover:text-foreground transition-colors">{t("nav.features")}</Link>
+          <Link to="/about" className="hover:text-foreground transition-colors">{t("nav.about")}</Link>
         </div>
 
         {/* Right Side - Auth & Theme */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          <LanguageSelector showLabel={true} />
+
           {user ? (
             <>
               <Link to="/dashboard">
                 <Button variant="ghost" className="text-muted-foreground hover:text-foreground hidden sm:inline-flex">
-                  Dashboard
+                  {t("nav.dashboard")}
                 </Button>
               </Link>
               <DropdownMenu>
@@ -63,7 +68,7 @@ export function Navbar() {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} className="text-red-500 cursor-pointer">
-                    Log out
+                    {t("nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -72,12 +77,12 @@ export function Navbar() {
             <>
               <Link to="/login">
                 <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-medium hidden sm:inline-flex">
-                  Sign in
+                  {t("nav.signin")}
                 </Button>
               </Link>
               <Link to="/signup">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md font-medium px-6">
-                  Get Started Free
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md font-medium px-4 sm:px-6">
+                  {t("nav.getStarted")}
                 </Button>
               </Link>
             </>

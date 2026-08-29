@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { SetSecretCodeModal } from "../pages/Dashboard/components/SetSecretCodeModal"
 import { 
   Cloud, 
@@ -19,6 +20,7 @@ import {
 import { useAuth } from "../context/AuthContext"
 import { startRegistration } from "@simplewebauthn/browser"
 import { ThemeToggle } from "../components/ThemeToggle"
+import { LanguageSelector } from "../components/LanguageSelector"
 import { Button } from "../components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
 import {
@@ -32,6 +34,7 @@ import { Input } from "../components/ui/input"
 import { sha256 } from "../lib/utils"
 
 export function DashboardLayout() {
+  const { t } = useTranslation()
   const { user, logout, login } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -138,11 +141,11 @@ export function DashboardLayout() {
   };
 
   const navItems = [
-    { name: "My Drive", path: "/dashboard", icon: FolderOpen },
-    { name: "Recent", path: "/dashboard/recent", icon: Clock },
-    { name: "Starred", path: "/dashboard/starred", icon: Star },
-    { name: "Shared with me", path: "/dashboard/shared", icon: Users },
-    { name: "Trash", path: "/dashboard/trash", icon: Trash2 },
+    { name: t("dashboard.myDrive"), path: "/dashboard", icon: FolderOpen },
+    { name: t("dashboard.recent"), path: "/dashboard/recent", icon: Clock },
+    { name: t("dashboard.starred"), path: "/dashboard/starred", icon: Star },
+    { name: t("dashboard.shared"), path: "/dashboard/shared", icon: Users },
+    { name: t("dashboard.trash"), path: "/dashboard/trash", icon: Trash2 },
   ]
 
   return (
@@ -185,18 +188,18 @@ export function DashboardLayout() {
           <DropdownMenu>
             <DropdownMenuTrigger className="w-full flex items-center justify-start gap-2 h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md focus-visible:outline-none">
               <Plus className="w-5 h-5" />
-              <span className="font-medium text-base">New</span>
+              <span className="font-medium text-base">{t("dashboard.new")}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
               <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('openCreateFolder'))} title="Create folder (Shift+N)">
-                <FolderPlus className="w-4 h-4 mr-2 text-muted-foreground" /> Create folder
+                <FolderPlus className="w-4 h-4 mr-2 text-muted-foreground" /> {t("dashboard.createFolder")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('triggerFileUpload'))} title="File upload (Shift+U)">
-                <FileUp className="w-4 h-4 mr-2 text-muted-foreground" /> File upload
+                <FileUp className="w-4 h-4 mr-2 text-muted-foreground" /> {t("dashboard.fileUpload")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => document.dispatchEvent(new CustomEvent('triggerFolderUpload'))} title="Folder upload (Shift+F)">
-                <FolderUp className="w-4 h-4 mr-2 text-muted-foreground" /> Folder upload
+                <FolderUp className="w-4 h-4 mr-2 text-muted-foreground" /> {t("dashboard.folderUpload")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -207,7 +210,7 @@ export function DashboardLayout() {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input 
               type="text" 
-              placeholder="Search..." 
+              placeholder={t("dashboard.mobileSearchPlaceholder")} 
               className="pl-9 bg-muted/50 border-border h-9 text-sm focus-visible:ring-1"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -220,7 +223,7 @@ export function DashboardLayout() {
             const isActive = location.pathname === item.path
             return (
               <Link 
-                key={item.name} 
+                key={item.path} 
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -238,7 +241,7 @@ export function DashboardLayout() {
 
         <div className="p-4 border-t border-border">
           <div className="mb-2 flex justify-between text-xs font-medium text-muted-foreground">
-            <span>Storage</span>
+            <span>{t("dashboard.storage")}</span>
             <span>
               {formatBytes(user?.storageUsed || 0)} / {formatBytes(user?.storageLimit || 1 * 1024 * 1024 * 1024)}
             </span>
@@ -269,7 +272,7 @@ export function DashboardLayout() {
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               <Input 
                 type="text" 
-                placeholder="Search files and folders..." 
+                placeholder={t("dashboard.searchPlaceholder")} 
                 className="pl-10 bg-muted/50 border-border focus-visible:ring-1"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -277,7 +280,8 @@ export function DashboardLayout() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <LanguageSelector />
             <div className="block">
               <ThemeToggle />
             </div>
@@ -300,10 +304,10 @@ export function DashboardLayout() {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleRegisterPasskey} className="cursor-pointer">
-                  Register Passkey
+                  {t("nav.registerPasskey")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout} className="text-red-500 cursor-pointer">
-                  Log out
+                  {t("nav.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom"
 import { Cloud } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 export function Footer() {
+  const { t } = useTranslation()
   return (
     <footer className="bg-muted/30 border-t border-border">
       <div className="w-full px-4 md:px-12 lg:px-20 mx-auto max-w-[1600px] pt-16 pb-8">
@@ -18,64 +20,64 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-              Building the infrastructure for tomorrow's digital economy. Secure, fast, and beautiful cloud storage for everyone.
+              {t("footer.tagline")}
             </p>
              
           </div>
 
           {/* Links: Product */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Product</h3>
+            <h3 className="font-semibold text-foreground mb-4">{t("footer.product")}</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</Link>
+                <Link to="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("nav.features")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.pricing")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Security</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.security")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Changelog</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.changelog")}</Link>
               </li>
             </ul>
           </div>
 
           {/* Links: Company */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Company</h3>
+            <h3 className="font-semibold text-foreground mb-4">{t("footer.company")}</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About Us</Link>
+                <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("nav.about")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Careers</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.careers")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.blog")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.contact")}</Link>
               </li>
             </ul>
           </div>
 
           {/* Links: Legal */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Legal</h3>
+            <h3 className="font-semibold text-foreground mb-4">{t("footer.legal")}</h3>
             <ul className="space-y-3">
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.privacy")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.terms")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Cookie Policy</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.cookiePolicy")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Acceptable Use</Link>
+                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.acceptableUse")}</Link>
               </li>
             </ul>
           </div>
@@ -85,10 +87,10 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground text-center md:text-left">
-            &copy; {new Date().getFullYear()} CloudBox, Inc. All rights reserved.
+            &copy; {new Date().getFullYear()} CloudBox, Inc. {t("footer.rights")}
           </p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>Status: All systems operational</span>
+            <span>{t("footer.status")}</span>
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           </div>
         </div>

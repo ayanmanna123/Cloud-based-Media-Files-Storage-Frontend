@@ -1,4 +1,5 @@
 import { memo } from "react"
+import { useTranslation } from "react-i18next"
 import {
   FolderOpen,
   MoreVertical,
@@ -42,6 +43,7 @@ function FolderCardComponent({
   onDoubleClick,
   isSharedProp
 }) {
+  const { t } = useTranslation()
   const isStarred = starredItems.includes(`folder_${folder.id}`)
   const isShared = isSharedProp || currentView === 'shared' || (folder.permission && folder.permission !== 'owner') || !!folder.sharedWithMe
   
@@ -58,40 +60,40 @@ function FolderCardComponent({
       {currentView === 'trash' ? (
         <>
           <ContextMenuItem onClick={() => onRestore(folder.id, 'folder')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
-            <RotateCcw className="w-4 h-4 mr-2" /> Restore
+            <RotateCcw className="w-4 h-4 mr-2" /> {t("dashboard.restore")}
           </ContextMenuItem>
           <ContextMenuItem onClick={() => onDeleteForever(folder.id, 'folder')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-            <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+            <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.deleteForever")}
           </ContextMenuItem>
         </>
       ) : (
         <>
           <ContextMenuItem onClick={() => onToggleStar(folder.id, 'folder', isStarred)}>
             <Star className={`w-4 h-4 mr-2 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
-            {isStarred ? 'Unstar' : 'Star'}
+            {isStarred ? t("dashboard.unstar") : t("dashboard.star")}
           </ContextMenuItem>
           <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
-            <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+            <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}
           </ContextMenuItem>
           {folder.permission !== 'viewer' && (
             <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> Rename
+              <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
             </ContextMenuItem>
           )}
           {currentView === 'secret' ? (
             <ContextMenuItem onClick={() => onHide(folder.id, false)}>
-              <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
+              <Eye className="w-4 h-4 mr-2 text-green-500" /> {t("dashboard.unhide")}
             </ContextMenuItem>
           ) : (
             <ContextMenuItem onClick={() => onHide(folder.id, true)}>
-              <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
+              <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> {t("dashboard.hide")}
             </ContextMenuItem>
           )}
           {folder.permission !== 'viewer' && (
             <>
               <ContextMenuSeparator />
               <ContextMenuItem onClick={() => onDelete(folder.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
               </ContextMenuItem>
             </>
           )}
@@ -122,40 +124,40 @@ function FolderCardComponent({
                 {currentView === 'trash' ? (
                   <>
                     <DropdownMenuItem onClick={() => onRestore(folder.id, 'folder')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
-                      <RotateCcw className="w-4 h-4 mr-2" /> Restore
+                      <RotateCcw className="w-4 h-4 mr-2" /> {t("dashboard.restore")}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onDeleteForever(folder.id, 'folder')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-                      <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+                      <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.deleteForever")}
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <>
                     <DropdownMenuItem onClick={() => onToggleStar(folder.id, 'folder', isStarred)}>
                       <Star className={`w-4 h-4 mr-2 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
-                      {isStarred ? 'Unstar' : 'Star'}
+                      {isStarred ? t("dashboard.unstar") : t("dashboard.star")}
                     </DropdownMenuItem>
                     <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
-                      <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+                      <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}
                     </DropdownMenuItem>
                     {folder.permission !== 'viewer' && (
                       <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
-                        <Edit2 className="w-4 h-4 mr-2" /> Rename
+                        <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
                       </DropdownMenuItem>
                     )}
                     {currentView === 'secret' ? (
                       <DropdownMenuItem onClick={() => setTimeout(() => onHide(folder.id, false), 0)}>
-                        <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
+                        <Eye className="w-4 h-4 mr-2 text-green-500" /> {t("dashboard.unhide")}
                       </DropdownMenuItem>
                     ) : (
                       <DropdownMenuItem onClick={() => setTimeout(() => onHide(folder.id, true), 0)}>
-                        <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
+                        <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> {t("dashboard.hide")}
                       </DropdownMenuItem>
                     )}
                     {folder.permission !== 'viewer' && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => setTimeout(() => onDelete(folder.id), 0)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete
+                          <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
                         </DropdownMenuItem>
                       </>
                     )}
@@ -171,17 +173,17 @@ function FolderCardComponent({
         <div className="text-xs text-muted-foreground mt-0.5">
           {(() => {
             if (folder.fileCount === undefined && folder.folderCount === undefined) {
-              return 'Folder';
+              return t("dashboard.itemFolder");
             }
             const parts = [];
             if (folder.folderCount && folder.folderCount > 0) {
-              parts.push(`${folder.folderCount} folder${folder.folderCount > 1 ? 's' : ''}`);
+              parts.push(`${folder.folderCount} ${folder.folderCount > 1 ? t("dashboard.itemFolders") : t("dashboard.itemFolder")}`);
             }
             if (folder.fileCount && folder.fileCount > 0) {
-              parts.push(`${folder.fileCount} file${folder.fileCount > 1 ? 's' : ''}`);
+              parts.push(`${folder.fileCount} ${folder.fileCount > 1 ? t("dashboard.itemFiles") : t("dashboard.itemFile")}`);
             }
             if (parts.length === 0) {
-              return 'Empty';
+              return "Empty";
             }
             let label = parts.join(', ');
             if (folder.totalSize) {

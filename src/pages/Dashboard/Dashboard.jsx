@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react"
 import { useParams, useNavigate, useOutletContext, useLocation } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { 
   FolderOpen, 
   MoreVertical, 
@@ -62,6 +63,7 @@ import { LightboxModal } from "./components/LightboxModal"
 import { LoadingScreen } from "../../components/LoadingScreen"
 
 export function Dashboard() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
@@ -1188,7 +1190,7 @@ export function Dashboard() {
           className="hover:text-foreground flex items-center transition-colors"
         >
           <Home className="w-4 h-4 mr-1.5" />
-          My Drive
+          {t("dashboard.myDrive")}
         </Link>
         
         {path && path.map((crumb, index) => (
@@ -1210,7 +1212,9 @@ export function Dashboard() {
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">{folder?.name || "My Drive"}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {(!folder || folder?.name === "My Drive") ? t("dashboard.myDrive") : folder.name}
+        </h1>
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex bg-muted/50 p-1 rounded-md border border-border/50 items-center mr-1">
             <button 
@@ -1233,7 +1237,7 @@ export function Dashboard() {
             <DropdownMenu>
               <DropdownMenuTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 gap-2">
                 <ArrowUpDown className="w-4 h-4" />
-                Sort
+                {t("dashboard.sort")}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setSortMethod("name-asc")}>Name (A-Z) {sortMethod === "name-asc" && "✓"}</DropdownMenuItem>
@@ -1256,7 +1260,7 @@ export function Dashboard() {
                     title="Upload File"
                   >
                     {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                    <span className="hidden sm:inline">Upload</span>
+                    <span className="hidden sm:inline">{t("dashboard.upload")}</span>
                     <ChevronDown className="w-3.5 h-3.5 opacity-70" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -1269,7 +1273,7 @@ export function Dashboard() {
                     className="cursor-pointer"
                   >
                     <Upload className="w-4 h-4 mr-2" />
-                    Standard Upload
+                    {t("dashboard.standardUpload")}
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => {
@@ -1279,7 +1283,7 @@ export function Dashboard() {
                     className="cursor-pointer text-emerald-600 dark:text-emerald-400 font-semibold"
                   >
                     <ShieldCheck className="w-4 h-4 mr-2" />
-                    Encrypted Upload (AES-256)
+                    {t("dashboard.encryptedUpload")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -1290,7 +1294,7 @@ export function Dashboard() {
                 title="New Folder (Shift+N)"
               >
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">New Folder</span>
+                <span className="hidden sm:inline">{t("dashboard.newFolder")}</span>
               </Button>
             </>
           )}
@@ -1301,12 +1305,12 @@ export function Dashboard() {
       {filteredFolders.length > 0 && (
         <section>
           <div className="flex items-center justify-between gap-3 mb-3">
-            <h2 className="text-sm font-medium text-muted-foreground shrink-0">Folders ({filteredFolders.length})</h2>
+            <h2 className="text-sm font-medium text-muted-foreground shrink-0">{t("dashboard.folders")} ({filteredFolders.length})</h2>
             <div className="relative flex-1 max-w-[200px] sm:hidden">
               <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               <Input 
                 type="text" 
-                placeholder="Search..." 
+                placeholder={t("dashboard.mobileSearchPlaceholder")} 
                 className="pl-8 h-8 text-xs bg-muted/40 border-border rounded-lg"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
@@ -1348,7 +1352,7 @@ export function Dashboard() {
       {filteredFiles.length > 0 && (
         <section>
           <div className="flex items-center justify-between gap-3 mb-3">
-            <h2 className="text-sm font-medium text-muted-foreground shrink-0">Files ({filteredFiles.length})</h2>
+            <h2 className="text-sm font-medium text-muted-foreground shrink-0">{t("dashboard.files")} ({filteredFiles.length})</h2>
             {filteredFolders.length === 0 && (
               <div className="relative flex-1 max-w-[200px] sm:hidden">
                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
@@ -1460,26 +1464,26 @@ export function Dashboard() {
       {selectedItems.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 max-w-[calc(100vw-1.5rem)] bg-popover/95 backdrop-blur-md text-popover-foreground border border-border shadow-2xl rounded-2xl sm:rounded-full px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center gap-1 sm:gap-2 md:gap-3 z-50 animate-in slide-in-from-bottom-5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <span className="text-xs sm:text-sm font-semibold pl-1 pr-2 border-r border-border shrink-0 whitespace-nowrap">
-            {selectedItems.length} <span className="hidden sm:inline">selected</span>
+            {selectedItems.length} <span className="hidden sm:inline">{t("dashboard.selected")}</span>
           </span>
           <Button variant="ghost" size="sm" onClick={handleSelectAll} title="Select All (Ctrl+A)" className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
-            <span className="hidden sm:inline">Select All</span>
-            <span className="sm:hidden">All</span>
+            <span className="hidden sm:inline">{t("dashboard.selectAll")}</span>
+            <span className="sm:hidden">{t("dashboard.selectAll")}</span>
           </Button>
           <div className="w-px h-4 bg-border shrink-0 hidden sm:block"></div>
           {currentView === 'trash' ? (
             <>
               <Button variant="ghost" size="sm" onClick={handleBulkRestore} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
-                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Restore
+                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.restore")}
               </Button>
               <Button variant="ghost" size="sm" onClick={handleBulkDeleteForever} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 whitespace-nowrap" title="Delete Forever (Delete)">
-                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> <span className="hidden sm:inline">Delete Forever</span><span className="sm:hidden">Delete</span>
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> <span className="hidden sm:inline">{t("dashboard.deleteForever")}</span><span className="sm:hidden">{t("dashboard.delete")}</span>
               </Button>
             </>
           ) : (
             <>
               <Button variant="ghost" size="sm" onClick={handleBulkDownload} title="Download as ZIP (Shift+D)" className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
-                {isSubmitting ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 animate-spin" /> : <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />} Download
+                {isSubmitting ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 animate-spin" /> : <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />} {t("dashboard.download")}
               </Button>
               <Button 
                 variant="ghost" 
@@ -1503,7 +1507,7 @@ export function Dashboard() {
                 className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
                 title={isSharedFolder ? "Sharing is disabled for shared items" : "Share"}
               >
-                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Share
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.share")}
               </Button>
               <Button 
                 variant="ghost" 
@@ -1516,10 +1520,10 @@ export function Dashboard() {
                 className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
                 title={isSharedFolder ? "Moving is disabled for shared items" : "Move"}
               >
-                <FolderInput className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Move
+                <FolderInput className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.move")}
               </Button>
               <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 whitespace-nowrap" title="Delete (Delete / Backspace)">
-                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Delete
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.delete")}
               </Button>
             </>
           )}

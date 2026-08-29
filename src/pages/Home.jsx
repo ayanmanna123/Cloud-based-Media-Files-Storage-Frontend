@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useAuth } from "../context/AuthContext"
 import { Button } from "../components/ui/button"
 import GradientWaves from "../components/GradientWaves"
@@ -14,6 +15,7 @@ import {
 } from "lucide-react"
 
 export function Home() {
+  const { t } = useTranslation()
   const { user } = useAuth()
 
   return (
@@ -55,30 +57,29 @@ export function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-background/80 backdrop-blur-md text-foreground px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium mb-8 border border-border/80 shadow-lg animate-in fade-in zoom-in-95 duration-500">
             <span className="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider">New</span>
-            <span>CloudBox v2.0 &bull; Secure Media & File Storage</span>
+            <span>{t("home.badge")}</span>
           </div>
           
           {/* Heading */}
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-foreground mb-6 leading-[1.12]">
-            All your files.<br />
-            One <span className="text-blue-500 dark:text-blue-400">secure</span> place.
+            {t("home.heroTitle")}
           </h1>
           
           {/* Subtitle */}
           <p className="text-base sm:text-xl text-muted-foreground mb-10 max-w-2xl leading-relaxed mx-auto font-normal">
-            Store, access, and share your media and documents seamlessly. CloudBox keeps your data safe, encrypted, and accessible anywhere.
+            {t("home.heroSubtitle")}
           </p>
           
           {/* CTA Buttons Centered */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 w-full sm:w-auto">
             <Link to={user ? "/dashboard" : "/signup"} className="w-full sm:w-auto">
               <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/25 text-base h-12 px-8 rounded-xl font-semibold transition-all hover:scale-105">
-                {user ? "Go to Dashboard" : "Get Started Free"}
+                {user ? t("nav.dashboard") : t("home.getStartedBtn")}
               </Button>
             </Link>
             <a href="#features" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto text-base h-12 px-8 rounded-xl bg-background/70 backdrop-blur-md border-border/80 hover:bg-accent font-medium transition-all">
-                Explore Features
+                {t("home.exploreFeatures")}
               </Button>
             </a>
           </div>
@@ -87,19 +88,19 @@ export function Home() {
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs sm:text-sm font-medium text-muted-foreground bg-background/40 backdrop-blur-md px-6 py-3 rounded-full border border-border/50">
             <div className="flex items-center gap-2">
               <Lock className="w-4 h-4 text-blue-500" />
-              Secure Encryption
+              {t("home.secureEncryption")}
             </div>
             <div className="flex items-center gap-2">
               <EyeOff className="w-4 h-4 text-violet-500" />
-              Secret Vault
+              {t("home.secretVault")}
             </div>
             <div className="flex items-center gap-2">
               <Share2 className="w-4 h-4 text-indigo-500" />
-              Easy Sharing
+              {t("home.easySharing")}
             </div>
             <div className="flex items-center gap-2">
               <Smartphone className="w-4 h-4 text-purple-500" />
-              Access Anywhere
+              {t("home.accessAnywhere")}
             </div>
           </div>
 
@@ -110,9 +111,9 @@ export function Home() {
       <section id="features" className="py-20 bg-muted/30 border-y border-border">
         <div className="w-full px-4 md:px-12 lg:px-20 mx-auto max-w-[1600px]">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold mb-4">Everything you need to manage files</h2>
+            <h2 className="text-3xl font-bold mb-4">{t("home.featuresTitle")}</h2>
             <p className="text-lg text-muted-foreground">
-              Powerful features designed to keep your data secure, organized, and accessible to the people who need it.
+              {t("home.featuresSubtitle")}
             </p>
           </div>
 
@@ -122,8 +123,8 @@ export function Home() {
               <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
                 <Cloud className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">Secure Storage</h3>
-              <p className="text-sm text-muted-foreground">Bank-level encryption ensures your data is always safe and protected.</p>
+              <h3 className="font-semibold mb-2">{t("home.featureSecureStorage")}</h3>
+              <p className="text-sm text-muted-foreground">{t("home.featureSecureStorageDesc")}</p>
             </div>
 
             {/* Feature 2 (Hidden Vault) */}
@@ -131,8 +132,8 @@ export function Home() {
               <div className="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mb-4 text-violet-600 dark:text-violet-400">
                 <EyeOff className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">Hidden Secret Vault</h3>
-              <p className="text-sm text-muted-foreground">Hide private images and files behind a personal 4-digit PIN code.</p>
+              <h3 className="font-semibold mb-2">{t("home.featureHiddenVault")}</h3>
+              <p className="text-sm text-muted-foreground">{t("home.featureHiddenVaultDesc")}</p>
             </div>
 
             {/* Feature 3 */}
@@ -140,8 +141,8 @@ export function Home() {
               <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 text-green-600 dark:text-green-400">
                 <Share2 className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">Easy Sharing</h3>
-              <p className="text-sm text-muted-foreground">Share files and folders with custom permissions and password links.</p>
+              <h3 className="font-semibold mb-2">{t("home.featureEasySharing")}</h3>
+              <p className="text-sm text-muted-foreground">{t("home.featureEasySharingDesc")}</p>
             </div>
 
             {/* Feature 4 */}
@@ -149,8 +150,8 @@ export function Home() {
               <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4 text-purple-600 dark:text-purple-400">
                 <Search className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">Smart Search</h3>
-              <p className="text-sm text-muted-foreground">Find files instantly with advanced search, filters, and sorting options.</p>
+              <h3 className="font-semibold mb-2">{t("home.featureSmartSearch")}</h3>
+              <p className="text-sm text-muted-foreground">{t("home.featureSmartSearchDesc")}</p>
             </div>
 
             {/* Feature 5 */}
@@ -158,8 +159,8 @@ export function Home() {
               <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4 text-amber-600 dark:text-amber-400">
                 <Trash2 className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">Trash & Restore</h3>
-              <p className="text-sm text-muted-foreground">Recover deleted files within 30 days with our smart trash system.</p>
+              <h3 className="font-semibold mb-2">{t("home.featureTrashRestore")}</h3>
+              <p className="text-sm text-muted-foreground">{t("home.featureTrashRestoreDesc")}</p>
             </div>
 
             {/* Feature 6 */}
@@ -167,8 +168,8 @@ export function Home() {
               <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mb-4 text-indigo-600 dark:text-indigo-400">
                 <Smartphone className="w-6 h-6" />
               </div>
-              <h3 className="font-semibold mb-2">Access Anywhere</h3>
-              <p className="text-sm text-muted-foreground">Access your files anytime, anywhere from any device.</p>
+              <h3 className="font-semibold mb-2">{t("home.featureAccessAnywhere")}</h3>
+              <p className="text-sm text-muted-foreground">{t("home.featureAccessAnywhereDesc")}</p>
             </div>
           </div>
         </div>

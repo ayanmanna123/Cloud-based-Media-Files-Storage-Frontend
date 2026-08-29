@@ -1,29 +1,32 @@
+import { useTranslation } from "react-i18next"
 import { Shield, Target, Users, Zap, Globe, Award } from "lucide-react"
 
 export function AboutUs() {
+  const { t } = useTranslation()
+
   const values = [
     {
       icon: Shield,
-      title: "Security First",
-      description: "We believe your data is yours alone. We employ military-grade encryption and zero-knowledge architecture to keep it that way."
+      title: t("aboutPage.value1Title"),
+      description: t("aboutPage.value1Desc")
     },
     {
       icon: Target,
-      title: "Radical Simplicity",
-      description: "Powerful tools shouldn't require a manual. We design intuitive, frictionless experiences that get out of your way."
+      title: t("aboutPage.value2Title"),
+      description: t("aboutPage.value2Desc")
     },
     {
       icon: Users,
-      title: "Collaboration Built-in",
-      description: "Whether you're a freelancer or an enterprise team, our tools are built to seamlessly connect you with the people that matter."
+      title: t("aboutPage.value3Title"),
+      description: t("aboutPage.value3Desc")
     }
   ]
 
   const stats = [
-    { label: "Files Secured", value: "2B+" },
-    { label: "Active Users", value: "10M+" },
-    { label: "Countries", value: "150+" },
-    { label: "Uptime", value: "99.99%" }
+    { label: t("aboutPage.statsFilesSecured"), value: "2B+" },
+    { label: t("aboutPage.statsActiveUsers"), value: "10M+" },
+    { label: t("aboutPage.statsCountries"), value: "150+" },
+    { label: t("aboutPage.statsUptime"), value: "99.99%" }
   ]
 
   return (
@@ -39,15 +42,15 @@ export function AboutUs() {
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center space-x-2 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-full text-sm font-semibold tracking-wide border border-indigo-100 dark:border-indigo-900">
               <Globe className="w-4 h-4" />
-              <span>Our Mission</span>
+              <span>{t("aboutPage.missionBadge")}</span>
             </div>
             
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground leading-[1.15]">
-              Redefining how the world <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">stores its digital life.</span>
+              {t("aboutPage.heroTitle")}
             </h1>
             
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Founded on the belief that digital storage should be fast, beautiful, and unconditionally secure, CloudBox is building the infrastructure for tomorrow's digital economy.
+              {t("aboutPage.heroSubtitle")}
             </p>
           </div>
         </div>
@@ -97,26 +100,20 @@ export function AboutUs() {
               {/* Decorative float */}
               <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-background border border-border rounded-2xl shadow-xl flex flex-col items-center justify-center gap-2 text-indigo-600 dark:text-indigo-400">
                 <Award className="w-10 h-10" />
-                <span className="text-xs font-bold text-center">Award Winning<br/>Platform</span>
+                <span className="text-xs font-bold text-center">{t("aboutPage.awardTitle")}</span>
               </div>
             </div>
             
             <div className="space-y-8">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Our Story</h2>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">{t("aboutPage.storyTitle")}</h2>
                 <div className="w-20 h-1.5 bg-blue-600 rounded-full" />
               </div>
               
               <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
-                <p>
-                  We started CloudBox because we were tired of compromising. We wanted the military-grade security of enterprise solutions, paired with the beautiful, frictionless design of modern consumer apps. When we couldn't find it, we built it.
-                </p>
-                <p>
-                  Today, we're a distributed team of engineers, designers, and security experts working across 12 countries. What unites us is a singular obsession: making digital file management invisible, so you can focus on the work that actually matters.
-                </p>
-                <p>
-                  We are independently funded, profitable, and beholden only to our users—not advertisers or data brokers.
-                </p>
+                <p>{t("aboutPage.storyP1")}</p>
+                <p>{t("aboutPage.storyP2")}</p>
+                <p>{t("aboutPage.storyP3")}</p>
               </div>
             </div>
           </div>
@@ -127,8 +124,8 @@ export function AboutUs() {
       <section className="py-20 md:py-32">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Our Core Values</h2>
-            <p className="text-lg text-muted-foreground">The principles that guide every feature we ship and every decision we make.</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t("aboutPage.valuesTitle")}</h2>
+            <p className="text-lg text-muted-foreground">{t("aboutPage.valuesSubtitle")}</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { 
   ShieldCheck, 
   FolderTree, 
@@ -18,83 +19,85 @@ import {
 } from "lucide-react"
 
 export function Features() {
+  const { t } = useTranslation()
+
   const mvpFeatures = [
     {
       icon: ShieldCheck,
-      title: "Secure Authentication",
-      description: "Robust Email and OAuth login with secure session management and detailed user profiles.",
+      title: t("featuresPage.secureAuthTitle"),
+      description: t("featuresPage.secureAuthDesc"),
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20"
     },
     {
       icon: Lock,
-      title: "Image Encryption",
-      description: "Client-side AES-256 military-grade encryption for images and media files before cloud storage.",
+      title: t("featuresPage.imageEncryptionTitle"),
+      description: t("featuresPage.imageEncryptionDesc"),
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
       borderColor: "border-emerald-500/20"
     },
     {
       icon: EyeOff,
-      title: "Hidden Media & Secret Vault",
-      description: "Hide sensitive images, videos, and private files behind a personal 4-digit PIN code.",
+      title: t("featuresPage.hiddenMediaTitle"),
+      description: t("featuresPage.hiddenMediaDesc"),
       color: "text-violet-500",
       bgColor: "bg-violet-500/10",
       borderColor: "border-violet-500/20"
     },
     {
       icon: FolderTree,
-      title: "Advanced Folder Management",
-      description: "Full CRUD operations, hierarchical tree structure, and intuitive breadcrumb navigation.",
+      title: t("featuresPage.folderMgmtTitle"),
+      description: t("featuresPage.folderMgmtDesc"),
       color: "text-indigo-500",
       bgColor: "bg-indigo-500/10",
       borderColor: "border-indigo-500/20"
     },
     {
       icon: UploadCloud,
-      title: "Seamless File Operations",
-      description: "Drag-and-drop uploads, file pickers, renaming, moving, and instant downloads.",
+      title: t("featuresPage.fileOpsTitle"),
+      description: t("featuresPage.fileOpsDesc"),
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
       borderColor: "border-purple-500/20"
     },
     {
       icon: Share2,
-      title: "Granular Sharing",
-      description: "Share securely with Viewer or Editor roles, revoke access instantly, and audit permissions.",
+      title: t("featuresPage.granularSharingTitle"),
+      description: t("featuresPage.granularSharingDesc"),
       color: "text-pink-500",
       bgColor: "bg-pink-500/10",
       borderColor: "border-pink-500/20"
     },
     {
       icon: LinkIcon,
-      title: "Public Share Links",
-      description: "Generate shareable links with customizable expiration dates and optional password protection.",
+      title: t("featuresPage.shareLinksTitle"),
+      description: t("featuresPage.shareLinksDesc"),
       color: "text-rose-500",
       bgColor: "bg-rose-500/10",
       borderColor: "border-rose-500/20"
     },
     {
       icon: Search,
-      title: "Smart Search & Filtering",
-      description: "Find exactly what you need by name, type, or owner, complete with dynamic sorting.",
+      title: t("featuresPage.smartSearchTitle"),
+      description: t("featuresPage.smartSearchDesc"),
       color: "text-amber-500",
       bgColor: "bg-amber-500/10",
       borderColor: "border-amber-500/20"
     },
     {
       icon: Clock,
-      title: "Quick Access",
-      description: "Instantly jump back in with Recent files and organize your most important work with Favorites.",
+      title: t("featuresPage.quickAccessTitle"),
+      description: t("featuresPage.quickAccessDesc"),
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
       borderColor: "border-emerald-500/20"
     },
     {
       icon: Trash2,
-      title: "Smart Trash Recovery",
-      description: "Accidentally deleted something? Recover files easily within a 30-day retention window.",
+      title: t("featuresPage.trashRecoveryTitle"),
+      description: t("featuresPage.trashRecoveryDesc"),
       color: "text-red-500",
       bgColor: "bg-red-500/10",
       borderColor: "border-red-500/20"
@@ -104,33 +107,33 @@ export function Features() {
   const phase2Features = [
     {
       icon: History,
-      title: "Version History",
-      description: "Keep current pointers and access archived versions of your files.",
+      title: t("featuresPage.versionHistoryTitle"),
+      description: t("featuresPage.versionHistoryDesc"),
     },
     {
       icon: FileImage,
-      title: "Rich Previews",
-      description: "Instant in-app previews for images, PDFs, and basic text files with generated thumbnails.",
+      title: t("featuresPage.richPreviewsTitle"),
+      description: t("featuresPage.richPreviewsDesc"),
     },
     {
       icon: Activity,
-      title: "Audit Logs",
-      description: "Comprehensive tracking of all file activities and workspace events.",
+      title: t("featuresPage.auditLogsTitle"),
+      description: t("featuresPage.auditLogsDesc"),
     },
     {
       icon: Tags,
-      title: "Advanced Organization",
-      description: "Custom tags, powerful bulk actions, and lightning-fast keyboard shortcuts.",
+      title: t("featuresPage.advOrgTitle"),
+      description: t("featuresPage.advOrgDesc"),
     },
     {
       icon: Users,
-      title: "Team Workspaces",
-      description: "Shared drives for teams and deep content indexing for enterprise-grade search.",
+      title: t("featuresPage.teamWorkspacesTitle"),
+      description: t("featuresPage.teamWorkspacesDesc"),
     },
     {
       icon: PieChart,
-      title: "Usage Analytics",
-      description: "Detailed quotas and visually rich dashboards to monitor storage usage.",
+      title: t("featuresPage.analyticsTitle"),
+      description: t("featuresPage.analyticsDesc"),
     }
   ]
 
@@ -148,13 +151,13 @@ export function Features() {
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-20 space-y-6">
           <div className="inline-flex items-center space-x-2 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full text-sm font-semibold tracking-wide border border-blue-100 dark:border-blue-900 shadow-sm">
-            <span>Platform Capabilities</span>
+            <span>{t("featuresPage.capabilities")}</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-foreground leading-[1.1]">
-            Everything you need to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">master your data</span>
+            {t("featuresPage.title")}
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            Discover a comprehensive suite of tools engineered for absolute security, seamless collaboration, and effortless file management.
+            {t("featuresPage.subtitle")}
           </p>
         </div>
 
@@ -162,11 +165,11 @@ export function Features() {
         <div className="mb-32">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-2">Core Features</h2>
-              <p className="text-muted-foreground">The essential tools powering your everyday workflow.</p>
+              <h2 className="text-3xl font-bold tracking-tight mb-2">{t("featuresPage.coreTitle")}</h2>
+              <p className="text-muted-foreground">{t("featuresPage.coreSubtitle")}</p>
             </div>
             <div className="hidden sm:flex px-3 py-1 bg-muted rounded-md text-xs font-medium text-muted-foreground border border-border">
-              Available Now
+              {t("featuresPage.availableNow")}
             </div>
           </div>
           
@@ -203,11 +206,11 @@ export function Features() {
               <div className="max-w-2xl">
                 <div className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold text-sm tracking-widest uppercase mb-3">
                   <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
-                  Coming Soon
+                  {t("featuresPage.comingSoon")}
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">The Future of CloudBox</h2>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">{t("featuresPage.futureTitle")}</h2>
                 <p className="text-lg text-muted-foreground">
-                  We're constantly innovating. Here's a sneak peek at the powerful capabilities coming in our next major release.
+                  {t("featuresPage.futureSubtitle")}
                 </p>
               </div>
             </div>

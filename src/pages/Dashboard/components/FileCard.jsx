@@ -1,4 +1,5 @@
 import { useState, memo } from "react"
+import { useTranslation } from "react-i18next"
 import {
   MoreVertical,
   Star,
@@ -75,6 +76,7 @@ function FileCardComponent({
   isSharedProp,
   showToast
 }) {
+  const { t } = useTranslation()
   const Icon = getFileIcon(file.name)
   const isEditable = file.name.match(/\.(txt|md|csv|json|js|jsx|ts|tsx|html|css|xml|yml|yaml|ini|env|log)$/i)
   const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp|avif|heic|heif)$/i)
@@ -159,57 +161,57 @@ function FileCardComponent({
   }
 
   const DropdownActions = () => (
-    <DropdownMenuContent align="end">
+    <DropdownMenuContent align="end" className="w-48">
       {currentView === 'trash' ? (
         <>
           <DropdownMenuItem onClick={() => onRestore(file.id, 'file')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
-            <RotateCcw className="w-4 h-4 mr-2" /> Restore
+            <RotateCcw className="w-4 h-4 mr-2" /> {t("dashboard.restore")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onDeleteForever(file.id, 'file')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-            <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+            <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.deleteForever")}
           </DropdownMenuItem>
         </>
       ) : (
         <>
           {isEditable && file.permission !== 'viewer' && (
             <DropdownMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> Edit
+              <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.edit")}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={() => onDownload(file.id, file.name)}>
-            <Download className="w-4 h-4 mr-2" /> Download
+            <Download className="w-4 h-4 mr-2" /> {t("dashboard.download")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleCopyUrl}>
-            <Copy className="w-4 h-4 mr-2" /> Copy Link
+            <Copy className="w-4 h-4 mr-2" /> {t("dashboard.copyLink")}
           </DropdownMenuItem>
           <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
-            <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+            <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}
           </DropdownMenuItem>
           {file.permission !== 'viewer' && (
             <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> Rename
+              <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onMove(file.id, file.name), 0)}>
-            <FolderInput className="w-4 h-4 mr-2" /> Move
+            <FolderInput className="w-4 h-4 mr-2" /> {t("dashboard.move")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
-            <Clock className="w-4 h-4 mr-2" /> Version History
+            <Clock className="w-4 h-4 mr-2" /> {t("dashboard.versionHistory")}
           </DropdownMenuItem>
           {currentView === 'secret' ? (
             <DropdownMenuItem onClick={() => setTimeout(() => onHide(file.id, false), 0)}>
-              <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
+              <Eye className="w-4 h-4 mr-2 text-green-500" /> {t("dashboard.unhide")}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem onClick={() => setTimeout(() => onHide(file.id, true), 0)}>
-              <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
+              <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> {t("dashboard.hide")}
             </DropdownMenuItem>
           )}
           {file.permission !== 'viewer' && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setTimeout(() => onDelete(file.id), 0)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
               </DropdownMenuItem>
             </>
           )}
@@ -223,53 +225,53 @@ function FileCardComponent({
       {currentView === 'trash' ? (
         <>
           <ContextMenuItem onClick={() => onRestore(file.id, 'file')} className="text-green-600 focus:text-green-600 focus:bg-green-50">
-            <RotateCcw className="w-4 h-4 mr-2" /> Restore
+            <RotateCcw className="w-4 h-4 mr-2" /> {t("dashboard.restore")}
           </ContextMenuItem>
           <ContextMenuItem onClick={() => onDeleteForever(file.id, 'file')} className="text-red-600 focus:text-red-600 focus:bg-red-50">
-            <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
+            <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.deleteForever")}
           </ContextMenuItem>
         </>
       ) : (
         <>
           {isEditable && file.permission !== 'viewer' && (
             <ContextMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> Edit
+              <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.edit")}
             </ContextMenuItem>
           )}
           <ContextMenuItem onClick={() => onDownload(file.id, file.name)}>
-            <Download className="w-4 h-4 mr-2" /> Download
+            <Download className="w-4 h-4 mr-2" /> {t("dashboard.download")}
           </ContextMenuItem>
           <ContextMenuItem onClick={handleCopyUrl}>
-            <Copy className="w-4 h-4 mr-2" /> Copy Link
+            <Copy className="w-4 h-4 mr-2" /> {t("dashboard.copyLink")}
           </ContextMenuItem>
           <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
-            <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
+            <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}
           </ContextMenuItem>
           {file.permission !== 'viewer' && (
             <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> Rename
+              <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
             </ContextMenuItem>
           )}
           <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onMove(file.id, file.name), 0)}>
-            <FolderInput className="w-4 h-4 mr-2" /> Move
+            <FolderInput className="w-4 h-4 mr-2" /> {t("dashboard.move")}
           </ContextMenuItem>
           <ContextMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
-            <Clock className="w-4 h-4 mr-2" /> Version History
+            <Clock className="w-4 h-4 mr-2" /> {t("dashboard.versionHistory")}
           </ContextMenuItem>
           {currentView === 'secret' ? (
             <ContextMenuItem onClick={() => onHide(file.id, false)}>
-              <Eye className="w-4 h-4 mr-2 text-green-500" /> Unhide
+              <Eye className="w-4 h-4 mr-2 text-green-500" /> {t("dashboard.unhide")}
             </ContextMenuItem>
           ) : (
             <ContextMenuItem onClick={() => onHide(file.id, true)}>
-              <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
+              <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> {t("dashboard.hide")}
             </ContextMenuItem>
           )}
           {file.permission !== 'viewer' && (
             <>
               <ContextMenuSeparator />
               <ContextMenuItem onClick={() => onDelete(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
               </ContextMenuItem>
             </>
           )}
@@ -348,7 +350,7 @@ function FileCardComponent({
         {(file.isEncrypted || file.is_encrypted) && (
           <div className="absolute top-2 left-2 z-10 bg-emerald-600/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs backdrop-blur-xs">
             <ShieldCheck className="w-3 h-3" />
-            <span>Encrypted</span>
+            <span>{t("dashboard.encrypted")}</span>
           </div>
         )}
         {(isImage || isPdf || isVideo) ? (
