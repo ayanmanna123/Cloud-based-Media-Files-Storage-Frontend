@@ -43,7 +43,7 @@ function FolderCardComponent({
   isSharedProp
 }) {
   const isStarred = starredItems.includes(`folder_${folder.id}`)
-  const isShared = isSharedProp || currentView === 'shared' || folder.isShared || !!folder.permission || !!folder.sharedWithMe || !!folder.sharedBy
+  const isShared = isSharedProp || currentView === 'shared' || (folder.permission && folder.permission !== 'owner') || !!folder.sharedWithMe
   
   const formatBytes = (bytes) => {
     if (!bytes || bytes === 0) return '0 B';

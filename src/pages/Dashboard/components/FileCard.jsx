@@ -84,7 +84,7 @@ function FileCardComponent({
   const previewUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}?tr=w-600,h-800,c-at_max,bg-FFFFFF`
   const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-600,h-800,c-at_max,bg-FFFFFF`
   const isStarred = starredItems.includes(`file_${file.id}`)
-  const isShared = isSharedProp || currentView === 'shared' || file.isShared || !!file.permission || !!file.sharedWithMe || !!file.sharedBy
+  const isShared = isSharedProp || currentView === 'shared' || (file.permission && file.permission !== 'owner') || !!file.sharedWithMe
   const [dimensions, setDimensions] = useState(file.width && file.height ? `${file.width}x${file.height}` : null)
   const [copied, setCopied] = useState(false)
 

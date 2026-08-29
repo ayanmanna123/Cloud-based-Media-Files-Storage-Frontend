@@ -87,6 +87,8 @@ export function Dashboard() {
     hideFolder, hideFile
   } = useDrive(driveId)
 
+  const isSharedFolder = currentView === 'shared' || (!!folder?.permission && folder?.permission !== 'owner')
+
   const { startUpload, updateProgress, completeUpload } = useProgress()
 
   // Folder Modals
@@ -302,7 +304,7 @@ export function Dashboard() {
 
       // Cut: Ctrl+X / Cmd+X
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
-        if (selectedItems.length > 0 && currentView !== 'trash' && currentView !== 'shared' && !folder?.permission && !folder?.isShared) {
+        if (selectedItems.length > 0 && currentView !== 'trash' && !isSharedFolder) {
           e.preventDefault();
           setClipboard({ action: 'cut', items: selectedItems });
           showToast(`Cut ${selectedItems.length} items to clipboard`);
@@ -1318,7 +1320,7 @@ export function Dashboard() {
                 key={f.id}
                 folder={f}
                 currentView={currentView === secretHash ? 'secret' : currentView}
-                isSharedProp={currentView === 'shared' || !!folder?.permission || !!folder?.isShared}
+                isSharedProp={isSharedFolder}
                 starredItems={starredItems}
                 isSelected={selectedItems.includes(`folder_${f.id}`)}
                 onClick={(e) => handleItemClick(e, f.id, 'folder')}
@@ -1382,7 +1384,7 @@ export function Dashboard() {
                       file={file}
                       viewMode="list"
                       currentView={currentView === secretHash ? 'secret' : currentView}
-                      isSharedProp={currentView === 'shared' || !!folder?.permission || !!folder?.isShared}
+                      isSharedProp={isSharedFolder}
                       starredItems={starredItems}
                       isSelected={selectedItems.includes(`file_${file.id}`)}
                       onClick={(e) => handleItemClick(e, file.id, 'file')}
@@ -1414,7 +1416,7 @@ export function Dashboard() {
                     file={file}
                     viewMode={viewMode}
                     currentView={currentView === secretHash ? 'secret' : currentView}
-                    isSharedProp={currentView === 'shared' || !!folder?.permission || !!folder?.isShared}
+                    isSharedProp={isSharedFolder}
                     starredItems={starredItems}
                     isSelected={selectedItems.includes(`file_${file.id}`)}
                     onClick={(e) => handleItemClick(e, file.id, 'file')}
@@ -1482,9 +1484,9 @@ export function Dashboard() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                disabled={(currentView === 'shared' || !!folder?.permission || !!folder?.isShared) || (selectedItems.length > 1 && selectedItems.every(id => id.startsWith('folder_')))} 
+                disabled={isSharedFolder || (selectedItems.length > 1 && selectedItems.every(id => id.startsWith('folder_')))} 
                 onClick={() => {
-                  if (currentView === 'shared' || folder?.permission || folder?.isShared) return;
+                  if (isSharedFolder) return;
                   if (selectedItems.length === 1) {
                     const id = selectedItems[0];
                     const type = id.startsWith('folder_') ? 'folder' : 'file';
@@ -1499,20 +1501,20 @@ export function Dashboard() {
                   }
                 }} 
                 className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
-                title={(currentView === 'shared' || folder?.permission || folder?.isShared) ? "Sharing is disabled for shared items" : "Share"}
+                title={isSharedFolder ? "Sharing is disabled for shared items" : "Share"}
               >
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Share
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                disabled={currentView === 'shared' || !!folder?.permission || !!folder?.isShared} 
+                disabled={isSharedFolder} 
                 onClick={() => {
-                  if (currentView === 'shared' || folder?.permission || folder?.isShared) return;
+                  if (isSharedFolder) return;
                   handleBulkMove();
                 }} 
                 className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
-                title={(currentView === 'shared' || folder?.permission || folder?.isShared) ? "Moving is disabled for shared items" : "Move"}
+                title={isSharedFolder ? "Moving is disabled for shared items" : "Move"}
               >
                 <FolderInput className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Move
               </Button>
