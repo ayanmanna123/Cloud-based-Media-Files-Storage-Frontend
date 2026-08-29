@@ -169,20 +169,9 @@ function FileCardComponent({
             <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
           </DropdownMenuItem>
         </>
-      ) : currentView === 'shared' ? (
-        <>
-          {isEditable && file.permission === 'editor' && (
-            <DropdownMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> Edit
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem onClick={() => onDownload(file.id, file.name)}>
-            <Download className="w-4 h-4 mr-2" /> Download
-          </DropdownMenuItem>
-        </>
       ) : (
         <>
-          {isEditable && (
+          {isEditable && file.permission !== 'viewer' && (
             <DropdownMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
               <Edit2 className="w-4 h-4 mr-2" /> Edit
             </DropdownMenuItem>
@@ -196,9 +185,11 @@ function FileCardComponent({
           <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
-            <Edit2 className="w-4 h-4 mr-2" /> Rename
-          </DropdownMenuItem>
+          {file.permission !== 'viewer' && (
+            <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
+              <Edit2 className="w-4 h-4 mr-2" /> Rename
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onMove(file.id, file.name), 0)}>
             <FolderInput className="w-4 h-4 mr-2" /> Move
           </DropdownMenuItem>
@@ -214,10 +205,14 @@ function FileCardComponent({
               <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
             </DropdownMenuItem>
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setTimeout(() => onDelete(file.id), 0)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-            <Trash2 className="w-4 h-4 mr-2" /> Delete
-          </DropdownMenuItem>
+          {file.permission !== 'viewer' && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setTimeout(() => onDelete(file.id), 0)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+                <Trash2 className="w-4 h-4 mr-2" /> Delete
+              </DropdownMenuItem>
+            </>
+          )}
         </>
       )}
     </DropdownMenuContent>
@@ -234,20 +229,9 @@ function FileCardComponent({
             <Trash2 className="w-4 h-4 mr-2" /> Delete Forever
           </ContextMenuItem>
         </>
-      ) : currentView === 'shared' ? (
-        <>
-          {isEditable && file.permission === 'editor' && (
-            <ContextMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> Edit
-            </ContextMenuItem>
-          )}
-          <ContextMenuItem onClick={() => onDownload(file.id, file.name)}>
-            <Download className="w-4 h-4 mr-2" /> Download
-          </ContextMenuItem>
-        </>
       ) : (
         <>
-          {isEditable && (
+          {isEditable && file.permission !== 'viewer' && (
             <ContextMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
               <Edit2 className="w-4 h-4 mr-2" /> Edit
             </ContextMenuItem>
@@ -261,9 +245,11 @@ function FileCardComponent({
           <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> Share
           </ContextMenuItem>
-          <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
-            <Edit2 className="w-4 h-4 mr-2" /> Rename
-          </ContextMenuItem>
+          {file.permission !== 'viewer' && (
+            <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
+              <Edit2 className="w-4 h-4 mr-2" /> Rename
+            </ContextMenuItem>
+          )}
           <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onMove(file.id, file.name), 0)}>
             <FolderInput className="w-4 h-4 mr-2" /> Move
           </ContextMenuItem>
@@ -279,10 +265,14 @@ function FileCardComponent({
               <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> Hide
             </ContextMenuItem>
           )}
-          <ContextMenuSeparator />
-          <ContextMenuItem onClick={() => onDelete(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-            <Trash2 className="w-4 h-4 mr-2" /> Delete
-          </ContextMenuItem>
+          {file.permission !== 'viewer' && (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuItem onClick={() => onDelete(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+                <Trash2 className="w-4 h-4 mr-2" /> Delete
+              </ContextMenuItem>
+            </>
+          )}
         </>
       )}
     </ContextMenuContent>
