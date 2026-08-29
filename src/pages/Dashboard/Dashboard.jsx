@@ -38,6 +38,7 @@ import JSZip from "jszip"
 import { useDrive } from "../../hooks/useDrive"
 import { UploadIcon } from "../../components/UploadIcon"
 import { SortIcon } from "../../components/SortIcon"
+import { SearchIcon } from "../../components/SearchIcon"
 import { useProgress } from "../../context/ProgressContext"
 import { Link } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
@@ -84,7 +85,7 @@ export function Dashboard() {
     folder, children, path, loading, error, starredItems,
     createFolder, renameFolder, deleteFolder, 
     uploadFile, renameFile, deleteFile, moveFile, downloadFile, fetchAllFolders,
-    fetchShares, shareResource, revokeShare,
+    fetchShares, shareResource, revokeShare, searchUsers,
     fetchLinkShare, createLinkShare, deleteLinkShare, toggleStar,
     restoreItem, deleteForever,
     trackOpen, createBundleShare,
@@ -1309,7 +1310,7 @@ export function Dashboard() {
           <div className="flex items-center justify-between gap-3 mb-3">
             <h2 className="text-sm font-medium text-muted-foreground shrink-0">{t("dashboard.folders")} ({filteredFolders.length})</h2>
             <div className="relative flex-1 max-w-[200px] sm:hidden">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <SearchIcon isSearching={!!searchQuery} className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <Input 
                 type="text" 
                 placeholder={t("dashboard.mobileSearchPlaceholder")} 
@@ -1616,7 +1617,7 @@ export function Dashboard() {
         resourceType={shareModalData.resourceType}
         resourceId={shareModalData.resourceId}
         resourceName={shareModalData.resourceName}
-        useDrive={{ fetchShares, shareResource, revokeShare, fetchLinkShare, createLinkShare, deleteLinkShare, createBundleShare }}
+        useDrive={{ fetchShares, shareResource, revokeShare, searchUsers, fetchLinkShare, createLinkShare, deleteLinkShare, createBundleShare }}
       />
       <SetSecretCodeModal
         isOpen={isSetCodeModalOpen}

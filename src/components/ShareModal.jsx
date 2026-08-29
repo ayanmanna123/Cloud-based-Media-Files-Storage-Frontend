@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { 
   Loader2, 
   Users, 
@@ -19,7 +19,7 @@ import {
 import { QRCodeSVG } from "qrcode.react"
 
 export function ShareModal({ isOpen, onClose, resourceType, resourceId, resourceName, useDrive }) {
-  const { fetchShares, shareResource, revokeShare, fetchLinkShare, createLinkShare, deleteLinkShare, createBundleShare } = useDrive
+  const { fetchShares, shareResource, revokeShare, searchUsers, fetchLinkShare, createLinkShare, deleteLinkShare, createBundleShare } = useDrive
   const [shares, setShares] = useState([])
   const [activeLink, setActiveLink] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -37,12 +37,53 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
   const [expiresAt, setExpiresAt] = useState("")
   const [linkCopied, setLinkCopied] = useState(false)
 
+  // Auto-suggestions state
+  const [userSuggestions, setUserSuggestions] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false)
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    if (!email.trim() || !searchUsers) {
+      setUserSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingUsers(true)
+      try {
+        const results = await searchUsers(email.trim())
+        setUserSuggestions(results || [])
+        setShowSuggestions(true)
+      } catch (err) {
+        console.error("Error searching users:", err)
+      } finally {
+        setIsSearchingUsers(false)
+      }
+    }, 250)
+
+    return () => clearTimeout(timer)
+  }, [email, searchUsers])
+
   useEffect(() => {
     if (isOpen && resourceId) {
       loadShares()
       loadLinkShare()
       // reset form
       setEmail("")
+      setUserSuggestions([])
+      setShowSuggestions(false)
       setRole("viewer")
       setMessage("")
       setError("")
@@ -170,16 +211,63 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
               {/* Invite Form */}
               <form onSubmit={handleShare} className="mt-4 space-y-4">
             <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <div className="relative flex-1" ref={containerRef}>
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
                 <Input 
                   placeholder="Add people via email" 
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => {
+                    if (email.trim() && userSuggestions.length > 0) setShowSuggestions(true)
+                  }}
                   className="pl-9 bg-muted/50 border-border focus-visible:ring-blue-500"
                   disabled={isSubmitting}
+                  autoComplete="off"
                 />
+
+                {/* Auto-suggestions Dropdown */}
+                {showSuggestions && (
+                  <div className="absolute left-0 right-0 top-full mt-1 bg-background/95 backdrop-blur-md border border-border shadow-xl rounded-lg overflow-hidden z-50 max-h-56 overflow-y-auto animate-in fade-in-50 zoom-in-95 duration-150">
+                    {isSearchingUsers ? (
+                      <div className="flex items-center justify-center p-3 text-xs text-muted-foreground gap-2">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Searching users...
+                      </div>
+                    ) : userSuggestions.length > 0 ? (
+                      <div className="py-1">
+                        <div className="px-3 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30 border-b border-border/50">
+                          Suggested Registered Users
+                        </div>
+                        {userSuggestions.map((u) => (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => {
+                              setEmail(u.email)
+                              setShowSuggestions(false)
+                            }}
+                            className="w-full text-left px-3 py-2 flex items-center gap-2.5 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 transition-colors cursor-pointer border-b border-border/20 last:border-0"
+                          >
+                            <img 
+                              src={u.imageUrl || u.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.email)}&background=random`} 
+                              alt={u.name || u.email}
+                              className="w-7 h-7 rounded-full bg-muted object-cover flex-shrink-0"
+                            />
+                            <div className="truncate flex-1">
+                              <p className="text-xs font-medium text-foreground truncate">{u.name || "User"}</p>
+                              <p className="text-[11px] text-muted-foreground truncate">{u.email}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-3 text-xs text-muted-foreground text-center">
+                        No registered user found matching "{email}"
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <select 
                 value={role}

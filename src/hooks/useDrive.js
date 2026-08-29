@@ -869,6 +869,20 @@ export function useDrive(folderId = null) {
     }
   };
 
+  const searchUsers = async (query = '') => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${baseUrl}/api/users/search?q=${encodeURIComponent(query)}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to search users');
+      return await response.json();
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
   return {
     folder: data.folder,
     children: data.children,
@@ -895,6 +909,7 @@ export function useDrive(folderId = null) {
     trackOpen,
     shareResource,
     revokeShare,
+    searchUsers,
     fetchLinkShare,
     createLinkShare,
     deleteLinkShare,

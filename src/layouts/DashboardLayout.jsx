@@ -17,6 +17,7 @@ import { FolderOpenIcon } from "../components/FolderOpenIcon"
 import { ClockIcon } from "../components/ClockIcon"
 import { StarIcon } from "../components/StarIcon"
 import { UsersIcon } from "../components/UsersIcon"
+import { SearchIcon } from "../components/SearchIcon"
 import { useAuth } from "../context/AuthContext"
 import { startRegistration } from "@simplewebauthn/browser"
 import { ThemeToggle } from "../components/ThemeToggle"
@@ -207,14 +208,23 @@ export function DashboardLayout() {
 
         <div className="px-4 pb-4 md:hidden">
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <SearchIcon isSearching={!!searchQuery} className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <Input 
               type="text" 
               placeholder={t("dashboard.mobileSearchPlaceholder")} 
-              className="pl-9 bg-muted/50 border-border h-9 text-sm focus-visible:ring-1"
+              className="pl-9 pr-8 bg-muted/50 border-border h-9 text-sm focus-visible:ring-1"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-0.5 rounded-full hover:bg-muted"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -273,14 +283,23 @@ export function DashboardLayout() {
             </Button>
             
             <div className="max-w-xl flex-1 relative hidden sm:block">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <SearchIcon isSearching={!!searchQuery} className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <Input 
                 type="text" 
                 placeholder={t("dashboard.searchPlaceholder")} 
-                className="pl-10 bg-muted/50 border-border focus-visible:ring-1"
+                className="pl-10 pr-9 bg-muted/50 border-border focus-visible:ring-1"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-0.5 rounded-full hover:bg-muted"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
