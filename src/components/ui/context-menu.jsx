@@ -17,16 +17,24 @@ function ContextMenuPortal({
 }
 
 function ContextMenuTrigger({
-  className,
   asChild,
+  render,
+  children,
+  className,
   ...props
 }) {
-  const { asChild: _, ...cleanProps } = props;
+  const triggerRender = render || (asChild && React.isValidElement(children) ? children : undefined);
+  const triggerChildren = asChild && React.isValidElement(children) ? undefined : children;
+
   return (
     <ContextMenuPrimitive.Trigger
       data-slot="context-menu-trigger"
+      render={triggerRender}
       className={cn("select-none", className)}
-      {...cleanProps} />
+      {...props}
+    >
+      {triggerChildren}
+    </ContextMenuPrimitive.Trigger>
   );
 }
 

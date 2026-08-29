@@ -13,10 +13,22 @@ function Dialog({
 
 function DialogTrigger({
   asChild,
+  render,
+  children,
   ...props
 }) {
-  const { asChild: _, ...cleanProps } = props;
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...cleanProps} />;
+  const triggerRender = render || (asChild && React.isValidElement(children) ? children : undefined);
+  const triggerChildren = asChild && React.isValidElement(children) ? undefined : children;
+
+  return (
+    <DialogPrimitive.Trigger 
+      data-slot="dialog-trigger" 
+      render={triggerRender} 
+      {...props}
+    >
+      {triggerChildren}
+    </DialogPrimitive.Trigger>
+  );
 }
 
 function DialogPortal({
