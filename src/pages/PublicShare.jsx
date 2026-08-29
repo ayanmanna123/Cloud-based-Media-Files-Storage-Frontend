@@ -43,7 +43,7 @@ export function PublicShare({ isBundle = false }) {
 
   const getFileIcon = (fileName) => {
     if (!fileName) return FileText
-    if (fileName.match(/\.(jpg|jpeg|png|gif|svg)$/i)) return FileImage
+    if (fileName.match(/\.(jpg|jpeg|png|gif|svg|webp|avif|heic|heif)$/i)) return FileImage
     if (fileName.match(/\.(mp4|webm|ogg)$/i)) return FileVideo
     if (fileName.match(/\.(csv|xls|xlsx)$/i)) return FileSpreadsheet
     return FileText
@@ -120,7 +120,7 @@ export function PublicShare({ isBundle = false }) {
   const isFile = data.resourceType === 'file'
   const resource = data.resource
   const Icon = isFile ? getFileIcon(resource?.name) : FolderOpen
-  const isImage = isFile && resource?.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+  const isImage = isFile && resource?.name?.match(/\.(jpg|jpeg|png|gif|webp|avif|heic|heif)$/i)
   const isPdf = isFile && resource?.name?.match(/\.(pdf)$/i)
   const previewUrl = isFile ? `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${resource.storageKey}` : null
   const pdfPreviewUrl = isPdf ? `${previewUrl}/ik-thumbnail.jpg` : null

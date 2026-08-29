@@ -1,15 +1,56 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import ImageKit from 'imagekit-javascript';
 import { sha256 } from '../lib/utils';
 
+// Module-scoped cache for Stale-While-Revalidate (SWR) folder navigation
+const driveCache = new Map();
+if (typeof window !== 'undefined') {
+  window.__driveCache = driveCache;
+}
+
 export function useDrive(folderId = null) {
   const { user, logout } = useAuth();
-  const [data, setData] = useState({ folder: null, children: { folders: [], files: [] }, path: [] });
-  const [loading, setLoading] = useState(true);
+  const cacheKey = `${user?.id || 'guest'}_${folderId || 'root'}`;
+  
+  const activeCacheKeyRef = useRef(cacheKey);
+  activeCacheKeyRef.current = cacheKey;
+
+  const [prevCacheKey, setPrevCacheKey] = useState(cacheKey);
+  const initialCached = driveCache.get(cacheKey);
+
+  const [data, setData] = useState(() => {
+    return initialCached || { folder: null, children: { folders: [], files: [] }, path: [] };
+  });
+  const [loading, setLoading] = useState(!initialCached);
   const [error, setError] = useState(null);
   const [starredItems, setStarredItems] = useState([]);
   const [secretHash, setSecretHash] = useState(null);
+
+  // Synchronously reset/load cached data when folderId or cacheKey changes during rendering
+  if (cacheKey !== prevCacheKey) {
+    setPrevCacheKey(cacheKey);
+    const cached = driveCache.get(cacheKey);
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+    } else {
+      setData({ folder: null, children: { folders: [], files: [] }, path: [] });
+      setLoading(true);
+    }
+  }
+
+  // Helper to sync local state and SWR cache concurrently
+  const updateDataAndCache = useCallback((updater) => {
+    const currentKey = cacheKey;
+    setData(prev => {
+      const nextData = typeof updater === 'function' ? updater(prev) : updater;
+      if (currentKey === activeCacheKeyRef.current && nextData) {
+        driveCache.set(currentKey, nextData);
+      }
+      return nextData;
+    });
+  }, [cacheKey]);
 
   useEffect(() => {
     const computeHash = async () => {
@@ -42,8 +83,17 @@ export function useDrive(folderId = null) {
 
   const fetchFolder = useCallback(async (showLoading = true) => {
     if (!user) return;
-    
-    if (showLoading) setLoading(true);
+    const requestKey = cacheKey;
+
+    // 1. SWR Cache Check: Instantly load cached folder data if available
+    const cachedData = driveCache.get(requestKey);
+    if (cachedData) {
+      setData(cachedData);
+      setLoading(false);
+    } else if (showLoading) {
+      setLoading(true);
+    }
+
     setError(null);
     try {
       let endpoint = `${import.meta.env.VITE_API_URL}/api/folders/root`;
@@ -76,52 +126,70 @@ export function useDrive(folderId = null) {
       if (!response.ok) {
         if (response.status === 401) {
           logout();
+          driveCache.clear();
           throw new Error('Session expired. Please log in again.');
         }
         throw new Error('Failed to fetch folder contents');
       }
 
       const result = await response.json();
+
+      // Guard: Discard stale response if user navigated to a different folder while fetching
+      if (requestKey !== activeCacheKeyRef.current) {
+        return;
+      }
+
+      let formattedData;
       if (folderId === 'shared') {
-        setData({
+        formattedData = {
           folder: { id: 'shared', name: 'Shared with me' },
           children: { folders: result.folders || [], files: result.files || [] },
           path: [{ id: 'shared', name: 'Shared with me' }]
-        });
+        };
       } else if (folderId === 'recent') {
-        setData({
+        formattedData = {
           folder: { id: 'recent', name: 'Recent' },
           children: { 
             folders: result.filter(r => r.itemType === 'folder') || [], 
             files: result.filter(r => r.itemType === 'file') || [] 
           },
           path: [{ id: 'recent', name: 'Recent' }]
-        });
+        };
       } else if (folderId === 'secret' || (secretHash && folderId === secretHash)) {
-        setData({
+        formattedData = {
           folder: { id: folderId, name: 'Secret Folder' },
           children: { folders: result.folders || [], files: result.files || [] },
           path: [{ id: folderId, name: 'Secret Folder' }]
-        });
+        };
       } else if (folderId === 'starred' || folderId === 'trash') {
         const title = folderId.charAt(0).toUpperCase() + folderId.slice(1);
-        setData({
+        formattedData = {
           folder: { id: folderId, name: title },
           children: { 
             folders: result.filter(r => r.type === 'folder') || [], 
             files: result.filter(r => r.type === 'file') || [] 
           },
           path: [{ id: folderId, name: title }]
-        });
+        };
       } else {
-        setData(result);
+        formattedData = result;
+      }
+
+      // Update cache and state with fresh background data only if key is still active
+      if (requestKey === activeCacheKeyRef.current) {
+        driveCache.set(requestKey, formattedData);
+        setData(formattedData);
       }
     } catch (err) {
-      setError(err.message);
+      if (requestKey === activeCacheKeyRef.current && !driveCache.has(requestKey)) {
+        setError(err.message);
+      }
     } finally {
-      if (showLoading) setLoading(false);
+      if (requestKey === activeCacheKeyRef.current && showLoading) {
+        setLoading(false);
+      }
     }
-  }, [folderId, user, secretHash]);
+  }, [folderId, user, secretHash, cacheKey, logout]);
 
   useEffect(() => {
     fetchFolder();
@@ -141,7 +209,7 @@ export function useDrive(folderId = null) {
       if (!response.ok) throw new Error('Failed to create folder');
       
       const newFolder = await response.json();
-      setData(prev => ({
+      updateDataAndCache(prev => ({
         ...prev,
         children: {
           ...prev.children,
@@ -168,7 +236,7 @@ export function useDrive(folderId = null) {
       if (!response.ok) throw new Error('Failed to rename folder');
       
       const updatedFolder = await response.json();
-      setData(prev => ({
+      updateDataAndCache(prev => ({
         ...prev,
         children: {
           ...prev.children,
@@ -192,7 +260,7 @@ export function useDrive(folderId = null) {
 
       if (!response.ok) throw new Error('Failed to delete folder');
       
-      setData(prev => ({
+      updateDataAndCache(prev => ({
         ...prev,
         children: {
           ...prev.children,
@@ -217,7 +285,7 @@ export function useDrive(folderId = null) {
 
       if (!response.ok) throw new Error('Failed to update folder hide state');
       
-      setData(prev => ({
+      updateDataAndCache(prev => ({
         ...prev,
         children: {
           ...prev.children,
@@ -368,7 +436,7 @@ export function useDrive(folderId = null) {
       });
       if (!response.ok) throw new Error('Failed to rename file');
       const updatedFile = await response.json();
-      setData(prev => ({
+      updateDataAndCache(prev => ({
         ...prev,
         children: {
           ...prev.children,
@@ -386,7 +454,7 @@ export function useDrive(folderId = null) {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to delete file');
-      setData(prev => ({
+      updateDataAndCache(prev => ({
         ...prev,
         children: {
           ...prev.children,
@@ -405,7 +473,7 @@ export function useDrive(folderId = null) {
         body: JSON.stringify({ isHidden }),
       });
       if (!response.ok) throw new Error('Failed to update file hide state');
-      setData(prev => ({
+      updateDataAndCache(prev => ({
         ...prev,
         children: {
           ...prev.children,
@@ -425,7 +493,7 @@ export function useDrive(folderId = null) {
       });
       if (!response.ok) throw new Error('Failed to move file');
       // Remove from current view
-      setData(prev => ({
+      updateDataAndCache(prev => ({
         ...prev,
         children: {
           ...prev.children,
@@ -448,7 +516,7 @@ export function useDrive(folderId = null) {
       
       // If we copied to the current folder view, add it to the state
       if ((targetFolderId || null) === (folderId || null)) {
-        setData(prev => ({
+        updateDataAndCache(prev => ({
           ...prev,
           children: {
             ...prev.children,
@@ -470,7 +538,7 @@ export function useDrive(folderId = null) {
       });
       if (!response.ok) throw new Error('Failed to move folder');
       // Remove from current view
-      setData(prev => ({
+      updateDataAndCache(prev => ({
         ...prev,
         children: {
           ...prev.children,
@@ -493,7 +561,7 @@ export function useDrive(folderId = null) {
       
       // If we copied to the current folder view, add it to the state
       if ((targetFolderId || null) === (folderId || null)) {
-        setData(prev => ({
+        updateDataAndCache(prev => ({
           ...prev,
           children: {
             ...prev.children,
@@ -715,7 +783,7 @@ export function useDrive(folderId = null) {
       );
       
       if (folderId === 'starred' && isStarred) {
-        setData(prevData => ({
+        updateDataAndCache(prevData => ({
           ...prevData,
           children: {
             folders: prevData.children.folders.filter(f => f.id !== resourceId),
@@ -739,7 +807,7 @@ export function useDrive(folderId = null) {
       });
       if (!response.ok) throw new Error('Failed to restore item');
       
-      setData(prevData => ({
+      updateDataAndCache(prevData => ({
         ...prevData,
         children: {
           folders: prevData.children.folders.filter(f => !(resourceType === 'folder' && f.id === resourceId)),
@@ -760,7 +828,7 @@ export function useDrive(folderId = null) {
       });
       if (!response.ok) throw new Error('Failed to permanently delete item');
       
-      setData(prevData => ({
+      updateDataAndCache(prevData => ({
         ...prevData,
         children: {
           folders: prevData.children.folders.filter(f => !(resourceType === 'folder' && f.id === resourceId)),

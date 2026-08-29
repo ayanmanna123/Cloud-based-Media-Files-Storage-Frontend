@@ -1,3 +1,4 @@
+import { memo } from "react"
 import {
   FolderOpen,
   MoreVertical,
@@ -24,7 +25,7 @@ import {
   ContextMenuTrigger,
 } from "../../../components/ui/context-menu"
 
-export function FolderCard({ 
+function FolderCardComponent({ 
   folder, 
   currentView, 
   starredItems,
@@ -184,3 +185,20 @@ export function FolderCard({
     </ContextMenu>
   )
 }
+
+export const FolderCard = memo(FolderCardComponent, (prevProps, nextProps) => {
+  const prevIsStarred = (prevProps.starredItems || []).includes(`folder_${prevProps.folder?.id}`);
+  const nextIsStarred = (nextProps.starredItems || []).includes(`folder_${nextProps.folder?.id}`);
+
+  return (
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.currentView === nextProps.currentView &&
+    prevIsStarred === nextIsStarred &&
+    prevProps.folder?.id === nextProps.folder?.id &&
+    prevProps.folder?.name === nextProps.folder?.name &&
+    prevProps.folder?.updatedAt === nextProps.folder?.updatedAt &&
+    prevProps.folder?.fileCount === nextProps.folder?.fileCount &&
+    prevProps.folder?.totalSize === nextProps.folder?.totalSize &&
+    prevProps.folder?.isHidden === nextProps.folder?.isHidden
+  );
+});

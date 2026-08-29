@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, memo } from "react"
 import {
   MoreVertical,
   Star,
@@ -37,7 +37,7 @@ import {
 const getFileIcon = (filename) => {
   if (!filename) return FileText
   const ext = filename.split('.').pop()?.toLowerCase()
-  if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext)) return FileImage
+  if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'avif', 'heic', 'heif'].includes(ext)) return FileImage
   if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) return FileVideo
   if (['csv', 'xlsx', 'xls'].includes(ext)) return FileSpreadsheet
   return FileText
@@ -51,7 +51,7 @@ const formatBytes = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-export function FileCard({
+function FileCardComponent({
   file,
   viewMode,
   currentView,
@@ -74,7 +74,7 @@ export function FileCard({
 }) {
   const Icon = getFileIcon(file.name)
   const isEditable = file.name.match(/\.(txt|md|csv|json|js|jsx|ts|tsx|html|css|xml|yml|yaml|ini|env|log)$/i)
-  const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+  const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp|avif|heic|heif)$/i)
   const isPdf = file.name.match(/\.(pdf)$/i)
   const isVideo = file.name.match(/\.(mp4|mov|avi|mkv|webm)$/i)
   const isOfficeDoc = file.name.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i)
@@ -424,3 +424,21 @@ export function FileCard({
     </ContextMenu>
   )
 }
+
+export const FileCard = memo(FileCardComponent, (prevProps, nextProps) => {
+  const prevIsStarred = (prevProps.starredItems || []).includes(`file_${prevProps.file?.id}`);
+  const nextIsStarred = (nextProps.starredItems || []).includes(`file_${nextProps.file?.id}`);
+
+  return (
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.viewMode === nextProps.viewMode &&
+    prevProps.currentView === nextProps.currentView &&
+    prevIsStarred === nextIsStarred &&
+    prevProps.file?.id === nextProps.file?.id &&
+    prevProps.file?.name === nextProps.file?.name &&
+    prevProps.file?.sizeBytes === nextProps.file?.sizeBytes &&
+    prevProps.file?.updatedAt === nextProps.file?.updatedAt &&
+    prevProps.file?.storageKey === nextProps.file?.storageKey &&
+    prevProps.file?.isHidden === nextProps.file?.isHidden
+  );
+});

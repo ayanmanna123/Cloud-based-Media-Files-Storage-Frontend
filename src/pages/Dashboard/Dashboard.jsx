@@ -169,6 +169,11 @@ export function Dashboard() {
   const isMouseDownRef = useRef(false)
   const dragStartPosRef = useRef({ x: 0, y: 0, clientX: 0, clientY: 0 })
   const initialSelectedItemsRef = useRef([])
+  const cachedItemsRef = useRef([])
+  const containerRectRef = useRef(null)
+  const latestMousePosRef = useRef({ clientX: 0, clientY: 0, isCtrl: false, isMeta: false, isShift: false })
+  const rafPendingRef = useRef(false)
+  const rafIdRef = useRef(null)
 
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem("drive_viewMode") || "grid"
@@ -406,7 +411,30 @@ export function Dashboard() {
     const startY = e.clientY - rect.top + container.scrollTop;
 
     isMouseDownRef.current = true;
-    dragStartPosRef.current = { x: startX, y: startY, clientX: e.clientX, clientY: e.clientY };
+    dragStartPosRef.current = { 
+      x: startX, 
+      y: startY, 
+      clientX: e.clientX, 
+      clientY: e.clientY,
+      scrollLeft: container.scrollLeft,
+      scrollTop: container.scrollTop
+    };
+    containerRectRef.current = rect;
+
+    // Cache item layout bounding boxes once on mousedown
+    const itemElements = container.querySelectorAll('[data-item-key]');
+    cachedItemsRef.current = Array.from(itemElements).map(el => {
+      const itemRect = el.getBoundingClientRect();
+      return {
+        key: el.getAttribute('data-item-key'),
+        rect: {
+          left: itemRect.left,
+          top: itemRect.top,
+          right: itemRect.right,
+          bottom: itemRect.bottom,
+        }
+      };
+    });
 
     if (e.ctrlKey || e.metaKey || e.shiftKey) {
       initialSelectedItemsRef.current = [...selectedItems];
@@ -420,14 +448,16 @@ export function Dashboard() {
     }
   };
 
-  const handleMarqueeMouseMove = useCallback((e) => {
+  const updateMarqueeSelection = useCallback(() => {
+    rafPendingRef.current = false;
     if (!isMouseDownRef.current || !containerRef.current) return;
 
     const container = containerRef.current;
-    
-    const rect = container.getBoundingClientRect();
-    const currentX = e.clientX - rect.left + container.scrollLeft;
-    const currentY = e.clientY - rect.top + container.scrollTop;
+    const { clientX, clientY, isCtrl, isMeta, isShift } = latestMousePosRef.current;
+    const rect = containerRectRef.current || container.getBoundingClientRect();
+
+    const currentX = clientX - rect.left + container.scrollLeft;
+    const currentY = clientY - rect.top + container.scrollTop;
 
     const startX = dragStartPosRef.current.x;
     const startY = dragStartPosRef.current.y;
@@ -444,37 +474,65 @@ export function Dashboard() {
 
     setSelectionBox({ left, top, width, height });
 
-    const boxViewportLeft = Math.min(dragStartPosRef.current.clientX, e.clientX);
-    const boxViewportTop = Math.min(dragStartPosRef.current.clientY, e.clientY);
-    const boxViewportRight = Math.max(dragStartPosRef.current.clientX, e.clientX);
-    const boxViewportBottom = Math.max(dragStartPosRef.current.clientY, e.clientY);
+    const boxViewportLeft = Math.min(dragStartPosRef.current.clientX, clientX);
+    const boxViewportTop = Math.min(dragStartPosRef.current.clientY, clientY);
+    const boxViewportRight = Math.max(dragStartPosRef.current.clientX, clientX);
+    const boxViewportBottom = Math.max(dragStartPosRef.current.clientY, clientY);
 
-    const itemElements = container.querySelectorAll('[data-item-key]');
+    const scrollDeltaX = container.scrollLeft - (dragStartPosRef.current.scrollLeft || 0);
+    const scrollDeltaY = container.scrollTop - (dragStartPosRef.current.scrollTop || 0);
+
     const selectedKeys = new Set(initialSelectedItemsRef.current);
+    const items = cachedItemsRef.current || [];
 
-    itemElements.forEach((el) => {
-      const itemKey = el.getAttribute('data-item-key');
-      const itemRect = el.getBoundingClientRect();
+    for (let i = 0; i < items.length; i++) {
+      const { key: itemKey, rect: itemRect } = items[i];
+      const itemLeft = itemRect.left - scrollDeltaX;
+      const itemRight = itemRect.right - scrollDeltaX;
+      const itemTop = itemRect.top - scrollDeltaY;
+      const itemBottom = itemRect.bottom - scrollDeltaY;
 
       const isIntersecting = !(
-        itemRect.right < boxViewportLeft ||
-        itemRect.left > boxViewportRight ||
-        itemRect.bottom < boxViewportTop ||
-        itemRect.top > boxViewportBottom
+        itemRight < boxViewportLeft ||
+        itemLeft > boxViewportRight ||
+        itemBottom < boxViewportTop ||
+        itemTop > boxViewportBottom
       );
 
       if (isIntersecting) {
         selectedKeys.add(itemKey);
-      } else if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+      } else if (!isCtrl && !isMeta && !isShift) {
         selectedKeys.delete(itemKey);
       }
-    });
+    }
 
     setSelectedItems(Array.from(selectedKeys));
   }, [selectionBox]);
 
+  const handleMarqueeMouseMove = useCallback((e) => {
+    if (!isMouseDownRef.current) return;
+
+    latestMousePosRef.current = {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      isCtrl: e.ctrlKey,
+      isMeta: e.metaKey,
+      isShift: e.shiftKey
+    };
+
+    if (!rafPendingRef.current) {
+      rafPendingRef.current = true;
+      rafIdRef.current = requestAnimationFrame(updateMarqueeSelection);
+    }
+  }, [updateMarqueeSelection]);
+
   const handleMarqueeMouseUp = useCallback(() => {
     isMouseDownRef.current = false;
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    rafPendingRef.current = false;
     setSelectionBox(null);
   }, []);
 
@@ -482,11 +540,21 @@ export function Dashboard() {
     const onGlobalMouseUp = () => {
       if (isMouseDownRef.current) {
         isMouseDownRef.current = false;
+        if (rafIdRef.current) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
+        }
+        rafPendingRef.current = false;
         setSelectionBox(null);
       }
     };
     window.addEventListener('mouseup', onGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', onGlobalMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', onGlobalMouseUp);
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
   }, []);
 
   const handleBulkDownload = async () => {
@@ -982,7 +1050,7 @@ export function Dashboard() {
 
   const getFileIcon = (fileName) => {
     if (!fileName) return FileText
-    if (fileName.match(/\.(jpg|jpeg|png|gif|svg)$/i)) return FileImage
+    if (fileName.match(/\.(jpg|jpeg|png|gif|svg|webp|avif|heic|heif)$/i)) return FileImage
     if (fileName.match(/\.(mp4|webm|ogg)$/i)) return FileVideo
     if (fileName.match(/\.(csv|xls|xlsx)$/i)) return FileSpreadsheet
     return FileText

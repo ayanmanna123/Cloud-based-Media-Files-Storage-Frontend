@@ -9,7 +9,7 @@ export function LightboxModal({ isOpen, file, files = [], onClose, onNavigate })
   const isVideo = file.name.match(/\.(mp4|mov|avi|mkv|webm)$/i);
   const fileUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`;
 
-  const mediaFiles = files.filter(f => f.name.match(/\.(jpg|jpeg|png|gif|webp|mp4|mov|avi|mkv|webm)$/i));
+  const mediaFiles = files.filter(f => f.name.match(/\.(jpg|jpeg|png|gif|webp|avif|heic|heif|mp4|mov|avi|mkv|webm)$/i));
   const currentIndex = mediaFiles.findIndex(f => f.id === file.id);
   
   const handlePrev = (e) => {
