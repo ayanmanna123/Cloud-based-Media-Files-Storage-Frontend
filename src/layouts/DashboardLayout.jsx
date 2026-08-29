@@ -240,7 +240,7 @@ export function DashboardLayout() {
           <div className="mb-2 flex justify-between text-xs font-medium text-muted-foreground">
             <span>Storage</span>
             <span>
-              {formatBytes(user?.storageUsed || 0)} / {formatBytes(user?.storageLimit || 100 * 1024 * 1024 * 1024)}
+              {formatBytes(user?.storageUsed || 0)} / {formatBytes(user?.storageLimit || 1 * 1024 * 1024 * 1024)}
             </span>
           </div>
           <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-1">

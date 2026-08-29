@@ -12,6 +12,7 @@ import GeometricGridBackground from "../../components/GeometricGridBackground"
 export function Register() {
   const navigate = useNavigate()
   const { login } = useAuth()
+
   const [formData, setFormData] = useState({ name: "", email: "", password: "" })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -89,7 +90,7 @@ export function Register() {
           />
         </div>
         <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
-        <Card className="relative z-10 w-full max-w-md text-center bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08),_inset_0_1px_1px_rgba(255,255,255,0.5)] dark:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.7),_inset_0_1px_1px_rgba(255,255,255,0.1)] rounded-[2rem] p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
+        <Card className="relative z-10 w-full max-w-md text-center bg-white/16 dark:bg-black/30 backdrop-blur-[7px] border-0 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] rounded-[2rem] p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
           <div className="mx-auto w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center ring-8 ring-blue-500/5 mb-5">
             <Mail className="w-8 h-8" />
           </div>
@@ -131,7 +132,7 @@ export function Register() {
         />
       </div>
       <div className="absolute inset-0 bg-background/30 z-0 pointer-events-none" />
-      <Card className="relative z-10 w-full max-w-md bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08),_inset_0_1px_1px_rgba(255,255,255,0.5)] dark:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.7),_inset_0_1px_1px_rgba(255,255,255,0.1)] rounded-[2rem]">
+      <Card className="relative z-10 w-full max-w-md bg-white/16 dark:bg-black/30 backdrop-blur-[7px] border-0 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] rounded-[2rem]">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl">Create an account</CardTitle>
           <CardDescription>

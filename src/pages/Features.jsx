@@ -13,7 +13,8 @@ import {
   Activity,
   Tags,
   Users,
-  PieChart
+  PieChart,
+  Lock
 } from "lucide-react"
 
 export function Features() {
@@ -25,6 +26,14 @@ export function Features() {
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/20"
+    },
+    {
+      icon: Lock,
+      title: "Image Encryption",
+      description: "Client-side AES-256 military-grade encryption for images and media files before cloud storage.",
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-500/10",
+      borderColor: "border-emerald-500/20"
     },
     {
       icon: EyeOff,
