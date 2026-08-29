@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom"
 import { Loader2, Download, FileText, FileImage, FileVideo, FileSpreadsheet, FolderOpen, AlertCircle, Archive } from "lucide-react"
 import { Button } from "../components/ui/button"
 import JSZip from "jszip"
+import { deriveEncryptionKey, decryptFileWithFallbackKeys } from "../lib/cryptoUtils"
 
 export function PublicShare({ isBundle = false }) {
   const { token } = useParams()
@@ -10,6 +11,7 @@ export function PublicShare({ isBundle = false }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [publicPreviewUrl, setPublicPreviewUrl] = useState(null)
 
   useEffect(() => {
     fetchLinkData()
@@ -26,6 +28,25 @@ export function PublicShare({ isBundle = false }) {
       const result = await res.json()
       setData(result)
       
+      const resource = result.resource;
+      const isEncrypted = resource?.is_encrypted || resource?.isEncrypted;
+
+      if (result.resourceType === 'file' && isEncrypted) {
+        try {
+          const rawUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${resource.storageKey}`;
+          const fileRes = await fetch(rawUrl);
+          if (fileRes.ok) {
+            const arrayBuffer = await fileRes.arrayBuffer();
+            const encIv = resource.encryption_iv || resource.encryptionIv;
+            const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, null, encIv, resource);
+            const blob = new Blob([decryptedBuffer], { type: resource.mime_type || resource.mimeType || 'image/jpeg' });
+            setPublicPreviewUrl(URL.createObjectURL(blob));
+          }
+        } catch (previewErr) {
+          console.error("Public preview decryption error:", previewErr);
+        }
+      }
+
       // Auto download if requested
       if (searchParams.get("auto_download") === "true") {
         if ((isBundle || result.resourceType === 'folder') && result.files && result.files.length > 0) {
@@ -51,15 +72,43 @@ export function PublicShare({ isBundle = false }) {
 
   const [isZipping, setIsZipping] = useState(false);
 
-  const handleDownload = (res = data?.resource) => {
+  const handleDownload = async (res = data?.resource) => {
     if (!res) return
-    const url = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${res.storageKey}?attachment=true`
-    const a = document.createElement('a')
-    a.href = url
-    a.download = res.name || 'download'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
+    const isEncrypted = res.is_encrypted || res.isEncrypted;
+
+    if (isEncrypted) {
+      try {
+        const rawUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${res.storageKey}`;
+        const fileRes = await fetch(rawUrl);
+        if (!fileRes.ok) throw new Error("Failed to download encrypted file payload");
+
+        const arrayBuffer = await fileRes.arrayBuffer();
+        const encIv = res.encryption_iv || res.encryptionIv;
+        const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, null, encIv, res);
+
+        const blob = new Blob([decryptedBuffer], { type: res.mime_type || res.mimeType || 'application/octet-stream' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = res.name || 'download';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        console.error("Public download decryption error:", err);
+        alert("Failed to decrypt shared file: " + err.message);
+      }
+    } else {
+      const url = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${res.storageKey}?attachment=true`
+      const a = document.createElement('a')
+      a.href = url
+      a.download = res.name || 'download'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    }
   }
 
   const handleBundleDownload = async (files = data?.files, zipName = "Shared_Bundle") => {
@@ -72,8 +121,20 @@ export function PublicShare({ isBundle = false }) {
         const url = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Failed to fetch ${file.name}`);
-        const blob = await response.blob();
-        zip.file(file.name, blob);
+        const arrayBuffer = await response.arrayBuffer();
+
+        const isEncrypted = file.is_encrypted || file.isEncrypted;
+        let blobPayload;
+
+        if (isEncrypted) {
+          const encIv = file.encryption_iv || file.encryptionIv;
+          const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, null, encIv, file);
+          blobPayload = new Blob([decryptedBuffer], { type: file.mime_type || file.mimeType || 'application/octet-stream' });
+        } else {
+          blobPayload = new Blob([arrayBuffer]);
+        }
+
+        zip.file(file.name, blobPayload);
       });
 
       await Promise.all(downloadPromises);
@@ -88,7 +149,7 @@ export function PublicShare({ isBundle = false }) {
       setTimeout(() => URL.revokeObjectURL(a.href), 100);
     } catch (err) {
       console.error("Failed to create zip:", err);
-      alert("Failed to download multiple files. Some files might be too large or inaccessible.");
+      alert("Failed to download multiple files: " + err.message);
     } finally {
       setIsZipping(false);
     }
@@ -170,7 +231,7 @@ export function PublicShare({ isBundle = false }) {
             <div className="flex-1 bg-muted/10 min-h-[400px] flex items-center justify-center relative p-8">
               {(isImage || isPdf) ? (
                 <img 
-                  src={isPdf ? pdfPreviewUrl : previewUrl} 
+                  src={publicPreviewUrl || (isPdf ? pdfPreviewUrl : previewUrl)} 
                   alt={resource?.name} 
                   className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm"
                   onError={(e) => {

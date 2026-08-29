@@ -17,7 +17,8 @@ import {
   Link,
   Check,
   Eye,
-  EyeOff
+  EyeOff,
+  ShieldCheck
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -71,7 +72,8 @@ function FileCardComponent({
   onClick,
   onOpen,
   onPreview,
-  isSharedProp
+  isSharedProp,
+  showToast
 }) {
   const Icon = getFileIcon(file.name)
   const isEditable = file.name.match(/\.(txt|md|csv|json|js|jsx|ts|tsx|html|css|xml|yml|yaml|ini|env|log)$/i)
@@ -138,8 +140,17 @@ function FileCardComponent({
 
   const handleOpen = () => {
     if (onOpen) onOpen();
-    if ((isImage || isVideo) && onPreview) {
-      onPreview(file);
+    const isEncrypted = file.isEncrypted || file.is_encrypted;
+
+    if (isImage || isVideo) {
+      if (onPreview) onPreview(file);
+    } else if (isEncrypted) {
+      if (showToast) {
+        showToast("Encrypted file: cannot open directly in browser due to security purpose. Downloading file...");
+      }
+      if (onDownload) {
+        onDownload(file.id, file.name);
+      }
     } else if (isOfficeDoc) {
       window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`, '_blank')
     } else {
@@ -290,6 +301,12 @@ function FileCardComponent({
         <div className="flex-1 min-w-0 flex items-center gap-3">
           <Icon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
           <span className="text-sm font-medium truncate">{file.name}</span>
+          {(file.isEncrypted || file.is_encrypted) && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+              <ShieldCheck className="w-3 h-3" />
+              <span>AES-256</span>
+            </span>
+          )}
         </div>
         <div className="hidden sm:block w-32 shrink-0 text-sm text-muted-foreground truncate">
           {currentView === 'shared' ? (file.ownerName || 'Unknown') : 'me'}
@@ -338,6 +355,12 @@ function FileCardComponent({
           onDoubleClick={handleOpen}
         >
       <div className="flex-1 bg-muted/30 flex items-center justify-center overflow-hidden relative">
+        {(file.isEncrypted || file.is_encrypted) && (
+          <div className="absolute top-2 left-2 z-10 bg-emerald-600/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs backdrop-blur-xs">
+            <ShieldCheck className="w-3 h-3" />
+            <span>Encrypted</span>
+          </div>
+        )}
         {(isImage || isPdf || isVideo) ? (
           <>
             <img 

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import ImageKit from 'imagekit-javascript';
 import { sha256 } from '../lib/utils';
+import { deriveEncryptionKey, encryptFileBuffer, decryptFileBuffer, decryptFileWithFallbackKeys } from '../lib/cryptoUtils';
 
 // Module-scoped cache for Stale-While-Revalidate (SWR) folder navigation
 const driveCache = new Map();
@@ -297,8 +298,20 @@ export function useDrive(folderId = null) {
     }
   };
 
-  const uploadFile = async (file, abortSignal = null, targetFolderId = folderId, targetFileId = null, onProgress = null) => {
+  const uploadFile = async (file, abortSignal = null, targetFolderId = folderId, targetFileId = null, onProgress = null, isEncrypted = false) => {
     try {
+      let uploadBlob = file;
+      let encryptionIv = null;
+
+      if (isEncrypted) {
+        const userPass = user?.id || user?.secretCode || 'default_storage_secret';
+        const key = await deriveEncryptionKey(userPass);
+        const arrayBuffer = await file.arrayBuffer();
+        const encResult = await encryptFileBuffer(arrayBuffer, key);
+        uploadBlob = new Blob([encResult.encryptedBuffer], { type: 'application/octet-stream' });
+        encryptionIv = encResult.ivBase64;
+      }
+
       // 1. Initialize upload on backend
       const initRes = await fetch(`${import.meta.env.VITE_API_URL}/api/files/init`, {
         method: 'POST',
@@ -309,7 +322,9 @@ export function useDrive(folderId = null) {
           mimeType: file.type || 'application/octet-stream', 
           sizeBytes: file.size, 
           folderId: targetFolderId,
-          targetFileId: targetFileId
+          targetFileId: targetFileId,
+          isEncrypted: isEncrypted,
+          encryptionIv: encryptionIv
         }),
         signal: abortSignal
       });
@@ -323,7 +338,7 @@ export function useDrive(folderId = null) {
       
       // 2. Upload directly to ImageKit using XMLHttpRequest for progress tracking
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', uploadBlob, file.name);
       formData.append('publicKey', import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY);
       formData.append('signature', initData.upload.auth.signature);
       formData.append('expire', initData.upload.auth.expire);
@@ -403,7 +418,9 @@ export function useDrive(folderId = null) {
           fileId: initData.fileId,
           isNewVersion: initData.isNewVersion,
           storageKey: initData.storageKey,
-          sizeBytes: file.size
+          sizeBytes: file.size,
+          isEncrypted: isEncrypted,
+          encryptionIv: encryptionIv
         }),
         signal: abortSignal
       });
@@ -573,30 +590,41 @@ export function useDrive(folderId = null) {
     } catch (err) { throw err; }
   };
 
+  const getFileBlobUrl = async (id) => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/files/${id}`, {
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    });
+    if (!response.ok) throw new Error('Failed to get file');
+    const data = await response.json();
+    if (!data.signedUrl) throw new Error('Signed URL missing');
+
+    const fileRes = await fetch(data.signedUrl);
+    if (!fileRes.ok) throw new Error('Failed to download file payload');
+
+    const fileMeta = data.file || {};
+    if (fileMeta.isEncrypted || fileMeta.is_encrypted) {
+      const encIv = fileMeta.encryptionIv || fileMeta.encryption_iv;
+      const arrayBuffer = await fileRes.arrayBuffer();
+      const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, user, encIv, fileMeta);
+      const blob = new Blob([decryptedBuffer], { type: fileMeta.mimeType || fileMeta.mime_type || 'application/octet-stream' });
+      return { url: URL.createObjectURL(blob), file: fileMeta };
+    } else {
+      const blob = await fileRes.blob();
+      return { url: URL.createObjectURL(blob), file: fileMeta };
+    }
+  };
+
   const downloadFile = async (id, fileName) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/files/${id}`, {
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to get download URL');
-      const data = await response.json();
-      
-      if (data.signedUrl) {
-        // Fetch as blob to bypass cross-origin tab opening and ImageKit header bugs
-        const fileRes = await fetch(data.signedUrl);
-        if (!fileRes.ok) throw new Error('Failed to download file from storage');
-        const blob = await fileRes.blob();
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName || 'download';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
+      const { url, file: fileMeta } = await getFileBlobUrl(id);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName || fileMeta.name || 'download';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) { 
       console.error("Download error:", err);
       alert("Error downloading file: " + err.message);
@@ -860,6 +888,7 @@ export function useDrive(folderId = null) {
     moveFolder,
     copyFolder,
     downloadFile,
+    getFileBlobUrl,
     fetchAllFolders,
     fetchShares,
     fetchRecentFiles,

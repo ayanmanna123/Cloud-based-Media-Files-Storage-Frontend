@@ -28,7 +28,8 @@ import {
   Users,
   Star,
   RotateCcw,
-  Search
+  Search,
+  ShieldCheck
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -103,6 +104,7 @@ export function Dashboard() {
   const [versionHistoryModalData, setVersionHistoryModalData] = useState({ isOpen: false, fileId: null, fileName: "", currentVersionId: null })
   const [editFileModalData, setEditFileModalData] = useState({ isOpen: false, file: null })
   const [lightboxData, setLightboxData] = useState({ isOpen: false, file: null })
+  const [isNextUploadEncrypted, setIsNextUploadEncrypted] = useState(false)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sortMethod, setSortMethod] = useState(() => {
@@ -752,7 +754,7 @@ export function Dashboard() {
     }
   }
 
-  const handleFileUpload = async (files, targetFolderIdOverride = undefined, targetFileIdOverride = null) => {
+  const handleFileUpload = async (files, targetFolderIdOverride = undefined, targetFileIdOverride = null, isEncryptedOverride = false) => {
     if (folder?.permission === 'viewer') {
       showToast("you not access to edite this folder")
       return
@@ -760,11 +762,15 @@ export function Dashboard() {
     if (!files || files.length === 0) return
     setIsUploading(true)
     
+    const shouldEncrypt = isEncryptedOverride || isNextUploadEncrypted || currentView === 'secret' || id === 'secret';
+    // Reset one-time encrypt flag
+    setIsNextUploadEncrypted(false);
+
     const newTasks = Array.from(files).map(f => {
       const isTooLarge = f.size > 20 * 1024 * 1024;
       return { 
         id: Math.random().toString(36).substring(2, 9), 
-        name: f.name, 
+        name: f.name + (shouldEncrypt ? ' 🔒' : ''), 
         status: isTooLarge ? 'error' : 'uploading',
         message: isTooLarge ? 'Max 20MB allowed' : undefined,
         progress: 0,
@@ -794,7 +800,7 @@ export function Dashboard() {
           const onProgress = (stats) => {
             setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...stats } : t));
           };
-          await uploadFile(file, controller.signal, targetFolderIdOverride, targetFileIdOverride, onProgress)
+          await uploadFile(file, controller.signal, targetFolderIdOverride, targetFileIdOverride, onProgress, shouldEncrypt)
           setUploadTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t))
         } catch (err) {
           if (err.name === 'AbortError') {
@@ -1240,16 +1246,43 @@ export function Dashboard() {
 
           {currentView !== "shared" && currentView !== "recent" && currentView !== "starred" && currentView !== "trash" && currentView !== "secret" && currentView !== secretHash && (
             <>
-              <Button 
-                onClick={() => fileInputRef.current?.click()} 
-                variant="outline" 
-                className="gap-2"
-                disabled={isUploading}
-                title="Upload File (Shift+U)"
-              >
-                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                <span className="hidden sm:inline">Upload File</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 border-emerald-500/40 hover:border-emerald-500 text-emerald-600 dark:text-emerald-400 font-medium"
+                    disabled={isUploading}
+                    title="Upload File"
+                  >
+                    {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    <span className="hidden sm:inline">Upload</span>
+                    <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setIsNextUploadEncrypted(false);
+                      setTimeout(() => fileInputRef.current?.click(), 50);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Standard Upload
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setIsNextUploadEncrypted(true);
+                      setTimeout(() => fileInputRef.current?.click(), 50);
+                    }}
+                    className="cursor-pointer text-emerald-600 dark:text-emerald-400 font-semibold"
+                  >
+                    <ShieldCheck className="w-4 h-4 mr-2" />
+                    Encrypted Upload (AES-256)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button 
                 onClick={() => setIsCreateModalOpen(true)} 
                 className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
@@ -1366,6 +1399,7 @@ export function Dashboard() {
                       onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
                       onPreview={(file) => setLightboxData({ isOpen: true, file })}
                       onHide={handleHideFile}
+                      showToast={showToast}
                     />
                   )
                 })}
@@ -1400,6 +1434,7 @@ export function Dashboard() {
                     onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
                     onPreview={(file) => setLightboxData({ isOpen: true, file })}
                     onHide={handleHideFile}
+                    showToast={showToast}
                   />
                 )
               })}
@@ -1536,7 +1571,7 @@ export function Dashboard() {
         isOpen={editFileModalData.isOpen}
         onClose={() => setEditFileModalData({ isOpen: false, file: null })}
         file={editFileModalData.file}
-        onSave={(file, folderId, fileId) => handleFileUpload([file], folderId, fileId)}
+        onSave={(file, folderId, fileId, isEncrypted) => handleFileUpload([file], folderId, fileId, isEncrypted)}
       />
 
       <LightboxModal

@@ -7,7 +7,9 @@ import {
   DialogFooter
 } from "../../../components/ui/dialog"
 import { Button } from "../../../components/ui/button"
-import { Loader2 } from "lucide-react"
+import { Loader2, ShieldCheck } from "lucide-react"
+import { useAuth } from "../../../context/AuthContext"
+import { deriveEncryptionKey, decryptFileBuffer, decryptFileWithFallbackKeys } from "../../../lib/cryptoUtils"
 
 export function EditFileModal({ 
   isOpen, 
@@ -15,6 +17,7 @@ export function EditFileModal({
   file, 
   onSave
 }) {
+  const { user } = useAuth()
   const [content, setContent] = useState("")
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -24,33 +27,61 @@ export function EditFileModal({
     if (isOpen && file) {
       setLoading(true)
       setError(null)
-      const fileUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`
-      
-      fetch(fileUrl)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to fetch file content")
-          return res.text()
-        })
-        .then(text => {
-          setContent(text)
-          setLoading(false)
-        })
-        .catch(err => {
-          console.error(err)
-          setError(err.message)
-          setLoading(false)
-        })
+
+      const isEncrypted = file.isEncrypted || file.is_encrypted;
+
+      if (isEncrypted) {
+        fetch(`${import.meta.env.VITE_API_URL}/api/files/${file.id}`, { credentials: 'include' })
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch file details")
+            return res.json()
+          })
+          .then(async (data) => {
+            const fileRes = await fetch(data.signedUrl)
+            if (!fileRes.ok) throw new Error("Failed to download encrypted file content")
+            const arrayBuffer = await fileRes.arrayBuffer()
+
+            const encIv = file.encryptionIv || file.encryption_iv || data.file?.encryptionIv || data.file?.encryption_iv
+            const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, user, encIv, data.file || file)
+
+            const text = new TextDecoder().decode(decryptedBuffer)
+            setContent(text)
+            setLoading(false)
+          })
+          .catch(err => {
+            console.error(err)
+            setError(err.message)
+            setLoading(false)
+          })
+      } else {
+        const fileUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}`
+        fetch(fileUrl)
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch file content")
+            return res.text()
+          })
+          .then(text => {
+            setContent(text)
+            setLoading(false)
+          })
+          .catch(err => {
+            console.error(err)
+            setError(err.message)
+            setLoading(false)
+          })
+      }
     }
-  }, [isOpen, file])
+  }, [isOpen, file, user])
 
   const handleSave = async () => {
     setSaving(true)
     try {
+      const isEncrypted = file.isEncrypted || file.is_encrypted;
       // Create a File object to match what the uploadFile function expects
       const updatedFile = new File([content], file.name, { type: file.mimeType || 'text/plain' })
       
-      // We pass the explicit folderId (or null if root) and file.id so the new version is uploaded correctly
-      await onSave(updatedFile, file.folderId || null, file.id)
+      // We pass the explicit folderId (or null if root), file.id, and isEncrypted flag
+      await onSave(updatedFile, file.folderId || null, file.id, isEncrypted)
       onClose()
     } catch (err) {
       setError(err.message || "Failed to save file")
