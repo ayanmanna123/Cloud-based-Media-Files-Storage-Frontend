@@ -18,6 +18,21 @@ import {
 } from "./ui/dialog"
 import { QRCodeSVG } from "qrcode.react"
 
+const truncateName = (str, maxLength = 20) => {
+  if (!str) return "";
+  if (str.length <= maxLength) return str;
+  const extIndex = str.lastIndexOf('.');
+  if (extIndex > 0 && str.length - extIndex <= 5) {
+    const ext = str.slice(extIndex);
+    const nameWithoutExt = str.slice(0, extIndex);
+    const avail = maxLength - ext.length - 3;
+    if (avail > 3) {
+      return `${nameWithoutExt.slice(0, avail)}...${ext}`;
+    }
+  }
+  return `${str.slice(0, maxLength - 3)}...`;
+};
+
 export function ShareModal({ isOpen, onClose, resourceType, resourceId, resourceName, useDrive }) {
   const { fetchShares, shareResource, revokeShare, searchUsers, fetchLinkShare, createLinkShare, deleteLinkShare, createBundleShare } = useDrive
   const [shares, setShares] = useState([])
@@ -176,14 +191,14 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md p-0 overflow-hidden gap-0">
-        <div className="p-6 pb-4 w-full overflow-hidden">
+      <DialogContent className="max-w-[92vw] sm:max-w-md p-0 overflow-hidden gap-0 rounded-2xl">
+        <div className="p-5 sm:p-6 pb-4 w-full">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <UserPlus className="w-5 h-5 text-blue-600" />
-              Share "{resourceName}"
+            <DialogTitle className="flex items-center gap-2 text-lg font-semibold truncate pr-6">
+              <UserPlus className="w-5 h-5 text-blue-600 shrink-0" />
+              <span className="truncate">Share "{truncateName(resourceName, 15)}"</span>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs sm:text-sm">
               Manage who has access to this {resourceType}.
             </DialogDescription>
           </DialogHeader>
@@ -210,8 +225,8 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
             <>
               {/* Invite Form */}
               <form onSubmit={handleShare} className="mt-4 space-y-4">
-            <div className="flex gap-2">
-              <div className="relative flex-1" ref={containerRef}>
+            <div className="flex items-center gap-2 w-full">
+              <div className="relative flex-1 min-w-0" ref={containerRef}>
                 <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
                 <Input 
                   placeholder="Add people via email" 
@@ -221,7 +236,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                   onFocus={() => {
                     if (email.trim() && userSuggestions.length > 0) setShowSuggestions(true)
                   }}
-                  className="pl-9 bg-muted/50 border-border focus-visible:ring-blue-500"
+                  className="pl-9 bg-muted/50 border-border focus-visible:ring-blue-500 text-xs sm:text-sm"
                   disabled={isSubmitting}
                   autoComplete="off"
                 />
@@ -273,7 +288,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 disabled={isSubmitting}
-                className="w-28 h-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background text-sm"
+                className="shrink-0 w-24 sm:w-28 h-10 px-2.5 sm:px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background text-xs sm:text-sm font-medium"
               >
                 <option value="viewer">Viewer</option>
                 <option value="editor">Editor</option>
