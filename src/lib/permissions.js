@@ -32,6 +32,12 @@ export function getEffectiveRole(item, currentView = 'root', isSharedProp = fals
   if (rawRole === USER_ROLES.EDITOR) return USER_ROLES.EDITOR;
   if (rawRole === USER_ROLES.VIEWER) return USER_ROLES.VIEWER;
 
+  if (typeof isSharedProp === 'string') {
+    if (isSharedProp === USER_ROLES.OWNER) return USER_ROLES.OWNER;
+    if (isSharedProp === USER_ROLES.EDITOR) return USER_ROLES.EDITOR;
+    if (isSharedProp === USER_ROLES.VIEWER) return USER_ROLES.VIEWER;
+  }
+
   if (isSharedProp || currentView === 'shared' || item?.sharedWithMe) {
     return USER_ROLES.VIEWER;
   }

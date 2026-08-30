@@ -95,6 +95,7 @@ export function Dashboard() {
   } = useDrive(driveId)
 
   const isSharedFolder = currentView === 'shared' || (!!folder?.permission && folder?.permission !== 'owner')
+  const effectiveSharedRole = folder?.permission || (currentView === 'shared' ? 'viewer' : isSharedFolder)
   const isViewerFolder = folder?.permission === 'viewer' || (currentView === 'shared' && folder?.permission !== 'editor' && folder?.permission !== 'owner')
 
   const { startUpload, updateProgress, completeUpload } = useProgress()
@@ -1354,7 +1355,7 @@ export function Dashboard() {
                     key={f.id}
                     folder={f}
                     currentView={currentView === secretHash ? 'secret' : currentView}
-                    isSharedProp={isSharedFolder}
+                    isSharedProp={f.permission || effectiveSharedRole}
                     starredItems={starredItems}
                     isSelected={selectedItems.includes(`folder_${f.id}`)}
                     onClick={(e) => handleItemClick(e, f.id, 'folder')}
@@ -1418,7 +1419,7 @@ export function Dashboard() {
                           file={file}
                           viewMode="list"
                           currentView={currentView === secretHash ? 'secret' : currentView}
-                          isSharedProp={isSharedFolder}
+                          isSharedProp={file.permission || effectiveSharedRole}
                           starredItems={starredItems}
                           isSelected={selectedItems.includes(`file_${file.id}`)}
                           onClick={(e) => handleItemClick(e, file.id, 'file')}
@@ -1451,7 +1452,7 @@ export function Dashboard() {
                         file={file}
                         viewMode={viewMode}
                         currentView={currentView === secretHash ? 'secret' : currentView}
-                        isSharedProp={isSharedFolder}
+                        isSharedProp={file.permission || effectiveSharedRole}
                         starredItems={starredItems}
                         isSelected={selectedItems.includes(`file_${file.id}`)}
                         onClick={(e) => handleItemClick(e, file.id, 'file')}
