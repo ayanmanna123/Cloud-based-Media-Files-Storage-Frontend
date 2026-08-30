@@ -1,0 +1,19 @@
+{
+  "name": "CloudBox - Secure Cloud Storage",
+  "short_name": "CloudBox",
+  "description": "Secure, fast, and reliable cloud storage platform for all your media and files.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090d16",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

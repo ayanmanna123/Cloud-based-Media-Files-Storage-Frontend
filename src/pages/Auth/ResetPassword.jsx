@@ -139,6 +139,11 @@ export function ResetPassword() {
             </Button>
           </form>
         </CardContent>
+        <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground pt-0">
+          <Link to="/login" className="text-primary hover:underline">
+            {t("auth.backToSignIn")}
+          </Link>
+        </CardFooter>
       </Card>
     </div>
   )
