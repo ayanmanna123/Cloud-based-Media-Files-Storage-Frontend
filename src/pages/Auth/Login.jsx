@@ -104,7 +104,7 @@ export function Login() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: formData.email, body: authResp }),
+        body: JSON.stringify({ email: formData.email, response: authResp, body: authResp }),
       })
 
       const verifyData = await verifyResp.json()
