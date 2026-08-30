@@ -11,7 +11,8 @@ import {
   Trash2,
   RotateCcw,
   Eye,
-  EyeOff
+  EyeOff,
+  CheckCircle2
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -122,6 +123,9 @@ function FolderCardComponent({
         </div>
         
         <div className="flex items-center gap-1">
+          {isSelected && (
+            <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400 fill-blue-500/20" />
+          )}
           <div onClick={e => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">

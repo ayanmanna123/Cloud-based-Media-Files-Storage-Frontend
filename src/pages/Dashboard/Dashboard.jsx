@@ -30,7 +30,8 @@ import {
   Star,
   RotateCcw,
   Search,
-  ShieldCheck
+  ShieldCheck,
+  CheckSquare
 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -108,6 +109,7 @@ export function Dashboard() {
   // File Modals
   const [renameFileModalData, setRenameFileModalData] = useState({ isOpen: false, id: null, currentName: "" })
   const [selectedItems, setSelectedItems] = useState([]);
+  const [isMobileSelectMode, setIsMobileSelectMode] = useState(false);
   const [moveFileModalData, setMoveFileModalData] = useState({ isOpen: false, id: null, currentName: "", selectedFolderId: "root", isBulk: false, items: [] })
   const [allFolders, setAllFolders] = useState([])
   
@@ -412,7 +414,8 @@ export function Dashboard() {
   const handleItemClick = (e, id, type) => {
     e.stopPropagation();
     const itemKey = `${type}_${id}`;
-    if (e.ctrlKey || e.metaKey) {
+    // If Ctrl/Meta key is pressed OR mobile selection mode is enabled, toggle selection
+    if (e.ctrlKey || e.metaKey || isMobileSelectMode) {
       setSelectedItems(prev => prev.includes(itemKey) 
         ? prev.filter(k => k !== itemKey) 
         : [...prev, itemKey]);
@@ -423,6 +426,7 @@ export function Dashboard() {
 
   const handleBackgroundClick = () => {
     setSelectedItems([]);
+    setIsMobileSelectMode(false);
   }
 
   const handleMarqueeMouseDown = (e) => {
@@ -1243,6 +1247,55 @@ export function Dashboard() {
           {(!folder || folder?.name === "My Drive") ? t("dashboard.myDrive") : folder.name}
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Header 3-Dot (More Options) Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className={`h-10 w-10 border-input transition-all ${isMobileSelectMode ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/50 text-blue-600' : ''}`} 
+                title="More Options"
+              >
+                <MoreVertical className="w-4 h-4 text-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem 
+                onClick={() => {
+                  if (isMobileSelectMode) {
+                    setIsMobileSelectMode(false);
+                    setSelectedItems([]);
+                  } else {
+                    setIsMobileSelectMode(true);
+                  }
+                }}
+                className="cursor-pointer font-medium"
+              >
+                <CheckSquare className="w-4 h-4 mr-2 text-blue-500" />
+                {isMobileSelectMode ? "Exit Selection Mode" : "Select"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSelectAll} className="cursor-pointer">
+                <CheckCircle2 className="w-4 h-4 mr-2 text-muted-foreground" />
+                {t("dashboard.selectAll") || "Select All"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {isMobileSelectMode && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => {
+                setIsMobileSelectMode(false);
+                setSelectedItems([]);
+              }}
+              className="h-10 px-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1.5"
+            >
+              <X className="w-4 h-4" />
+              <span>Done</span>
+            </Button>
+          )}
+
           <div className="flex bg-muted/50 p-1 rounded-md border border-border/50 items-center mr-1">
             <button 
               onClick={() => setViewMode("list")} 
@@ -1295,6 +1348,9 @@ export function Dashboard() {
                   <DropdownMenuItem 
                     onClick={() => {
                       setIsNextUploadEncrypted(false);
+                      if (window.innerWidth < 640) {
+                        showToast("Mobile Tip: In Files App, tap '...' → 'Select' to pick multiple files");
+                      }
                       setTimeout(() => fileInputRef.current?.click(), 50);
                     }}
                     className="group/item cursor-pointer"
@@ -1305,6 +1361,9 @@ export function Dashboard() {
                   <DropdownMenuItem 
                     onClick={() => {
                       setIsNextUploadEncrypted(true);
+                      if (window.innerWidth < 640) {
+                        showToast("Mobile Tip: In Files App, tap '...' → 'Select' to pick multiple files");
+                      }
                       setTimeout(() => fileInputRef.current?.click(), 50);
                     }}
                     className="cursor-pointer text-emerald-600 dark:text-emerald-400 font-semibold"

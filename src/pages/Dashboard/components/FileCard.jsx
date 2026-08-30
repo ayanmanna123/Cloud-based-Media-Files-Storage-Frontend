@@ -301,7 +301,13 @@ function FileCardComponent({
             onDoubleClick={handleOpen}
           >
         <div className="flex-1 min-w-0 flex items-center gap-3">
-          <FileIcon filename={file.name} className="w-5 h-5 flex-shrink-0" />
+          {isSelected ? (
+            <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
+              <Check className="w-3 h-3" />
+            </div>
+          ) : (
+            <FileIcon filename={file.name} className="w-5 h-5 flex-shrink-0" />
+          )}
           <span className="text-sm font-medium truncate">{file.name}</span>
           {(file.isEncrypted || file.is_encrypted) && (
             <span 
@@ -362,6 +368,11 @@ function FileCardComponent({
             className="absolute top-2.5 left-2.5 z-10 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-background shadow-xs" 
             title={t("dashboard.encrypted") || "Encrypted"} 
           />
+        )}
+        {isSelected && (
+          <div className="absolute top-2.5 right-2.5 z-10 bg-blue-600 text-white rounded-full p-1 shadow-md animate-in zoom-in-50">
+            <Check className="w-3.5 h-3.5" />
+          </div>
         )}
         {(isImage || isPdf || isVideo) ? (
           <>
