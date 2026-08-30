@@ -1,17 +1,23 @@
 import { useState, useEffect } from "react"
-import { useParams, useSearchParams } from "react-router-dom"
-import { Loader2, Download, FileText, FileImage, FileVideo, FileSpreadsheet, FolderOpen, AlertCircle, Archive } from "lucide-react"
+import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom"
+import { Loader2, Download, FileText, FileImage, FileVideo, FileSpreadsheet, FolderOpen, AlertCircle, Archive, CheckCircle2, LogIn, X } from "lucide-react"
 import { Button } from "../components/ui/button"
 import JSZip from "jszip"
 import { deriveEncryptionKey, decryptFileWithFallbackKeys } from "../lib/cryptoUtils"
+import { useAuth } from "../context/AuthContext"
 
 export function PublicShare({ isBundle = false }) {
   const { token } = useParams()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { user } = useAuth()
+
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [publicPreviewUrl, setPublicPreviewUrl] = useState(null)
+  const [showGuestModal, setShowGuestModal] = useState(false)
 
   useEffect(() => {
     fetchLinkData()
@@ -20,7 +26,9 @@ export function PublicShare({ isBundle = false }) {
   const fetchLinkData = async () => {
     try {
       const endpoint = isBundle ? `/api/link-shares/bundle/${token}` : `/api/link-shares/${token}`
-      const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`)
+      const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
+        credentials: "include"
+      })
       if (!res.ok) {
         const errorData = await res.json()
         throw new Error(errorData.message || "Link not found or expired")
@@ -38,13 +46,19 @@ export function PublicShare({ isBundle = false }) {
           if (fileRes.ok) {
             const arrayBuffer = await fileRes.arrayBuffer();
             const encIv = resource.encryption_iv || resource.encryptionIv;
-            const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, null, encIv, resource);
+            const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, user, encIv, resource);
             const blob = new Blob([decryptedBuffer], { type: resource.mime_type || resource.mimeType || 'image/jpeg' });
             setPublicPreviewUrl(URL.createObjectURL(blob));
           }
         } catch (previewErr) {
           console.error("Public preview decryption error:", previewErr);
         }
+      }
+
+      // Check guest modal state
+      const guestDismissed = sessionStorage.getItem(`guest_dismissed_${token}`);
+      if (!user && !guestDismissed) {
+        setShowGuestModal(true);
       }
 
       // Auto download if requested
@@ -60,6 +74,16 @@ export function PublicShare({ isBundle = false }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleDismissGuestModal = () => {
+    sessionStorage.setItem(`guest_dismissed_${token}`, "true")
+    setShowGuestModal(false)
+  }
+
+  const handleGoToLogin = () => {
+    const currentPath = location.pathname + location.search;
+    navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
   }
 
   const getFileIcon = (fileName) => {
@@ -84,7 +108,7 @@ export function PublicShare({ isBundle = false }) {
 
         const arrayBuffer = await fileRes.arrayBuffer();
         const encIv = res.encryption_iv || res.encryptionIv;
-        const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, null, encIv, res);
+        const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, user, encIv, res);
 
         const blob = new Blob([decryptedBuffer], { type: res.mime_type || res.mimeType || 'application/octet-stream' });
         const blobUrl = URL.createObjectURL(blob);
@@ -128,7 +152,7 @@ export function PublicShare({ isBundle = false }) {
 
         if (isEncrypted) {
           const encIv = file.encryption_iv || file.encryptionIv;
-          const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, null, encIv, file);
+          const decryptedBuffer = await decryptFileWithFallbackKeys(arrayBuffer, user, encIv, file);
           blobPayload = new Blob([decryptedBuffer], { type: file.mime_type || file.mimeType || 'application/octet-stream' });
         } else {
           blobPayload = new Blob([arrayBuffer]);
@@ -187,7 +211,45 @@ export function PublicShare({ isBundle = false }) {
   const pdfPreviewUrl = isPdf ? `${previewUrl}/ik-thumbnail.jpg` : null
 
   return (
-    <div className="min-h-screen bg-muted/30 flex flex-col items-center justify-center p-4 sm:p-8">
+    <div className="min-h-screen bg-muted/30 flex flex-col items-center justify-center p-4 sm:p-8 relative">
+      {/* Guest Prompt Modal */}
+      {showGuestModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
+            <button 
+              onClick={handleDismissGuestModal}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-full hover:bg-accent transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FolderOpen className="w-7 h-7" />
+            </div>
+            <h2 className="text-xl font-bold text-center text-foreground mb-2">
+              Save this item to your Storage?
+            </h2>
+            <p className="text-sm text-muted-foreground text-center mb-6 leading-relaxed">
+              Sign in to automatically save this {isFile ? 'file' : 'folder'} to your <span className="font-semibold text-foreground">"Shared with me"</span> section with view access.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button 
+                onClick={handleGoToLogin}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2 h-11 text-base font-semibold shadow-md shadow-blue-500/20"
+              >
+                <LogIn className="w-5 h-5" /> Sign In / Register
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleDismissGuestModal}
+                className="w-full border-border text-foreground hover:bg-accent h-11"
+              >
+                Continue as Guest
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-3xl w-full">
         {/* Header */}
         <div className="mb-8 text-center">
@@ -205,7 +267,7 @@ export function PublicShare({ isBundle = false }) {
         </div>
 
         {/* Preview Card */}
-        <div className="bg-card border border-border shadow-lg rounded-2xl overflow-hidden flex flex-col mb-8">
+        <div className="bg-card border border-border shadow-lg rounded-2xl overflow-hidden flex flex-col mb-6">
           {isBundle ? (
             <div className="p-8">
               <div className="flex items-center justify-center mb-6">
@@ -296,6 +358,26 @@ export function PublicShare({ isBundle = false }) {
             )}
           </div>
         </div>
+
+        {/* Saved Banner for Logged-In Users (Bottom Section) */}
+        {user && (data.savedToSharedWithMe || user) && (
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between flex-wrap gap-3 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-emerald-950 dark:text-emerald-200">
+                Saved to your <span className="font-semibold underline">Shared with me</span> section with view access.
+              </span>
+            </div>
+            <Button 
+              onClick={() => navigate('/dashboard/shared')} 
+              size="sm" 
+              variant="outline" 
+              className="border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 text-xs font-semibold rounded-full px-5"
+            >
+              Open in My Storage
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -48,6 +48,7 @@ function FolderCardComponent({
   const { t } = useTranslation()
   const isStarred = starredItems.includes(`folder_${folder.id}`)
   const isShared = isSharedProp || currentView === 'shared' || (folder.permission && folder.permission !== 'owner') || !!folder.sharedWithMe
+  const isViewer = folder.permission === 'viewer' || (currentView === 'shared' && folder.permission !== 'editor' && folder.permission !== 'owner')
   
   const formatBytes = (bytes) => {
     if (!bytes || bytes === 0) return '0 B';
@@ -91,14 +92,14 @@ function FolderCardComponent({
               <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> {t("dashboard.hide")}
             </ContextMenuItem>
           )}
-          {folder.permission !== 'viewer' && (
-            <>
-              <ContextMenuSeparator />
-              <ContextMenuItem onClick={() => onDelete(folder.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50 group/del">
-                <TrashBinIcon className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
-              </ContextMenuItem>
-            </>
-          )}
+          <ContextMenuSeparator />
+          <ContextMenuItem 
+            disabled={isViewer} 
+            onClick={() => !isViewer && onDelete(folder.id)} 
+            className={isViewer ? "" : "text-red-500 focus:text-red-500 focus:bg-red-50 group/del"}
+          >
+            <TrashBinIcon className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
+          </ContextMenuItem>
         </>
       )}
     </ContextMenuContent>
@@ -158,14 +159,14 @@ function FolderCardComponent({
                         <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> {t("dashboard.hide")}
                       </DropdownMenuItem>
                     )}
-                    {folder.permission !== 'viewer' && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setTimeout(() => onDelete(folder.id), 0)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                          <TrashBinIcon className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
-                        </DropdownMenuItem>
-                      </>
-                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      disabled={isViewer} 
+                      onClick={() => !isViewer && setTimeout(() => onDelete(folder.id), 0)} 
+                      className={isViewer ? "" : "text-red-500 focus:text-red-500 focus:bg-red-50"}
+                    >
+                      <TrashBinIcon className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
+                    </DropdownMenuItem>
                   </>
                 )}
               </DropdownMenuContent>

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { Eye, EyeOff, Mail, ArrowRight } from "lucide-react"
 import { GoogleLogin } from "@react-oauth/google"
 import { Button } from "../../components/ui/button"
@@ -11,6 +11,8 @@ import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function Register() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectUrl = searchParams.get("redirect") || "/dashboard"
   const { login } = useAuth()
 
   const [formData, setFormData] = useState({ name: "", email: "", password: "" })
@@ -66,7 +68,7 @@ export function Register() {
       }
 
       login(data.user)
-      navigate("/dashboard")
+      navigate(redirectUrl)
     } catch (err) {
       setError(err.message)
     } finally {

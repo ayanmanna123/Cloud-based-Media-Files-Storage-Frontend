@@ -94,6 +94,7 @@ export function Dashboard() {
   } = useDrive(driveId)
 
   const isSharedFolder = currentView === 'shared' || (!!folder?.permission && folder?.permission !== 'owner')
+  const isViewerFolder = folder?.permission === 'viewer' || (currentView === 'shared' && folder?.permission !== 'editor' && folder?.permission !== 'owner')
 
   const { startUpload, updateProgress, completeUpload } = useProgress()
 
@@ -107,6 +108,19 @@ export function Dashboard() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [moveFileModalData, setMoveFileModalData] = useState({ isOpen: false, id: null, currentName: "", selectedFolderId: "root", isBulk: false, items: [] })
   const [allFolders, setAllFolders] = useState([])
+  
+  const isSelectionViewer = selectedItems.length > 0
+    ? selectedItems.some(itemKey => {
+        const [type, id] = itemKey.split('_');
+        const item = type === 'folder' 
+          ? children?.folders?.find(f => f.id === id) 
+          : children?.files?.find(f => f.id === id);
+        if (!item) return isViewerFolder;
+        if (item.permission === 'viewer') return true;
+        if (item.permission === 'editor' || item.permission === 'owner') return false;
+        return isViewerFolder;
+      })
+    : isViewerFolder;
   
   const [shareModalData, setShareModalData] = useState({ isOpen: false, resourceType: null, resourceId: null, resourceName: "" })
   const [versionHistoryModalData, setVersionHistoryModalData] = useState({ isOpen: false, fileId: null, fileName: "", currentVersionId: null })
@@ -649,8 +663,8 @@ export function Dashboard() {
   }
 
   const handleBulkDelete = async () => {
-    if (folder?.permission === 'viewer') {
-      showToast("you not access to edite this folder")
+    if (isSelectionViewer) {
+      showToast("you not access to edit this folder")
       return
     }
     if (!confirm(`Are you sure you want to delete ${selectedItems.length} items?`)) return;
@@ -1525,7 +1539,17 @@ export function Dashboard() {
               >
                 <FolderInput className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.move")}
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 whitespace-nowrap" title="Delete (Delete / Backspace)">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                disabled={isSelectionViewer}
+                onClick={() => {
+                  if (isSelectionViewer) return;
+                  handleBulkDelete();
+                }} 
+                className={`h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap ${isSelectionViewer ? "" : "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"}`}
+                title={isSelectionViewer ? "Delete is disabled for viewers" : "Delete (Delete / Backspace)"}
+              >
                 <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.delete")}
               </Button>
             </>

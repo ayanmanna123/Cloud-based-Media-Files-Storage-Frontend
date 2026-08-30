@@ -88,6 +88,7 @@ function FileCardComponent({
   const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-600,h-800,c-at_max,bg-FFFFFF`
   const isStarred = starredItems.includes(`file_${file.id}`)
   const isShared = isSharedProp || currentView === 'shared' || (file.permission && file.permission !== 'owner') || !!file.sharedWithMe
+  const isViewer = file.permission === 'viewer' || (currentView === 'shared' && file.permission !== 'editor' && file.permission !== 'owner')
   const [dimensions, setDimensions] = useState(file.width && file.height ? `${file.width}x${file.height}` : null)
   const [copied, setCopied] = useState(false)
 
@@ -208,14 +209,14 @@ function FileCardComponent({
               <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> {t("dashboard.hide")}
             </DropdownMenuItem>
           )}
-          {file.permission !== 'viewer' && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setTimeout(() => onDelete(file.id), 0)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
-              </DropdownMenuItem>
-            </>
-          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            disabled={isViewer} 
+            onClick={() => !isViewer && setTimeout(() => onDelete(file.id), 0)} 
+            className={isViewer ? "" : "text-red-500 focus:text-red-500 focus:bg-red-50"}
+          >
+            <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
+          </DropdownMenuItem>
         </>
       )}
     </DropdownMenuContent>
@@ -268,14 +269,14 @@ function FileCardComponent({
               <EyeOff className="w-4 h-4 mr-2 text-yellow-500" /> {t("dashboard.hide")}
             </ContextMenuItem>
           )}
-          {file.permission !== 'viewer' && (
-            <>
-              <ContextMenuSeparator />
-              <ContextMenuItem onClick={() => onDelete(file.id)} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
-              </ContextMenuItem>
-            </>
-          )}
+          <ContextMenuSeparator />
+          <ContextMenuItem 
+            disabled={isViewer} 
+            onClick={() => !isViewer && onDelete(file.id)} 
+            className={isViewer ? "" : "text-red-500 focus:text-red-500 focus:bg-red-50"}
+          >
+            <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
+          </ContextMenuItem>
         </>
       )}
     </ContextMenuContent>
