@@ -12,13 +12,19 @@ export function ThemeToggle() {
   }
 
   return (
-    <Button variant="outline" size="icon" onClick={toggleTheme} className="rounded-full flex items-center justify-center w-10 h-10">
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      onClick={toggleTheme} 
+      className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+      title={`Theme: ${theme}`}
+    >
       {theme === 'dark' ? (
-        <Moon className="h-[1.2rem] w-[1.2rem]" />
+        <Moon className="h-[1.1rem] w-[1.1rem]" />
       ) : theme === 'light' ? (
-        <Sun className="h-[1.2rem] w-[1.2rem]" />
+        <Sun className="h-[1.1rem] w-[1.1rem]" />
       ) : (
-        <span className="text-xs font-bold">SYS</span>
+        <span className="text-[10px] font-bold tracking-tighter">AUTO</span>
       )}
       <span className="sr-only">Toggle theme</span>
     </Button>

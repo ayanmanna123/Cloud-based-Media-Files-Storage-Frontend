@@ -34,16 +34,16 @@ export function LanguageSelector({ variant = "ghost", showLabel = false }) {
         <Button
           variant={variant}
           size="sm"
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground font-medium transition-colors"
+          className="h-9 px-2.5 rounded-full flex items-center gap-1.5 text-muted-foreground hover:text-foreground font-medium transition-colors"
           title="Change language / भाषा बदलें"
         >
-          <Globe className="w-4 h-4 text-blue-500" />
+          <Globe className="w-4 h-4 text-blue-500 shrink-0" />
           <span className="text-xs font-semibold uppercase tracking-wider">{currentLang.code}</span>
-          {showLabel && <span className="hidden sm:inline text-xs font-normal">({currentLang.nativeName})</span>}
+          {showLabel && <span className="hidden lg:inline text-xs font-normal text-muted-foreground">({currentLang.nativeName})</span>}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 max-h-80 overflow-y-auto">
-        <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border mb-1">
+      <DropdownMenuContent align="end" className="w-48 max-h-80 overflow-y-auto p-1.5 shadow-xl border-border/80">
+        <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/60 mb-1">
           Select Language
         </div>
         {LANGUAGES.map((lang) => {
@@ -52,8 +52,8 @@ export function LanguageSelector({ variant = "ghost", showLabel = false }) {
             <DropdownMenuItem
               key={lang.code}
               onClick={() => handleLanguageChange(lang.code)}
-              className={`flex items-center justify-between cursor-pointer py-2 px-3 text-sm rounded-md transition-colors ${
-                isSelected ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-semibold" : ""
+              className={`flex items-center justify-between cursor-pointer py-2 px-3 text-sm rounded-lg transition-colors ${
+                isSelected ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-semibold" : ""
               }`}
             >
               <div className="flex flex-col">
