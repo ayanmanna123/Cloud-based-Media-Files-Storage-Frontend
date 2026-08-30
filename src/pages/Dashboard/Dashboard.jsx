@@ -1556,28 +1556,33 @@ export function Dashboard() {
 
       {/* Bulk Action Bar */}
       {selectedItems.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 max-w-[calc(100vw-1.5rem)] bg-popover/95 backdrop-blur-md text-popover-foreground border border-border shadow-2xl rounded-2xl sm:rounded-full px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center gap-1 sm:gap-2 md:gap-3 z-50 animate-in slide-in-from-bottom-5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 max-w-[calc(100vw-1.5rem)] bg-popover/95 backdrop-blur-md text-popover-foreground border border-border shadow-2xl rounded-full px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-1 sm:gap-2 z-50 animate-in slide-in-from-bottom-5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <span className="text-xs sm:text-sm font-semibold pl-1 pr-2 border-r border-border shrink-0 whitespace-nowrap">
             {selectedItems.length} <span className="hidden sm:inline">{t("dashboard.selected")}</span>
           </span>
           <Button variant="ghost" size="sm" onClick={handleSelectAll} title="Select All (Ctrl+A)" className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
-            <span className="hidden sm:inline">{t("dashboard.selectAll")}</span>
-            <span className="sm:hidden">{t("dashboard.selectAll")}</span>
+            <CheckSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="hidden sm:inline ml-1.5">{t("dashboard.selectAll")}</span>
+            <span className="sm:hidden ml-1">{t("dashboard.selectAll")}</span>
           </Button>
           <div className="w-px h-4 bg-border shrink-0 hidden sm:block"></div>
           {currentView === 'trash' ? (
             <>
-              <Button variant="ghost" size="sm" onClick={handleBulkRestore} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
-                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.restore")}
+              <Button variant="ghost" size="sm" onClick={handleBulkRestore} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap" title={t("dashboard.restore")}>
+                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                <span className="hidden sm:inline ml-1.5">{t("dashboard.restore")}</span>
               </Button>
               <Button variant="ghost" size="sm" onClick={handleBulkDeleteForever} className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 whitespace-nowrap" title="Delete Forever (Delete)">
-                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> <span className="hidden sm:inline">{t("dashboard.deleteForever")}</span><span className="sm:hidden">{t("dashboard.delete")}</span>
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                <span className="hidden sm:inline ml-1.5">{t("dashboard.deleteForever")}</span>
+                <span className="sm:hidden ml-1">{t("dashboard.delete")}</span>
               </Button>
             </>
           ) : (
             <>
               <Button variant="ghost" size="sm" onClick={handleBulkDownload} title="Download as ZIP (Shift+D)" className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap">
-                {isSubmitting ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 animate-spin" /> : <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />} {t("dashboard.download")}
+                {isSubmitting ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 animate-spin" /> : <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
+                <span className="hidden sm:inline ml-1.5">{t("dashboard.download")}</span>
               </Button>
               <Button 
                 variant="ghost" 
@@ -1601,7 +1606,8 @@ export function Dashboard() {
                 className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
                 title={!bulkPerms.canShare ? "Sharing is disabled for shared items" : "Share"}
               >
-                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.share")}
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                <span className="hidden sm:inline ml-1.5">{t("dashboard.share")}</span>
               </Button>
               <Button 
                 variant="ghost" 
@@ -1614,7 +1620,8 @@ export function Dashboard() {
                 className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
                 title={!bulkPerms.canMove ? "Moving is disabled for shared items" : "Move"}
               >
-                <FolderInput className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.move")}
+                <FolderInput className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                <span className="hidden sm:inline ml-1.5">{t("dashboard.move")}</span>
               </Button>
               <Button 
                 variant="ghost" 
@@ -1627,7 +1634,8 @@ export function Dashboard() {
                 className={`h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap ${!bulkPerms.canDelete ? "" : "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"}`}
                 title={!bulkPerms.canDelete ? "Delete is disabled for viewers" : "Delete (Delete / Backspace)"}
               >
-                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.delete")}
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                <span className="hidden sm:inline ml-1.5">{t("dashboard.delete")}</span>
               </Button>
             </>
           )}
