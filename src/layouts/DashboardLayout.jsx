@@ -115,7 +115,7 @@ export function DashboardLayout() {
       // 2. Pass options to browser to register
       let asseResp;
       try {
-        asseResp = await startRegistration(options);
+        asseResp = await startRegistration({ optionsJSON: options.options || options });
       } catch (error) {
         console.error("Passkey error:", error);
         throw new Error(error.message || "Passkey registration cancelled or failed");

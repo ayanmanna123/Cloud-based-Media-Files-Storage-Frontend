@@ -86,7 +86,7 @@ export function Login() {
     setError("")
 
     try {
-      const optResp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkey/login-options`, {
+      const optResp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkeys/login-options`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email }),
@@ -98,9 +98,9 @@ export function Login() {
         throw new Error(optData.error?.message || "Failed to generate passkey challenge")
       }
 
-      const authResp = await startAuthentication({ optionsJSON: optData.options })
+      const authResp = await startAuthentication({ optionsJSON: optData.options || optData })
 
-      const verifyResp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkey/login-verify`, {
+      const verifyResp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/passkeys/login-verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
