@@ -27,8 +27,6 @@ export function UploadProgress({
 }) {
   const { t } = useTranslation()
 
-  if (tasks.length === 0) return null
-
   const inProgressCount = tasks.filter(t => t.status === 'uploading' || t.status === 'pending').length
   const completedCount = tasks.filter(t => t.status === 'completed').length
   const allDone = inProgressCount === 0 && tasks.length > 0;
@@ -48,6 +46,8 @@ export function UploadProgress({
     }
     return () => clearTimeout(timeout);
   }, [allDone, onClose]);
+
+  if (tasks.length === 0) return null;
 
   return (
     <div className="fixed bottom-3 right-3 w-[270px] sm:w-72 md:w-80 max-w-[calc(100vw-24px)] bg-card border border-border/80 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[40vh] sm:max-h-[55vh] transition-all duration-200">
