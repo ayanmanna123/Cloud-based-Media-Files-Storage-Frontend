@@ -16,12 +16,14 @@ import {
   FileVideo,
   Clock,
   Copy,
+  CopyPlus,
   Link,
   Check,
   Eye,
   EyeOff,
   ShieldCheck
 } from "lucide-react"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,6 +69,7 @@ function FileCardComponent({
   onMove,
   onDelete,
   onDownload,
+  onMakeCopy,
   onRestore,
   onDeleteForever,
   onOpenVersionHistory,
@@ -189,6 +192,9 @@ function FileCardComponent({
           <DropdownMenuItem onClick={handleCopyUrl}>
             <Copy className="w-4 h-4 mr-2" /> {t("dashboard.copyLink")}
           </DropdownMenuItem>
+          <DropdownMenuItem disabled={!perms.canMakeCopy} onClick={() => perms.canMakeCopy && onMakeCopy && setTimeout(() => onMakeCopy(file), 0)}>
+            <CopyPlus className="w-4 h-4 mr-2 text-indigo-500" /> {t("dashboard.makeCopy", "Make a copy")}
+          </DropdownMenuItem>
           <DropdownMenuItem disabled={!perms.canShare} onClick={() => perms.canShare && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}
           </DropdownMenuItem>
@@ -246,6 +252,9 @@ function FileCardComponent({
           </ContextMenuItem>
           <ContextMenuItem onClick={handleCopyUrl}>
             <Copy className="w-4 h-4 mr-2" /> {t("dashboard.copyLink")}
+          </ContextMenuItem>
+          <ContextMenuItem disabled={!perms.canMakeCopy} onClick={() => perms.canMakeCopy && onMakeCopy && setTimeout(() => onMakeCopy(file), 0)}>
+            <CopyPlus className="w-4 h-4 mr-2 text-indigo-500" /> {t("dashboard.makeCopy", "Make a copy")}
           </ContextMenuItem>
           <ContextMenuItem disabled={!perms.canShare} onClick={() => perms.canShare && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}

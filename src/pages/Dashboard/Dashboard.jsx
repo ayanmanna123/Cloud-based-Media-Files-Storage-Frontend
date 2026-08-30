@@ -64,7 +64,7 @@ import { MoveFileModal } from "./components/MoveFileModal"
 import { VersionHistoryModal } from "./components/VersionHistoryModal"
 import { EditFileModal } from "./components/EditFileModal"
 import { LightboxModal } from "./components/LightboxModal"
-import { LoadingScreen } from "../../components/LoadingScreen"
+import { DashboardSkeleton } from "./components/DashboardSkeleton"
 
 export function Dashboard() {
   const { t } = useTranslation()
@@ -1082,6 +1082,18 @@ export function Dashboard() {
     }
   }
 
+  const handleMakeCopy = async (file) => {
+    try {
+      const targetFolderId = (currentView === 'shared' || currentView === 'starred' || currentView === 'recent') ? null : (id || null);
+      const newCopy = await copyFile(file.id, targetFolderId);
+      showToast(`Created copy: ${newCopy.name}`);
+      if (refresh) refresh();
+    } catch (err) {
+      console.error('Copy file error:', err);
+      showToast(err.message || 'Failed to create copy');
+    }
+  }
+
   const getFileIcon = (fileName) => {
     if (!fileName) return FileText
     if (fileName.match(/\.(jpg|jpeg|png|gif|svg|webp|avif|heic|heif)$/i)) return FileImage
@@ -1127,12 +1139,6 @@ export function Dashboard() {
     })
     return result
   }, [children.files, searchQuery, sortMethod, currentView])
-
-  if (loading) {
-    return (
-      <LoadingScreen text="Loading files & folders..." fullScreen={false} />
-    )
-  }
 
   if (error) {
     return (
@@ -1321,163 +1327,171 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Folders Section */}
-      {filteredFolders.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <h2 className="text-sm font-medium text-muted-foreground shrink-0">{t("dashboard.folders")} ({filteredFolders.length})</h2>
-            <div className="relative flex-1 max-w-[200px] sm:hidden">
-              <SearchIcon isSearching={!!searchQuery} className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <Input 
-                type="text" 
-                placeholder={t("dashboard.mobileSearchPlaceholder")} 
-                className="pl-8 h-8 text-xs bg-muted/40 border-border rounded-lg"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredFolders.map((f) => (
-              <FolderCard
-                key={f.id}
-                folder={f}
-                currentView={currentView === secretHash ? 'secret' : currentView}
-                isSharedProp={isSharedFolder}
-                starredItems={starredItems}
-                isSelected={selectedItems.includes(`folder_${f.id}`)}
-                onClick={(e) => handleItemClick(e, f.id, 'folder')}
-                onDoubleClick={() => {
-                  trackOpen(f.id, 'folder');
-                  navigate(`/dashboard/folder/${f.id}`);
-                }}
-                onNavigate={(id) => {
-                  trackOpen(id, 'folder');
-                  navigate(`/dashboard/folder/${id}`);
-                }}
-                onToggleStar={toggleStar}
-                onShare={setShareModalData}
-                onRename={setRenameModalData}
-                onDelete={handleDeleteFolder}
-                onRestore={restoreItem}
-                onDeleteForever={deleteForever}
-                onHide={handleHideFolder}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Files Section */}
-      {filteredFiles.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <h2 className="text-sm font-medium text-muted-foreground shrink-0">{t("dashboard.files")} ({filteredFiles.length})</h2>
-            {filteredFolders.length === 0 && (
-              <div className="relative flex-1 max-w-[200px] sm:hidden">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                <Input 
-                  type="text" 
-                  placeholder="Search..." 
-                  className="pl-8 h-8 text-xs bg-muted/40 border-border rounded-lg"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
-                />
+      {/* Folders & Files Content / Skeleton */}
+      {loading ? (
+        <DashboardSkeleton viewMode={viewMode} />
+      ) : (
+        <>
+          {/* Folders Section */}
+          {filteredFolders.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <h2 className="text-sm font-medium text-muted-foreground shrink-0">{t("dashboard.folders")} ({filteredFolders.length})</h2>
+                <div className="relative flex-1 max-w-[200px] sm:hidden">
+                  <SearchIcon isSearching={!!searchQuery} className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Input 
+                    type="text" 
+                    placeholder={t("dashboard.mobileSearchPlaceholder")} 
+                    className="pl-8 h-8 text-xs bg-muted/40 border-border rounded-lg"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+                  />
+                </div>
               </div>
-            )}
-          </div>
-          
-          {viewMode === "list" ? (
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
-              {/* Table Header */}
-              <div className="flex items-center gap-4 p-4 border-b border-border bg-muted/50 text-sm font-medium text-muted-foreground">
-                <div className="flex-1 min-w-0">Name</div>
-                <div className="hidden sm:block w-32 shrink-0">Owner</div>
-                <div className="hidden md:block w-32 shrink-0">Last modified</div>
-                <div className="hidden sm:block w-20 shrink-0">Size</div>
-                <div className="w-8 shrink-0"></div>
-              </div>
-              {/* Table Body */}
-              <div className="divide-y divide-border">
-                {filteredFiles.map((file) => {
-                  const Icon = getFileIcon(file.name)
-                  return (
-                    <FileCard
-                      key={file.id}
-                      file={file}
-                      viewMode="list"
-                      currentView={currentView === secretHash ? 'secret' : currentView}
-                      isSharedProp={isSharedFolder}
-                      starredItems={starredItems}
-                      isSelected={selectedItems.includes(`file_${file.id}`)}
-                      onClick={(e) => handleItemClick(e, file.id, 'file')}
-                      onOpen={() => trackOpen(file.id, 'file')}
-                      onToggleStar={toggleStar}
-                      onShare={setShareModalData}
-                      onRename={setRenameFileModalData}
-                      onMove={openMoveFileModal}
-                      onDelete={handleDeleteFile}
-                      onDownload={downloadFile}
-                      onRestore={restoreItem}
-                      onDeleteForever={deleteForever}
-                      onOpenVersionHistory={setVersionHistoryModalData}
-                      onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
-                      onPreview={(file) => setLightboxData({ isOpen: true, file })}
-                      onHide={handleHideFile}
-                      showToast={showToast}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {filteredFiles.map((file) => {
-                return (
-                  <FileCard 
-                    key={file.id} 
-                    file={file}
-                    viewMode={viewMode}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredFolders.map((f) => (
+                  <FolderCard
+                    key={f.id}
+                    folder={f}
                     currentView={currentView === secretHash ? 'secret' : currentView}
                     isSharedProp={isSharedFolder}
                     starredItems={starredItems}
-                    isSelected={selectedItems.includes(`file_${file.id}`)}
-                    onClick={(e) => handleItemClick(e, file.id, 'file')}
-                    onOpen={() => trackOpen(file.id, 'file')}
+                    isSelected={selectedItems.includes(`folder_${f.id}`)}
+                    onClick={(e) => handleItemClick(e, f.id, 'folder')}
+                    onDoubleClick={() => {
+                      trackOpen(f.id, 'folder');
+                      navigate(`/dashboard/folder/${f.id}`);
+                    }}
+                    onNavigate={(id) => {
+                      trackOpen(id, 'folder');
+                      navigate(`/dashboard/folder/${id}`);
+                    }}
                     onToggleStar={toggleStar}
                     onShare={setShareModalData}
-                    onRename={setRenameFileModalData}
-                    onMove={(id, name) => fetchAllFolders().then(folders => {
-                      setAllFolders(folders);
-                      setMoveFileModalData({ isOpen: true, id, currentName: name, selectedFolderId: "root", isBulk: false, items: [] });
-                    })}
-                    onDelete={handleDeleteFile}
-                    onDownload={downloadFile}
+                    onRename={setRenameModalData}
+                    onDelete={handleDeleteFolder}
                     onRestore={restoreItem}
                     onDeleteForever={deleteForever}
-                    onOpenVersionHistory={setVersionHistoryModalData}
-                    onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
-                    onPreview={(file) => setLightboxData({ isOpen: true, file })}
-                    onHide={handleHideFile}
-                    showToast={showToast}
+                    onHide={handleHideFolder}
                   />
-                )
-              })}
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Files Section */}
+          {filteredFiles.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <h2 className="text-sm font-medium text-muted-foreground shrink-0">{t("dashboard.files")} ({filteredFiles.length})</h2>
+                {filteredFolders.length === 0 && (
+                  <div className="relative flex-1 max-w-[200px] sm:hidden">
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                    <Input 
+                      type="text" 
+                      placeholder="Search..." 
+                      className="pl-8 h-8 text-xs bg-muted/40 border-border rounded-lg"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {viewMode === "list" ? (
+                <div className="bg-card border border-border rounded-xl overflow-hidden">
+                  {/* Table Header */}
+                  <div className="flex items-center gap-4 p-4 border-b border-border bg-muted/50 text-sm font-medium text-muted-foreground">
+                    <div className="flex-1 min-w-0">Name</div>
+                    <div className="hidden sm:block w-32 shrink-0">Owner</div>
+                    <div className="hidden md:block w-32 shrink-0">Last modified</div>
+                    <div className="hidden sm:block w-20 shrink-0">Size</div>
+                    <div className="w-8 shrink-0"></div>
+                  </div>
+                  {/* Table Body */}
+                  <div className="divide-y divide-border">
+                    {filteredFiles.map((file) => {
+                      const Icon = getFileIcon(file.name)
+                      return (
+                        <FileCard
+                          key={file.id}
+                          file={file}
+                          viewMode="list"
+                          currentView={currentView === secretHash ? 'secret' : currentView}
+                          isSharedProp={isSharedFolder}
+                          starredItems={starredItems}
+                          isSelected={selectedItems.includes(`file_${file.id}`)}
+                          onClick={(e) => handleItemClick(e, file.id, 'file')}
+                          onOpen={() => trackOpen(file.id, 'file')}
+                          onToggleStar={toggleStar}
+                          onShare={setShareModalData}
+                          onRename={setRenameFileModalData}
+                          onMove={openMoveFileModal}
+                          onDelete={handleDeleteFile}
+                          onDownload={downloadFile}
+                          onMakeCopy={handleMakeCopy}
+                          onRestore={restoreItem}
+                          onDeleteForever={deleteForever}
+                          onOpenVersionHistory={setVersionHistoryModalData}
+                          onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
+                          onPreview={(file) => setLightboxData({ isOpen: true, file })}
+                          onHide={handleHideFile}
+                          showToast={showToast}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {filteredFiles.map((file) => {
+                    return (
+                      <FileCard 
+                        key={file.id} 
+                        file={file}
+                        viewMode={viewMode}
+                        currentView={currentView === secretHash ? 'secret' : currentView}
+                        isSharedProp={isSharedFolder}
+                        starredItems={starredItems}
+                        isSelected={selectedItems.includes(`file_${file.id}`)}
+                        onClick={(e) => handleItemClick(e, file.id, 'file')}
+                        onOpen={() => trackOpen(file.id, 'file')}
+                        onToggleStar={toggleStar}
+                        onShare={setShareModalData}
+                        onRename={setRenameFileModalData}
+                        onMove={(id, name) => fetchAllFolders().then(folders => {
+                          setAllFolders(folders);
+                          setMoveFileModalData({ isOpen: true, id, currentName: name, selectedFolderId: "root", isBulk: false, items: [] });
+                        })}
+                        onDelete={handleDeleteFile}
+                        onDownload={downloadFile}
+                        onMakeCopy={handleMakeCopy}
+                        onRestore={restoreItem}
+                        onDeleteForever={deleteForever}
+                        onOpenVersionHistory={setVersionHistoryModalData}
+                        onEdit={(file) => setEditFileModalData({ isOpen: true, file })}
+                        onPreview={(file) => setLightboxData({ isOpen: true, file })}
+                        onHide={handleHideFile}
+                        showToast={showToast}
+                      />
+                    )
+                  })}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Empty State */}
+          {filteredFolders.length === 0 && filteredFiles.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border rounded-xl">
+              <FolderOpen className="w-16 h-16 text-muted-foreground/30 mb-4" />
+              <h3 className="text-lg font-medium text-foreground">This folder is empty</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mt-2">
+                Upload files or create new folders to get started.
+              </p>
             </div>
           )}
-        </section>
-      )}
-
-
-      {/* Empty State */}
-      {filteredFolders.length === 0 && filteredFiles.length === 0 && !loading && (
-        <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border rounded-xl">
-          <FolderOpen className="w-16 h-16 text-muted-foreground/30 mb-4" />
-          <h3 className="text-lg font-medium text-foreground">This folder is empty</h3>
-          <p className="text-sm text-muted-foreground max-w-sm mt-2">
-            Upload files or create new folders to get started.
-          </p>
-        </div>
+        </>
       )}
 
       {/* Bulk Action Bar */}

@@ -75,6 +75,7 @@ export function getItemPermissions(itemOrRole, currentView = 'root', isSharedPro
     canDelete: isOwner || isEditor,       // Enabled for Editor and Owner; Disabled for Viewer
     canVersionHistory: isOwner || isEditor,
     canToggleHide: !isGuest,              // Independent personal vault feature; enabled for Owner, Editor, Viewer
+    canMakeCopy: !isGuest,                // Enabled for Owner, Editor, and Viewer
 
     canShare: isOwner,                    // Only owner can manage shares
     canMove: isOwner,                     // Only owner can move root item
