@@ -21,7 +21,7 @@ export function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[85vh] flex items-center justify-center pt-24 pb-20 border-b border-border">
+      <section className="relative overflow-hidden min-h-[75vh] sm:min-h-[85vh] flex items-center justify-center pt-6 sm:pt-12 md:pt-20 pb-12 sm:pb-16 md:pb-20 border-b border-border">
         {/* Background Gradient Waves */}
         <div className="absolute inset-0 z-0">
           <GradientWaves
@@ -55,7 +55,7 @@ export function Home() {
         <div className="relative z-10 w-full px-4 md:px-12 mx-auto max-w-4xl text-center flex flex-col items-center justify-center">
           
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-background/80 backdrop-blur-md text-foreground px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium mb-8 border border-border/80 shadow-lg animate-in fade-in zoom-in-95 duration-500">
+          <div className="inline-flex items-center gap-2 bg-background/80 backdrop-blur-md text-foreground px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-8 border border-border/80 shadow-lg animate-in fade-in zoom-in-95 duration-500">
             <span className="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider">New</span>
             <span>{t("home.badge")}</span>
           </div>

@@ -37,7 +37,7 @@ export function AboutUs() {
       </div>
       
       {/* Hero Section */}
-      <section className="pt-24 pb-16 md:pt-32 md:pb-24 border-b border-border/50 bg-muted/10 relative overflow-hidden">
+      <section className="pt-8 pb-12 sm:pt-16 md:pt-32 md:pb-24 border-b border-border/50 bg-muted/10 relative overflow-hidden">
         <div className="container mx-auto px-4 max-w-7xl relative z-10">
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center space-x-2 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-full text-sm font-semibold tracking-wide border border-indigo-100 dark:border-indigo-900">
