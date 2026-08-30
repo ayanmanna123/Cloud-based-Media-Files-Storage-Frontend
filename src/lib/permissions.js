@@ -100,21 +100,27 @@ export function getItemPermissions(itemOrRole, currentView = 'root', isSharedPro
  */
 export function getBulkPermissions(selectedItemsKeys = [], children = { folders: [], files: [] }, currentView = 'root', isSharedFolder = false, user = null) {
   if (!selectedItemsKeys || selectedItemsKeys.length === 0) {
-    const defaultRole = (isSharedFolder || currentView === 'shared') ? USER_ROLES.VIEWER : USER_ROLES.OWNER;
+    const defaultRole = typeof isSharedFolder === 'string'
+      ? isSharedFolder
+      : (isSharedFolder || currentView === 'shared') ? USER_ROLES.VIEWER : USER_ROLES.OWNER;
     return getItemPermissions(defaultRole);
   }
 
   const items = selectedItemsKeys.map(key => {
     const [type, id] = key.split('_');
     return type === 'folder'
-      ? children?.folders?.find(f => f.id === id)
-      : children?.files?.find(f => f.id === id);
+      ? children?.folders?.find(f => String(f.id) === String(id))
+      : children?.files?.find(f => String(f.id) === String(id));
   }).filter(Boolean);
 
   const permissionsList = items.map(item => getItemPermissions(item, currentView, isSharedFolder, user));
 
-  const canShare = !isSharedFolder && permissionsList.every(p => p.canShare);
-  const canMove = !isSharedFolder && permissionsList.every(p => p.canMove);
+  const isShared = (typeof isSharedFolder === 'string'
+    ? (isSharedFolder === USER_ROLES.VIEWER || isSharedFolder === USER_ROLES.EDITOR)
+    : !!isSharedFolder) || currentView === 'shared';
+
+  const canShare = !isShared && permissionsList.every(p => p.canShare);
+  const canMove = !isShared && permissionsList.every(p => p.canMove);
   const canDelete = permissionsList.length > 0 && permissionsList.every(p => p.canDelete);
 
   return {

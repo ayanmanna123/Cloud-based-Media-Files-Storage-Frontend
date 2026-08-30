@@ -115,8 +115,8 @@ export function Dashboard() {
     ? selectedItems.some(itemKey => {
         const [type, id] = itemKey.split('_');
         const item = type === 'folder' 
-          ? children?.folders?.find(f => f.id === id) 
-          : children?.files?.find(f => f.id === id);
+          ? children?.folders?.find(f => String(f.id) === String(id)) 
+          : children?.files?.find(f => String(f.id) === String(id));
         if (!item) return isViewerFolder;
         if (item.permission === 'viewer') return true;
         if (item.permission === 'editor' || item.permission === 'owner') return false;
@@ -124,7 +124,7 @@ export function Dashboard() {
       })
     : isViewerFolder;
 
-  const bulkPerms = getBulkPermissions(selectedItems, children, currentView, isSharedFolder, user);
+  const bulkPerms = getBulkPermissions(selectedItems, children, currentView, effectiveSharedRole, user);
   
   const [shareModalData, setShareModalData] = useState({ isOpen: false, resourceType: null, resourceId: null, resourceName: "" })
   const [versionHistoryModalData, setVersionHistoryModalData] = useState({ isOpen: false, fileId: null, fileName: "", currentVersionId: null })
