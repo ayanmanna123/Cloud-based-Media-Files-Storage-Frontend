@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Loader2, Key } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../../../components/ui/button"
 import { Input } from "../../../components/ui/input"
 import {
@@ -18,6 +19,7 @@ export function SetSecretCodeModal({
   isSubmitting,
   initialCode = ""
 }) {
+  const { t } = useTranslation()
   const [code, setCode] = useState("")
 
   useEffect(() => {
@@ -42,17 +44,17 @@ export function SetSecretCodeModal({
               <Key className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <DialogTitle className="text-center text-xl font-bold">
-              {initialCode ? "Change Secret Code" : "Set up Secret Folder"}
+              {t("modals.setVaultPinTitle")}
             </DialogTitle>
             <DialogDescription className="text-center text-sm text-muted-foreground">
-              Choose a secret passcode to secure your hidden files. Typing this passcode in the search bar will unlock the secret folder.
+              {t("modals.setVaultPinDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="py-6">
             <Input 
               type="text"
               autoFocus
-              placeholder="e.g. mysecretcode123" 
+              placeholder={t("modals.enterPin")}
               value={code}
               onChange={(e) => setCode(e.target.value)}
               disabled={isSubmitting}
@@ -67,7 +69,7 @@ export function SetSecretCodeModal({
               disabled={isSubmitting}
               className="w-full sm:w-auto"
             >
-              Cancel
+              {t("modals.cancel")}
             </Button>
             <Button 
               type="submit" 
@@ -75,7 +77,7 @@ export function SetSecretCodeModal({
               className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              {initialCode ? "Save Changes" : "Set Secret Code"}
+              {t("modals.setPinBtn")}
             </Button>
           </DialogFooter>
         </form>
@@ -83,3 +85,4 @@ export function SetSecretCodeModal({
     </Dialog>
   )
 }
+

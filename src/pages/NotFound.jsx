@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import FuzzyText from '../components/FuzzyText';
 import GeometricGridBackground from '../components/GeometricGridBackground';
 import { Button } from '../components/ui/button';
-import { Home, LayoutDashboard, ArrowLeft, CloudOff, Sparkles } from 'lucide-react';
+import { Home, LayoutDashboard, ArrowLeft, CloudOff } from 'lucide-react';
 
 export function NotFound() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -29,7 +31,7 @@ export function NotFound() {
         {/* Liquid Glass Pill Badge */}
         <div className="inline-flex items-center gap-2 bg-white/20 dark:bg-white/5 border border-white/40 dark:border-white/15 text-blue-600 dark:text-blue-400 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-md">
           <CloudOff className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
-          <span>404 &bull; Page Not Found</span>
+          <span>{t("notFound.title")}</span>
         </div>
 
         {/* Animated Fuzzy 404 Liquid Shatters Typography */}
@@ -49,10 +51,10 @@ export function NotFound() {
         {/* Message Headings */}
         <div className="space-y-2.5">
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground/95">
-            Lost in the Cloud
+            {t("notFound.title")}
           </h1>
           <p className="text-muted-foreground/90 text-sm sm:text-base leading-relaxed max-w-md mx-auto font-medium">
-            The page, file, or folder you're looking for doesn't exist, has been moved, or is temporarily unavailable.
+            {t("notFound.subtitle")}
           </p>
         </div>
 
@@ -63,18 +65,18 @@ export function NotFound() {
             variant="outline"
             className="w-full sm:w-auto h-12 px-6 rounded-2xl font-semibold gap-2 bg-white/20 dark:bg-white/5 hover:bg-white/40 dark:hover:bg-white/15 text-foreground border border-white/40 dark:border-white/15 shadow-sm backdrop-blur-md transition-all active:scale-[0.98]"
           >
-            <ArrowLeft className="w-4 h-4" /> Go Back
+            <ArrowLeft className="w-4 h-4" /> {t("modals.cancel")}
           </Button>
 
           <Link to="/" className="w-full sm:w-auto">
             <Button className="w-full sm:w-auto h-12 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-[0_8px_25px_rgba(59,130,246,0.4),_inset_0_1px_1px_rgba(255,255,255,0.35)] transition-all active:scale-[0.98] gap-2">
-              <Home className="w-4 h-4" /> Return to Home
+              <Home className="w-4 h-4" /> {t("notFound.backHome")}
             </Button>
           </Link>
 
           <Link to="/dashboard" className="w-full sm:w-auto">
             <Button className="w-full sm:w-auto h-12 px-6 rounded-2xl font-semibold gap-2 bg-white/20 dark:bg-white/5 hover:bg-white/40 dark:hover:bg-white/15 text-foreground border border-white/40 dark:border-white/15 shadow-sm backdrop-blur-md transition-all active:scale-[0.98]">
-              <LayoutDashboard className="w-4 h-4" /> Dashboard
+              <LayoutDashboard className="w-4 h-4" /> {t("notFound.goDashboard")}
             </Button>
           </Link>
         </div>
@@ -84,3 +86,4 @@ export function NotFound() {
 }
 
 export default NotFound;
+

@@ -6,6 +6,7 @@ import {
   Mail,
   UserPlus
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Textarea } from "./ui/textarea"
@@ -34,6 +35,7 @@ const truncateName = (str, maxLength = 20) => {
 };
 
 export function ShareModal({ isOpen, onClose, resourceType, resourceId, resourceName, useDrive }) {
+  const { t } = useTranslation()
   const { fetchShares, shareResource, revokeShare, searchUsers, fetchLinkShare, createLinkShare, deleteLinkShare, createBundleShare } = useDrive
   const [shares, setShares] = useState([])
   const [activeLink, setActiveLink] = useState(null)
@@ -122,15 +124,15 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
     setIsSubmitting(true)
     setError("")
     try {
-      let link;
+      let data;
       if (resourceType === 'bundle') {
-        link = await createBundleShare(resourceId, expiresAt || null, null);
+        data = await createBundleShare(resourceId, expiresAt ? new Date(expiresAt).toISOString() : null)
       } else {
-        link = await createLinkShare(resourceType, resourceId, expiresAt || null, null);
+        data = await createLinkShare(resourceType, resourceId, expiresAt ? new Date(expiresAt).toISOString() : null)
       }
-      setActiveLink(link)
+      setActiveLink(data)
     } catch (err) {
-      setError(err.message || "Failed to create link")
+      setError(err.message || "Failed to create share link")
     } finally {
       setIsSubmitting(false)
     }
@@ -142,7 +144,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
       await deleteLinkShare(activeLink.id)
       setActiveLink(null)
     } catch (err) {
-      setError(err.message || "Failed to remove link")
+      setError(err.message || "Failed to delete share link")
     }
   }
 
@@ -196,11 +198,8 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-semibold truncate pr-6">
               <UserPlus className="w-5 h-5 text-blue-600 shrink-0" />
-              <span className="truncate">Share "{truncateName(resourceName, 15)}"</span>
+              <span className="truncate">{t("shareModal.shareTitle", { name: truncateName(resourceName, 15) })}</span>
             </DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm">
-              Manage who has access to this {resourceType}.
-            </DialogDescription>
           </DialogHeader>
 
           {/* Tabs */}
@@ -210,14 +209,14 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                 onClick={() => setActiveTab("people")}
                 className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "people" ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}
               >
-                Share with people
+                {t("shareModal.peopleTab")}
               </button>
             )}
             <button
               onClick={() => setActiveTab("link")}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "link" ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
-              Public Link
+              {t("shareModal.linkTab")}
             </button>
           </div>
 
@@ -229,7 +228,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
               <div className="relative flex-1 min-w-0" ref={containerRef}>
                 <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
                 <Input 
-                  placeholder="Add people via email" 
+                  placeholder={t("shareModal.enterEmail")}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -247,12 +246,12 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                     {isSearchingUsers ? (
                       <div className="flex items-center justify-center p-3 text-xs text-muted-foreground gap-2">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Searching users...
+                        {t("uploadProgress.calculating")}
                       </div>
                     ) : userSuggestions.length > 0 ? (
                       <div className="py-1">
                         <div className="px-3 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30 border-b border-border/50">
-                          Suggested Registered Users
+                          {t("shareModal.addPeople")}
                         </div>
                         {userSuggestions.map((u) => (
                           <button
@@ -290,8 +289,8 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                 disabled={isSubmitting}
                 className="shrink-0 w-24 sm:w-28 h-10 px-2.5 sm:px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background text-xs sm:text-sm font-medium"
               >
-                <option value="viewer">Viewer</option>
-                <option value="editor">Editor</option>
+                <option value="viewer">{t("shareModal.viewerRole")}</option>
+                <option value="editor">{t("shareModal.editorRole")}</option>
               </select>
             </div>
             
@@ -307,7 +306,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                 <div className="flex justify-end mt-3">
                   <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
                     {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                    Send invite
+                    {t("shareModal.sendInvite")}
                   </Button>
                 </div>
               </div>
@@ -331,7 +330,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                       setLinkCopied(true);
                       setTimeout(() => setLinkCopied(false), 2000);
                     }} variant="secondary" size="sm" className="w-full">
-                      {linkCopied ? "Copied!" : "Copy"}
+                      {linkCopied ? t("shareModal.linkCopied") : t("shareModal.copyLink")}
                     </Button>
                   </div>
                   {activeLink.expiresAt && (
@@ -342,22 +341,19 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                   
                   <div className="flex gap-2">
                     <Button onClick={handleRevokeLink} variant="destructive" size="sm" className="w-full">
-                      Revoke Link
+                      {t("shareModal.deleteLink")}
                     </Button>
                   </div>
                   
                   <div className="flex flex-col items-center justify-center p-4 bg-white rounded-md mt-4 border border-border">
                     <QRCodeSVG value={resourceType === 'bundle' ? `${window.location.origin}/share/bundle/${activeLink.token}?auto_download=true` : `${window.location.origin}/share/${activeLink.token}?auto_download=true`} size={200} />
-                    <p className="text-xs text-muted-foreground mt-4 text-center">Scan to open and instantly download on your phone.</p>
+                    <p className="text-xs text-muted-foreground mt-4 text-center">{t("shareModal.qrCodeTitle")}</p>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Anyone on the internet with this link can view this {resourceType}.
-                  </p>
                   <div>
-                    <label className="text-xs font-medium mb-1 block text-muted-foreground">Expiry Date (Optional)</label>
+                    <label className="text-xs font-medium mb-1 block text-muted-foreground">{t("shareModal.linkExpires")}</label>
                     <Input 
                       type="datetime-local" 
                       value={expiresAt}
@@ -368,7 +364,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                   </div>
                   <Button onClick={handleGenerateLink} disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700">
                     {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                    Create Public Link
+                    {t("shareModal.generateLink")}
                   </Button>
                   {error && <p className="text-sm text-red-500 font-medium text-center mt-2">{error}</p>}
                 </div>
@@ -382,7 +378,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
           <div className="bg-muted/30 p-6 pt-4 border-t border-border">
           <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
             <Users className="w-4 h-4" />
-            People with access
+            {t("shareModal.peopleWithAccess")}
           </h3>
           
           <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2">
@@ -392,7 +388,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
               </div>
             ) : shares.length === 0 ? (
               <div className="text-center py-4 text-sm text-muted-foreground bg-background rounded-lg border border-dashed border-border/60">
-                This {resourceType} hasn't been shared with anyone yet.
+                {t("shareModal.peopleWithAccess")}
               </div>
             ) : (
               shares.map((share) => (
@@ -404,7 +400,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                       className="w-9 h-9 rounded-full bg-muted object-cover flex-shrink-0"
                     />
                     <div className="truncate">
-                      <p className="text-sm font-medium truncate">{share.grantee?.name || "Unknown User"}</p>
+                      <p className="text-sm font-medium truncate">{share.grantee?.name || "User"}</p>
                       <p className="text-xs text-muted-foreground truncate">{share.grantee?.email}</p>
                     </div>
                   </div>
@@ -417,7 +413,7 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                       size="icon" 
                       onClick={() => handleRevoke(share.id)}
                       className="w-8 h-8 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-                      title="Remove access"
+                      title={t("shareModal.revokeAccess")}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

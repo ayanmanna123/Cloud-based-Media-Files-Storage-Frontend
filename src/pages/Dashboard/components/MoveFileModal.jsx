@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../../../components/ui/button"
 import {
   Dialog,
@@ -16,14 +17,16 @@ export function MoveFileModal({
   onSubmit, 
   isSubmitting 
 }) {
+  const { t } = useTranslation()
+
   return (
     <Dialog open={moveFileModalData.isOpen} onOpenChange={(open) => !open && setMoveFileModalData({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })}>
       <DialogContent>
         <form onSubmit={onSubmit}>
           <DialogHeader>
-            <DialogTitle>{moveFileModalData.isBulk ? 'Move items' : 'Move file'}</DialogTitle>
+            <DialogTitle>{t("modals.moveItemTitle")}</DialogTitle>
             <DialogDescription>
-              Select a destination folder for <span className="font-semibold break-all">{moveFileModalData.isBulk ? `${moveFileModalData.items?.length} items` : `'${moveFileModalData.currentName}'`}</span>
+              {t("modals.moveItemDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -33,7 +36,7 @@ export function MoveFileModal({
               disabled={isSubmitting}
               className="w-full h-10 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background"
             >
-              <option value="root">My Drive (Root)</option>
+              <option value="root">{t("dashboard.myDrive")} (Root)</option>
               {allFolders.map(f => (
                 <option key={f.id} value={f.id}>{f.name}</option>
               ))}
@@ -41,11 +44,11 @@ export function MoveFileModal({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setMoveFileModalData({ isOpen: false, id: null, currentName: "", selectedFolderId: "root" })} disabled={isSubmitting}>
-              Cancel
+              {t("modals.cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              Move
+              {t("modals.moveHere")}
             </Button>
           </DialogFooter>
         </form>
@@ -53,3 +56,4 @@ export function MoveFileModal({
     </Dialog>
   )
 }
+

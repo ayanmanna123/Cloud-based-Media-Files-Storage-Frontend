@@ -8,6 +8,7 @@ import {
 } from "../../../components/ui/dialog"
 import { Button } from "../../../components/ui/button"
 import { Loader2, ShieldCheck } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useAuth } from "../../../context/AuthContext"
 import { deriveEncryptionKey, decryptFileBuffer, decryptFileWithFallbackKeys } from "../../../lib/cryptoUtils"
 
@@ -17,6 +18,7 @@ export function EditFileModal({
   file, 
   onSave
 }) {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [content, setContent] = useState("")
   const [loading, setLoading] = useState(false)
@@ -94,7 +96,7 @@ export function EditFileModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && !saving && onClose()}>
       <DialogContent className="sm:max-w-[800px] h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Edit {file?.name}</DialogTitle>
+          <DialogTitle>{t("modals.editFileTitle")} - {file?.name}</DialogTitle>
         </DialogHeader>
         
         <div className="flex-1 min-h-0 overflow-hidden py-4">
@@ -118,13 +120,14 @@ export function EditFileModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button variant="outline" onClick={onClose} disabled={saving}>{t("modals.cancel")}</Button>
           <Button onClick={handleSave} disabled={loading || saving || !!error}>
             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            Save Changes
+            {t("modals.saveChanges")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
 }
+

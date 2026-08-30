@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   XCircle
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 const formatBytes = (bytes) => {
   if (bytes === 0 || !bytes) return '0 B';
@@ -17,12 +18,6 @@ const formatBytes = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
-const formatTime = (seconds) => {
-  if (seconds === undefined || seconds === null || seconds === Infinity || isNaN(seconds)) return 'Calculating...';
-  if (seconds < 60) return `${Math.round(seconds)}s left`;
-  return `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s left`;
-};
-
 export function UploadProgress({ 
   tasks, 
   isExpanded, 
@@ -30,11 +25,19 @@ export function UploadProgress({
   onClose, 
   onCancel 
 }) {
+  const { t } = useTranslation()
+
   if (tasks.length === 0) return null
 
   const inProgressCount = tasks.filter(t => t.status === 'uploading' || t.status === 'pending').length
   const completedCount = tasks.filter(t => t.status === 'completed').length
   const allDone = inProgressCount === 0 && tasks.length > 0;
+
+  const formatTime = (seconds) => {
+    if (seconds === undefined || seconds === null || seconds === Infinity || isNaN(seconds)) return t("uploadProgress.calculating");
+    if (seconds < 60) return t("uploadProgress.secondsLeft", { count: Math.round(seconds) });
+    return t("uploadProgress.minutesLeft", { min: Math.floor(seconds / 60), sec: Math.round(seconds % 60) });
+  };
 
   useEffect(() => {
     let timeout;
@@ -55,13 +58,16 @@ export function UploadProgress({
       >
         <div className="font-semibold text-xs text-foreground flex items-center gap-1.5 truncate">
           <span className="truncate">
-            {allDone ? `Uploaded ${completedCount} file${completedCount !== 1 ? 's' : ''}` : `Uploading ${inProgressCount} file${inProgressCount !== 1 ? 's' : ''}`}
+            {allDone 
+              ? t("uploadProgress.uploadedCount", { count: completedCount }) 
+              : t("uploadProgress.uploadingCount", { count: inProgressCount })
+            }
           </span>
         </div>
         <div className="flex items-center gap-1 text-muted-foreground shrink-0">
           <button 
             className="hover:text-foreground p-0.5 rounded hover:bg-background/50 transition-colors"
-            title={isExpanded ? "Collapse" : "Expand"}
+            title={isExpanded ? t("uploadProgress.collapse") : t("uploadProgress.expand")}
           >
             {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
           </button>
@@ -71,7 +77,7 @@ export function UploadProgress({
               e.stopPropagation()
               onClose()
             }}
-            title="Close"
+            title={t("uploadProgress.close")}
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -90,7 +96,7 @@ export function UploadProgress({
                   <div className="mt-1">
                     <div className="flex justify-between text-[10px] text-muted-foreground mb-0.5">
                       <span className="truncate">{formatBytes(task.loaded || 0)} / {formatBytes(task.totalSize || 0)}</span>
-                      <span className="font-mono text-[9px] shrink-0 ml-1">{task.speed ? `${formatBytes(task.speed)}/s` : 'Starting...'}</span>
+                      <span className="font-mono text-[9px] shrink-0 ml-1">{task.speed ? `${formatBytes(task.speed)}/s` : t("uploadProgress.starting")}</span>
                     </div>
                     <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
                       <div 
@@ -105,17 +111,17 @@ export function UploadProgress({
                 )}
                 {task.status === 'completed' && (
                   <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
-                    <CheckCircle2 className="w-3 h-3" /> Complete
+                    <CheckCircle2 className="w-3 h-3" /> {t("uploadProgress.completed")}
                   </div>
                 )}
                 {task.status === 'error' && (
                   <div className="text-[10px] text-red-500 font-medium flex items-center gap-1 mt-0.5 truncate">
-                    <XCircle className="w-3 h-3 shrink-0" /> <span className="truncate">{task.message || 'Failed'}</span>
+                    <XCircle className="w-3 h-3 shrink-0" /> <span className="truncate">{task.message || t("uploadProgress.failed")}</span>
                   </div>
                 )}
                 {task.status === 'cancelled' && (
                   <div className="text-[10px] text-muted-foreground font-medium mt-0.5">
-                    Cancelled
+                    {t("modals.cancel")}
                   </div>
                 )}
               </div>
@@ -128,7 +134,7 @@ export function UploadProgress({
                       onCancel(task.id)
                     }}
                     className="p-0.5 hover:bg-red-500/10 hover:text-red-500 rounded text-muted-foreground transition-all sm:opacity-0 sm:group-hover:opacity-100"
-                    title="Cancel upload"
+                    title={t("modals.cancel")}
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -141,3 +147,4 @@ export function UploadProgress({
     </div>
   )
 }
+

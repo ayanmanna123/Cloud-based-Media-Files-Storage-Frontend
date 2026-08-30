@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { Eye, EyeOff, Fingerprint } from "lucide-react"
 import { GoogleLogin } from "@react-oauth/google"
 import { startAuthentication } from "@simplewebauthn/browser"
+import { useTranslation } from "react-i18next"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
@@ -11,6 +12,7 @@ import { useAuth } from "../../context/AuthContext"
 import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function Login() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const redirectUrl = searchParams.get("redirect") || "/dashboard"
@@ -78,7 +80,7 @@ export function Login() {
 
   const handlePasskeyLogin = async () => {
     if (!formData.email) {
-      setError("Please enter your email first to login with Passkey/Security Key")
+      setError(t("auth.enterEmailFirstPasskey"))
       return
     }
 
@@ -140,9 +142,9 @@ export function Login() {
 
       <Card className="relative z-10 w-full max-w-md bg-white/16 dark:bg-black/30 backdrop-blur-[7px] border-0 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] rounded-[2rem]">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardTitle className="text-2xl">{t("auth.loginTitle")}</CardTitle>
           <CardDescription>
-            Enter your email to sign in to your account
+            {t("auth.loginSubtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -150,15 +152,15 @@ export function Login() {
             {error && <div className="p-3 text-sm text-red-500 bg-red-100 dark:bg-red-900/20 rounded-md">{error}</div>}
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input id="email" type="email" placeholder="m@example.com" required value={formData.email} onChange={handleChange} />
             </div>
             
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("auth.password")}</Label>
                 <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
-                  Forgot password?
+                  {t("auth.forgotPasswordLink")}
                 </Link>
               </div>
               <div className="relative">
@@ -182,7 +184,7 @@ export function Login() {
             </div>
             
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? t("auth.signingIn") : t("auth.signIn")}
             </Button>
             
             <div className="relative my-4">
@@ -191,14 +193,14 @@ export function Login() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
+                  {t("auth.orContinueWith")}
                 </span>
               </div>
             </div>
 
             <Button type="button" variant="outline" className="w-full" onClick={handlePasskeyLogin} disabled={loading}>
               <Fingerprint className="mr-2 h-4 w-4" />
-              Sign in with Passkey
+              {t("auth.loginWithPasskey")}
             </Button>
 
             <div className="flex justify-center mt-2">
@@ -215,9 +217,9 @@ export function Login() {
         </CardContent>
         <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
           <div>
-            Don't have an account?{" "}
+            {t("auth.noAccount")}{" "}
             <Link to="/signup" className="text-primary hover:underline">
-              Sign up
+              {t("auth.signUp")}
             </Link>
           </div>
         </CardFooter>
@@ -225,3 +227,4 @@ export function Login() {
     </div>
   )
 }
+

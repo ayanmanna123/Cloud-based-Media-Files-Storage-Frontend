@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Loader2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../../../components/ui/button"
 import { Input } from "../../../components/ui/input"
 import {
@@ -17,6 +18,7 @@ export function RenameFileModal({
   onSubmit, 
   isSubmitting 
 }) {
+  const { t } = useTranslation()
   const fullName = renameFileModalData.currentName || "";
   const lastDotIndex = fullName.lastIndexOf(".");
   
@@ -51,23 +53,23 @@ export function RenameFileModal({
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Rename file</DialogTitle>
+            <DialogTitle>{t("modals.renameFileTitle")}</DialogTitle>
             <DialogDescription>
-              Enter a new name for the file. The file extension is locked and cannot be changed.
+              {t("modals.renameFileDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-center gap-2">
               <Input 
                 autoFocus
-                placeholder="File name" 
+                placeholder={t("modals.newFileName")}
                 value={baseName}
                 onChange={(e) => setBaseName(e.target.value)}
                 disabled={isSubmitting}
                 className="flex-1 font-medium"
               />
               {hasExt && (
-                <div className="flex items-center px-3 py-2 bg-muted/80 border border-border rounded-md text-xs font-bold text-muted-foreground select-none flex-shrink-0" title="File extension is locked and cannot be modified">
+                <div className="flex items-center px-3 py-2 bg-muted/80 border border-border rounded-md text-xs font-bold text-muted-foreground select-none flex-shrink-0">
                   <span className="font-mono">{originalExt}</span>
                 </div>
               )}
@@ -75,11 +77,11 @@ export function RenameFileModal({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setRenameFileModalData({ isOpen: false, id: null, currentName: "" })} disabled={isSubmitting}>
-              Cancel
+              {t("modals.cancel")}
             </Button>
             <Button type="submit" disabled={!baseName.trim() || isSubmitting}>
               {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              Rename
+              {t("modals.rename")}
             </Button>
           </DialogFooter>
         </form>
@@ -87,3 +89,4 @@ export function RenameFileModal({
     </Dialog>
   )
 }
+

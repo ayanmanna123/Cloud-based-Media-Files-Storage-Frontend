@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams, Link, useNavigate } from "react-router-dom"
 import { Eye, EyeOff, CheckCircle2, ArrowRight } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
@@ -8,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function ResetPassword() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token")
@@ -71,15 +73,12 @@ export function ResetPassword() {
             <CheckCircle2 className="w-8 h-8 text-emerald-500" />
           </div>
           <div className="space-y-2 mb-6">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Password Reset Successful</h2>
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
-              Your password has been successfully updated. You can now log in with your new password.
-            </p>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">{t("auth.resetPasswordTitle")}</h2>
           </div>
           <div className="w-full">
             <Link to="/login" className="w-full block">
               <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 rounded-xl h-11 gap-2 transition-all">
-                Go to Login <ArrowRight className="w-4 h-4" />
+                {t("auth.signIn")} <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -102,9 +101,9 @@ export function ResetPassword() {
 
       <Card className="relative z-10 w-full max-w-md bg-white/16 dark:bg-black/30 backdrop-blur-[7px] border-0 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] rounded-[2rem]">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl">Set New Password</CardTitle>
+          <CardTitle className="text-2xl">{t("auth.resetPasswordTitle")}</CardTitle>
           <CardDescription>
-            Enter your new password below.
+            {t("auth.resetPasswordSubtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -112,7 +111,7 @@ export function ResetPassword() {
             {error && <div className="p-3 text-sm text-red-500 bg-red-100 dark:bg-red-900/20 rounded-md">{error}</div>}
             
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <div className="relative">
                 <Input 
                   id="password" 
@@ -136,7 +135,7 @@ export function ResetPassword() {
             </div>
             
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading || !token}>
-              {loading ? "Resetting..." : "Reset Password"}
+              {loading ? t("modals.saving") : t("auth.resetPasswordBtn")}
             </Button>
           </form>
         </CardContent>
@@ -144,3 +143,4 @@ export function ResetPassword() {
     </div>
   )
 }
+

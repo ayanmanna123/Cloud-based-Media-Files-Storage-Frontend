@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react"
 import { useSearchParams, Link } from "react-router-dom"
 import { CheckCircle2, XCircle, Loader2, ArrowRight } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../../components/ui/button"
 import { Card } from "../../components/ui/card"
 import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function VerifyEmail() {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token")
   
   const [status, setStatus] = useState("verifying") // verifying, success, error
-  const [message, setMessage] = useState("Please wait while we verify your email address...")
+  const [message, setMessage] = useState("")
   
   useEffect(() => {
     if (!token) {
@@ -30,7 +32,7 @@ export function VerifyEmail() {
         }
 
         setStatus("success")
-        setMessage(data.message || "Email verified successfully! You can now log in.")
+        setMessage(data.message || "Email verified successfully!")
       } catch (err) {
         setStatus("error")
         setMessage(err.message)
@@ -75,9 +77,9 @@ export function VerifyEmail() {
 
         <div className="space-y-2 mb-6">
           <h2 className="text-2xl font-bold tracking-tight">
-            {status === "verifying" && <span className="text-foreground">Verifying Email...</span>}
-            {status === "success" && <span className="text-foreground">Verification Successful</span>}
-            {status === "error" && <span className="text-red-500">Verification Failed</span>}
+            {status === "verifying" && <span className="text-foreground">{t("auth.verifyEmailTitle")}</span>}
+            {status === "success" && <span className="text-foreground">{t("uploadProgress.completed")}</span>}
+            {status === "error" && <span className="text-red-500">{t("uploadProgress.failed")}</span>}
           </h2>
           <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
             {message}
@@ -88,14 +90,14 @@ export function VerifyEmail() {
           {status === "success" && (
             <Link to="/login" className="w-full block">
               <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 rounded-xl h-11 gap-2 transition-all">
-                Go to Login <ArrowRight className="w-4 h-4" />
+                {t("auth.signIn")} <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           )}
           {status === "error" && (
             <Link to="/signup" className="w-full block">
               <Button variant="outline" className="w-full rounded-xl h-11 border-border font-medium hover:bg-accent">
-                Back to Sign Up
+                {t("auth.signUp")}
               </Button>
             </Link>
           )}
@@ -104,3 +106,4 @@ export function VerifyEmail() {
     </div>
   )
 }
+

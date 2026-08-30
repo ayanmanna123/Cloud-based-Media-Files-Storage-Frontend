@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { X, Clock, FileText, Download, RotateCcw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function VersionHistoryModal({ isOpen, onClose, fileId, fileName, currentVersionId, onRestore }) {
+  const { t } = useTranslation();
   const [versions, setVersions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,7 +59,7 @@ export function VersionHistoryModal({ isOpen, onClose, fileId, fileName, current
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Version History</h2>
+            <h2 className="text-lg font-semibold">{t("modals.versionHistoryTitle")}</h2>
           </div>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-muted text-muted-foreground">
             <X className="w-5 h-5" />
@@ -67,17 +69,17 @@ export function VersionHistoryModal({ isOpen, onClose, fileId, fileName, current
         <div className="p-4 border-b border-border bg-muted/30">
           <p className="text-sm font-medium truncate">{fileName}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Uploading a file with the exact same name to this folder adds a new version.
+            {t("modals.versionHistoryDesc")}
           </p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {loading ? (
-            <div className="flex justify-center p-4"><span className="animate-pulse">Loading versions...</span></div>
+            <div className="flex justify-center p-4"><span className="animate-pulse">{t("uploadProgress.calculating")}</span></div>
           ) : error ? (
             <div className="text-red-500 text-sm p-4 text-center">{error}</div>
           ) : versions.length === 0 ? (
-            <div className="text-muted-foreground text-sm p-4 text-center">No versions found.</div>
+            <div className="text-muted-foreground text-sm p-4 text-center">{t("modals.noVersions")}</div>
           ) : (
             versions.map((v, index) => {
               const isCurrent = v.id === currentVersionId;
@@ -92,7 +94,7 @@ export function VersionHistoryModal({ isOpen, onClose, fileId, fileName, current
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className={`text-sm font-medium ${isCurrent ? 'text-blue-600' : ''}`}>
-                        Version {v.versionNumber} {isCurrent && '(Current)'}
+                        Version {v.versionNumber} {isCurrent && `(${t("modals.currentVersion")})`}
                       </p>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">{sizeMB} MB</span>
                     </div>
@@ -105,14 +107,14 @@ export function VersionHistoryModal({ isOpen, onClose, fileId, fileName, current
                         rel="noreferrer"
                         className="text-xs text-blue-500 hover:underline flex items-center gap-1"
                       >
-                        <Download className="w-3 h-3" /> View / Download
+                        <Download className="w-3 h-3" /> {t("dashboard.download")}
                       </a>
                       {!isCurrent && (
                         <button 
                           onClick={() => handleRestore(v.id)}
                           className="text-xs text-green-600 hover:underline flex items-center gap-1"
                         >
-                          <RotateCcw className="w-3 h-3" /> Restore
+                          <RotateCcw className="w-3 h-3" /> {t("modals.restore")}
                         </button>
                       )}
                     </div>
@@ -126,3 +128,4 @@ export function VersionHistoryModal({ isOpen, onClose, fileId, fileName, current
     </div>
   );
 }
+

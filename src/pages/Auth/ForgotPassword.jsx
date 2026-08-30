@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { ArrowLeft, Mail, ArrowRight } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
@@ -8,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import GeometricGridBackground from "../../components/GeometricGridBackground"
 
 export function ForgotPassword() {
+  const { t } = useTranslation()
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -58,21 +60,18 @@ export function ForgotPassword() {
             <Mail className="w-8 h-8" />
           </div>
           <div className="space-y-2 mb-6">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Check Your Email</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">{t("auth.forgotPasswordTitle")}</h2>
             <div className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
-              If an account exists for:
+              {t("auth.forgotPasswordSubtitle")}
               <span className="block mt-2 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20 py-1.5 px-3 rounded-lg break-all">
                 {email}
-              </span>
-              <span className="block mt-3 text-xs text-muted-foreground">
-                We have sent a password reset link to your email address.
               </span>
             </div>
           </div>
           <div className="w-full flex flex-col gap-3">
             <Link to="/login" className="w-full block">
               <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 rounded-xl h-11 gap-2 transition-all">
-                Return to Login <ArrowRight className="w-4 h-4" />
+                {t("auth.backToSignIn")} <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -95,9 +94,9 @@ export function ForgotPassword() {
 
       <Card className="relative z-10 w-full max-w-md bg-white/16 dark:bg-black/30 backdrop-blur-[7px] border-0 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] rounded-[2rem]">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <CardTitle className="text-2xl">{t("auth.forgotPasswordTitle")}</CardTitle>
           <CardDescription>
-            Enter your email address and we'll send you a link to reset your password.
+            {t("auth.forgotPasswordSubtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -105,7 +104,7 @@ export function ForgotPassword() {
             {error && <div className="p-3 text-sm text-red-500 bg-red-100 dark:bg-red-900/20 rounded-md">{error}</div>}
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input 
                 id="email" 
                 type="email" 
@@ -117,16 +116,17 @@ export function ForgotPassword() {
             </div>
             
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
-              {loading ? "Sending link..." : "Send Reset Link"}
+              {loading ? t("modals.saving") : t("auth.sendResetLink")}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <Link to="/login" className="text-sm font-medium text-primary hover:underline">
-            Back to login
+            {t("auth.backToSignIn")}
           </Link>
         </CardFooter>
       </Card>
     </div>
   )
 }
+
