@@ -688,7 +688,7 @@ export function useDrive(folderId = null) {
 
   const shareResource = async (resourceType, resourceId, email, role, message) => {
     try {
-      const baseUrl = import.meta.env.VITE_EMAIL_API_URL || import.meta.env.VITE_API_URL;
+      const baseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_EMAIL_API_URL;
       const response = await fetch(`${baseUrl}/api/shares`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
