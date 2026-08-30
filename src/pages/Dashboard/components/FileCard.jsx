@@ -37,6 +37,8 @@ import {
   ContextMenuTrigger,
 } from "../../../components/ui/context-menu"
 
+import { getItemPermissions } from "../../../lib/permissions"
+
 const getFileIcon = (filename) => {
   if (!filename) return FileText
   const ext = filename.split('.').pop()?.toLowerCase()
@@ -88,7 +90,8 @@ function FileCardComponent({
   const thumbnailUrl = `${import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}/${file.storageKey}/ik-thumbnail.jpg?tr=w-600,h-800,c-at_max,bg-FFFFFF`
   const isStarred = starredItems.includes(`file_${file.id}`)
   const isShared = isSharedProp || currentView === 'shared' || (file.permission && file.permission !== 'owner') || !!file.sharedWithMe
-  const isViewer = file.permission === 'viewer' || (currentView === 'shared' && file.permission !== 'editor' && file.permission !== 'owner')
+  const perms = getItemPermissions(file, currentView, isSharedProp)
+  const isViewer = perms.isViewer
   const [dimensions, setDimensions] = useState(file.width && file.height ? `${file.width}x${file.height}` : null)
   const [copied, setCopied] = useState(false)
 
@@ -175,7 +178,7 @@ function FileCardComponent({
         </>
       ) : (
         <>
-          {isEditable && file.permission !== 'viewer' && (
+          {isEditable && perms.canEditContent && (
             <DropdownMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
               <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.edit")}
             </DropdownMenuItem>
@@ -186,18 +189,16 @@ function FileCardComponent({
           <DropdownMenuItem onClick={handleCopyUrl}>
             <Copy className="w-4 h-4 mr-2" /> {t("dashboard.copyLink")}
           </DropdownMenuItem>
-          <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
+          <DropdownMenuItem disabled={!perms.canShare} onClick={() => perms.canShare && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}
           </DropdownMenuItem>
-          {file.permission !== 'viewer' && (
-            <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onMove(file.id, file.name), 0)}>
+          <DropdownMenuItem disabled={!perms.canRename} onClick={() => perms.canRename && setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
+            <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled={!perms.canMove} onClick={() => perms.canMove && setTimeout(() => onMove(file.id, file.name), 0)}>
             <FolderInput className="w-4 h-4 mr-2" /> {t("dashboard.move")}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
+          <DropdownMenuItem disabled={!perms.canVersionHistory} onClick={() => perms.canVersionHistory && setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
             <Clock className="w-4 h-4 mr-2" /> {t("dashboard.versionHistory")}
           </DropdownMenuItem>
           {currentView === 'secret' ? (
@@ -211,9 +212,9 @@ function FileCardComponent({
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem 
-            disabled={isViewer} 
-            onClick={() => !isViewer && setTimeout(() => onDelete(file.id), 0)} 
-            className={isViewer ? "" : "text-red-500 focus:text-red-500 focus:bg-red-50"}
+            disabled={!perms.canDelete} 
+            onClick={() => perms.canDelete && setTimeout(() => onDelete(file.id), 0)} 
+            className={perms.canDelete ? "text-red-500 focus:text-red-500 focus:bg-red-50" : ""}
           >
             <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
           </DropdownMenuItem>
@@ -235,7 +236,7 @@ function FileCardComponent({
         </>
       ) : (
         <>
-          {isEditable && file.permission !== 'viewer' && (
+          {isEditable && perms.canEditContent && (
             <ContextMenuItem onClick={() => setTimeout(() => onEdit(file), 0)}>
               <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.edit")}
             </ContextMenuItem>
@@ -246,18 +247,16 @@ function FileCardComponent({
           <ContextMenuItem onClick={handleCopyUrl}>
             <Copy className="w-4 h-4 mr-2" /> {t("dashboard.copyLink")}
           </ContextMenuItem>
-          <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
+          <ContextMenuItem disabled={!perms.canShare} onClick={() => perms.canShare && setTimeout(() => onShare({ isOpen: true, resourceType: 'file', resourceId: file.id, resourceName: file.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}
           </ContextMenuItem>
-          {file.permission !== 'viewer' && (
-            <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
-            </ContextMenuItem>
-          )}
-          <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onMove(file.id, file.name), 0)}>
+          <ContextMenuItem disabled={!perms.canRename} onClick={() => perms.canRename && setTimeout(() => onRename({ isOpen: true, id: file.id, currentName: file.name }), 0)}>
+            <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
+          </ContextMenuItem>
+          <ContextMenuItem disabled={!perms.canMove} onClick={() => perms.canMove && setTimeout(() => onMove(file.id, file.name), 0)}>
             <FolderInput className="w-4 h-4 mr-2" /> {t("dashboard.move")}
           </ContextMenuItem>
-          <ContextMenuItem onClick={() => setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
+          <ContextMenuItem disabled={!perms.canVersionHistory} onClick={() => perms.canVersionHistory && setTimeout(() => onOpenVersionHistory({ isOpen: true, fileId: file.id, fileName: file.name, currentVersionId: file.versionId }), 0)}>
             <Clock className="w-4 h-4 mr-2" /> {t("dashboard.versionHistory")}
           </ContextMenuItem>
           {currentView === 'secret' ? (
@@ -271,9 +270,9 @@ function FileCardComponent({
           )}
           <ContextMenuSeparator />
           <ContextMenuItem 
-            disabled={isViewer} 
-            onClick={() => !isViewer && onDelete(file.id)} 
-            className={isViewer ? "" : "text-red-500 focus:text-red-500 focus:bg-red-50"}
+            disabled={!perms.canDelete} 
+            onClick={() => perms.canDelete && onDelete(file.id)} 
+            className={perms.canDelete ? "text-red-500 focus:text-red-500 focus:bg-red-50" : ""}
           >
             <Trash2 className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
           </ContextMenuItem>

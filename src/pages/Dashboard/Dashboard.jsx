@@ -38,6 +38,7 @@ import JSZip from "jszip"
 import { useDrive } from "../../hooks/useDrive"
 import { UploadIcon } from "../../components/UploadIcon"
 import { SortIcon } from "../../components/SortIcon"
+import { getBulkPermissions, getItemPermissions } from "../../lib/permissions"
 import { SearchIcon } from "../../components/SearchIcon"
 import { useProgress } from "../../context/ProgressContext"
 import { Link } from "react-router-dom"
@@ -121,6 +122,8 @@ export function Dashboard() {
         return isViewerFolder;
       })
     : isViewerFolder;
+
+  const bulkPerms = getBulkPermissions(selectedItems, children, currentView, isSharedFolder, user);
   
   const [shareModalData, setShareModalData] = useState({ isOpen: false, resourceType: null, resourceId: null, resourceName: "" })
   const [versionHistoryModalData, setVersionHistoryModalData] = useState({ isOpen: false, fileId: null, fileName: "", currentVersionId: null })
@@ -1505,9 +1508,9 @@ export function Dashboard() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                disabled={isSharedFolder || (selectedItems.length > 1 && selectedItems.every(id => id.startsWith('folder_')))} 
+                disabled={!bulkPerms.canShare} 
                 onClick={() => {
-                  if (isSharedFolder) return;
+                  if (!bulkPerms.canShare) return;
                   if (selectedItems.length === 1) {
                     const id = selectedItems[0];
                     const type = id.startsWith('folder_') ? 'folder' : 'file';
@@ -1522,33 +1525,33 @@ export function Dashboard() {
                   }
                 }} 
                 className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
-                title={isSharedFolder ? "Sharing is disabled for shared items" : "Share"}
+                title={!bulkPerms.canShare ? "Sharing is disabled for shared items" : "Share"}
               >
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.share")}
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                disabled={isSharedFolder} 
+                disabled={!bulkPerms.canMove} 
                 onClick={() => {
-                  if (isSharedFolder) return;
+                  if (!bulkPerms.canMove) return;
                   handleBulkMove();
                 }} 
                 className="h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap"
-                title={isSharedFolder ? "Moving is disabled for shared items" : "Move"}
+                title={!bulkPerms.canMove ? "Moving is disabled for shared items" : "Move"}
               >
                 <FolderInput className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.move")}
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                disabled={isSelectionViewer}
+                disabled={!bulkPerms.canDelete}
                 onClick={() => {
-                  if (isSelectionViewer) return;
+                  if (!bulkPerms.canDelete) return;
                   handleBulkDelete();
                 }} 
-                className={`h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap ${isSelectionViewer ? "" : "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"}`}
-                title={isSelectionViewer ? "Delete is disabled for viewers" : "Delete (Delete / Backspace)"}
+                className={`h-8 px-2 sm:px-3 text-xs sm:text-sm shrink-0 whitespace-nowrap ${!bulkPerms.canDelete ? "" : "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"}`}
+                title={!bulkPerms.canDelete ? "Delete is disabled for viewers" : "Delete (Delete / Backspace)"}
               >
                 <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> {t("dashboard.delete")}
               </Button>

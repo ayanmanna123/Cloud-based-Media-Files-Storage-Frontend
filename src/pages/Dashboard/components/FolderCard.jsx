@@ -28,6 +28,8 @@ import {
   ContextMenuTrigger,
 } from "../../../components/ui/context-menu"
 
+import { getItemPermissions } from "../../../lib/permissions"
+
 function FolderCardComponent({ 
   folder, 
   currentView, 
@@ -48,7 +50,8 @@ function FolderCardComponent({
   const { t } = useTranslation()
   const isStarred = starredItems.includes(`folder_${folder.id}`)
   const isShared = isSharedProp || currentView === 'shared' || (folder.permission && folder.permission !== 'owner') || !!folder.sharedWithMe
-  const isViewer = folder.permission === 'viewer' || (currentView === 'shared' && folder.permission !== 'editor' && folder.permission !== 'owner')
+  const perms = getItemPermissions(folder, currentView, isSharedProp)
+  const isViewer = perms.isViewer
   
   const formatBytes = (bytes) => {
     if (!bytes || bytes === 0) return '0 B';
@@ -75,14 +78,12 @@ function FolderCardComponent({
             <Star className={`w-4 h-4 mr-2 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
             {isStarred ? t("dashboard.unstar") : t("dashboard.star")}
           </ContextMenuItem>
-          <ContextMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
+          <ContextMenuItem disabled={!perms.canShare} onClick={() => perms.canShare && setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
             <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}
           </ContextMenuItem>
-          {folder.permission !== 'viewer' && (
-            <ContextMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
-              <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
-            </ContextMenuItem>
-          )}
+          <ContextMenuItem disabled={!perms.canRename} onClick={() => perms.canRename && setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
+            <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
+          </ContextMenuItem>
           {currentView === 'secret' ? (
             <ContextMenuItem onClick={() => onHide(folder.id, false)}>
               <Eye className="w-4 h-4 mr-2 text-green-500" /> {t("dashboard.unhide")}
@@ -94,9 +95,9 @@ function FolderCardComponent({
           )}
           <ContextMenuSeparator />
           <ContextMenuItem 
-            disabled={isViewer} 
-            onClick={() => !isViewer && onDelete(folder.id)} 
-            className={isViewer ? "" : "text-red-500 focus:text-red-500 focus:bg-red-50 group/del"}
+            disabled={!perms.canDelete} 
+            onClick={() => perms.canDelete && onDelete(folder.id)} 
+            className={perms.canDelete ? "text-red-500 focus:text-red-500 focus:bg-red-50 group/del" : ""}
           >
             <TrashBinIcon className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
           </ContextMenuItem>
@@ -142,14 +143,12 @@ function FolderCardComponent({
                       <Star className={`w-4 h-4 mr-2 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} /> 
                       {isStarred ? t("dashboard.unstar") : t("dashboard.star")}
                     </DropdownMenuItem>
-                    <DropdownMenuItem disabled={isShared} onClick={() => !isShared && setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
+                    <DropdownMenuItem disabled={!perms.canShare} onClick={() => perms.canShare && setTimeout(() => onShare({ isOpen: true, resourceType: 'folder', resourceId: folder.id, resourceName: folder.name }), 0)}>
                       <Users className="w-4 h-4 mr-2 text-blue-600" /> {t("dashboard.share")}
                     </DropdownMenuItem>
-                    {folder.permission !== 'viewer' && (
-                      <DropdownMenuItem onClick={() => setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
-                        <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem disabled={!perms.canRename} onClick={() => perms.canRename && setTimeout(() => onRename({ isOpen: true, id: folder.id, currentName: folder.name }), 0)}>
+                      <Edit2 className="w-4 h-4 mr-2" /> {t("dashboard.rename")}
+                    </DropdownMenuItem>
                     {currentView === 'secret' ? (
                       <DropdownMenuItem onClick={() => setTimeout(() => onHide(folder.id, false), 0)}>
                         <Eye className="w-4 h-4 mr-2 text-green-500" /> {t("dashboard.unhide")}
@@ -161,9 +160,9 @@ function FolderCardComponent({
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      disabled={isViewer} 
-                      onClick={() => !isViewer && setTimeout(() => onDelete(folder.id), 0)} 
-                      className={isViewer ? "" : "text-red-500 focus:text-red-500 focus:bg-red-50"}
+                      disabled={!perms.canDelete} 
+                      onClick={() => perms.canDelete && setTimeout(() => onDelete(folder.id), 0)} 
+                      className={perms.canDelete ? "text-red-500 focus:text-red-500 focus:bg-red-50" : ""}
                     >
                       <TrashBinIcon className="w-4 h-4 mr-2" /> {t("dashboard.delete")}
                     </DropdownMenuItem>
