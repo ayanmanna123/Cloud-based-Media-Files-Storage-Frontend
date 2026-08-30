@@ -295,10 +295,10 @@ function FileCardComponent({
           <FileIcon filename={file.name} className="w-5 h-5 flex-shrink-0" />
           <span className="text-sm font-medium truncate">{file.name}</span>
           {(file.isEncrypted || file.is_encrypted) && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 px-2 py-0.5 rounded-full">
-              <ShieldCheck className="w-3 h-3" />
-              <span>AES-256</span>
-            </span>
+            <span 
+              className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" 
+              title={t("dashboard.encrypted") || "Encrypted"} 
+            />
           )}
         </div>
         <div className="hidden sm:block w-32 shrink-0 text-sm text-muted-foreground truncate">
@@ -349,10 +349,10 @@ function FileCardComponent({
         >
       <div className="flex-1 bg-muted/30 flex items-center justify-center overflow-hidden relative">
         {(file.isEncrypted || file.is_encrypted) && (
-          <div className="absolute top-2 left-2 z-10 bg-emerald-600/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs backdrop-blur-xs">
-            <ShieldCheck className="w-3 h-3" />
-            <span>{t("dashboard.encrypted")}</span>
-          </div>
+          <div 
+            className="absolute top-2.5 left-2.5 z-10 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-background shadow-xs" 
+            title={t("dashboard.encrypted") || "Encrypted"} 
+          />
         )}
         {(isImage || isPdf || isVideo) ? (
           <>
