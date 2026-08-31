@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext"
 import { Button } from "../components/ui/button"
 import GradientWaves from "../components/GradientWaves"
 import GradientText from "../components/GradientText"
+import TextType from "../components/TextType"
 import { 
   Cloud,
   Lock, 
@@ -26,9 +27,9 @@ export function Home() {
         {/* Background Gradient Waves */}
         <div className="absolute inset-0 z-0">
           <GradientWaves
-            horizonColor="#3A00E5"
-            waveColor="#FF1AD9"
-            crestColor="#FFFFFF"
+            horizonColor="#5227ff"
+            waveColor="#ff9ffc"
+            crestColor="#ffffff"
             speed={0.4}
             amplitude={2.5}
             waveScale={0.6}
@@ -38,9 +39,9 @@ export function Home() {
             tilt={1.11}
             zoom={1}
             height={5.5}
-            fogDepth={8}
+            fogDepth={15}
             detail="medium"
-            brightness={1.45}
+            brightness={1}
             opacity={1}
             mouseInteraction
             parallaxStrength={0.5}
@@ -73,9 +74,22 @@ export function Home() {
           </h1>
           
           {/* Subtitle */}
-          <p className="text-base sm:text-xl text-muted-foreground mb-10 max-w-2xl leading-relaxed mx-auto font-normal">
-            {t("home.heroSubtitle")}
-          </p>
+          <div className="text-base sm:text-xl text-muted-foreground mb-10 max-w-2xl leading-relaxed mx-auto font-normal min-h-[4rem] sm:min-h-[3.5rem] flex items-center justify-center text-center">
+            <TextType 
+              text={[
+                t("home.heroSubtitle", "Store, share, and manage your photos, videos, and documents with end-to-end security and lightning speed."),
+                t("home.heroSubtitle2", "Keep your private media locked safely behind your personal Secret Vault PIN."),
+                t("home.heroSubtitle3", "Collaborate effortlessly with password-protected share links and custom access."),
+                t("home.heroSubtitle4", "Access your encrypted cloud storage anytime, anywhere from any device.")
+              ]}
+              typingSpeed={50}
+              deletingSpeed={30}
+              pauseDuration={2200}
+              showCursor={true}
+              cursorCharacter="|"
+              cursorBlinkDuration={0.5}
+            />
+          </div>
           
           {/* CTA Buttons Centered */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 w-full sm:w-auto">
