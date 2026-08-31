@@ -203,7 +203,19 @@
     "resendEmail": "Resend Email",
     "enterEmailFirstPasskey": "Please enter your email first to login with Passkey/Security Key",
     "enterEmailFirstRegisterPasskey": "Please enter your full name and email first to register a Passkey",
-    "passkeySuccess": "Passkey registered successfully!"
+    "passkeySuccess": "Passkey registered successfully!",
+    "loginHelp": "Login Help",
+    "loginHelpTitle": "Login & Account Help",
+    "loginHelpSubtitle": "Troubleshooting and quick assistance for accessing your account.",
+    "helpForgotPasswordTitle": "Forgot Password?",
+    "helpForgotPasswordDesc": "If you forgot your password, click the link above to receive a password reset link in your email.",
+    "helpPasskeyTitle": "Passkey / Biometrics Login",
+    "helpPasskeyDesc": "Make sure you type your registered email address into the Email field before clicking 'Login with Passkey'. Also ensure biometrics or security keys are configured on your browser/device.",
+    "helpGoogleTitle": "Google Sign-In Issues",
+    "helpGoogleDesc": "If the Google popup closes immediately or throws an error, verify popups and third-party cookies are enabled in your browser settings.",
+    "helpEmailVerifyTitle": "Email Verification",
+    "helpEmailVerifyDesc": "If you recently registered, check your inbox and spam/junk folders for your activation email before signing in.",
+    "helpSupportDesc": "Still having trouble? Contact support."
   },
   "modals": {
     "createFolderTitle": "Create new folder",

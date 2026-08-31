@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useAuth } from "../context/AuthContext"
 import { Button } from "../components/ui/button"
 import GradientWaves from "../components/GradientWaves"
+import GradientText from "../components/GradientText"
 import { 
   Cloud,
   Lock, 
@@ -61,8 +62,14 @@ export function Home() {
           </div>
           
           {/* Heading */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-foreground mb-6 leading-[1.12]">
-            {t("home.heroTitle")}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.12]">
+            <GradientText
+              colors={["#5227FF", "#FF9FFC", "#B497CF"]}
+              animationSpeed={8}
+              showBorder={false}
+            >
+              {t("home.heroTitle")}
+            </GradientText>
           </h1>
           
           {/* Subtitle */}

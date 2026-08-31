@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { Eye, EyeOff, Mail, ArrowRight } from "lucide-react"
+import { Eye, EyeOff, Mail, ArrowRight, HelpCircle } from "lucide-react"
 import { GoogleLogin } from "@react-oauth/google"
 import { useTranslation } from "react-i18next"
 import { Button } from "../../components/ui/button"
@@ -9,6 +9,7 @@ import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import { useAuth } from "../../context/AuthContext"
 import GeometricGridBackground from "../../components/GeometricGridBackground"
+import { LoginHelpModal } from "../../components/LoginHelpModal"
 
 export function Register() {
   const { t } = useTranslation()
@@ -22,6 +23,7 @@ export function Register() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showHelpModal, setShowHelpModal] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -201,15 +203,25 @@ export function Register() {
             </div>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
+        <CardFooter className="flex flex-col space-y-3 text-center text-sm text-muted-foreground">
           <div>
             {t("auth.alreadyHaveAccount")}{" "}
             <Link to="/login" className="text-primary hover:underline">
               {t("auth.signIn")}
             </Link>
           </div>
+          <button
+            type="button"
+            onClick={() => setShowHelpModal(true)}
+            className="inline-flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors cursor-pointer"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>{t("auth.loginHelp", "Login Help")}</span>
+          </button>
         </CardFooter>
       </Card>
+
+      <LoginHelpModal isOpen={showHelpModal} onOpenChange={setShowHelpModal} />
     </div>
   )
 }
