@@ -878,12 +878,12 @@ export function Dashboard() {
 
     // 2. Proceed with file upload but override the target folder ID
     const newTasks = Array.from(filesList).map(f => {
-      const isTooLarge = f.size > 20 * 1024 * 1024;
+      const isTooLarge = f.size > 50 * 1024 * 1024;
       return { 
         id: Math.random().toString(36).substring(2, 9), 
         name: f.name, 
         status: isTooLarge ? 'error' : 'uploading',
-        message: isTooLarge ? 'Max 20MB allowed' : undefined,
+        message: isTooLarge ? 'Max 50MB allowed' : undefined,
         progress: 0,
         speed: 0,
         timeRemaining: 0,
@@ -1215,24 +1215,25 @@ export function Dashboard() {
       />
 
       {/* Breadcrumbs */}
-      <nav className="flex items-center text-sm font-medium text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 scrollbar-none">
+      <nav className="flex items-center text-sm font-medium text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 scrollbar-none max-w-full">
         <Link 
           to="/dashboard" 
-          className="hover:text-foreground flex items-center transition-colors"
+          className="hover:text-foreground flex items-center transition-colors shrink-0"
         >
           <Home className="w-4 h-4 mr-1.5" />
           {t("dashboard.myDrive")}
         </Link>
         
         {path && path.map((crumb, index) => (
-          <div key={crumb.id || index} className="flex items-center">
-            <ChevronRight className="w-4 h-4 mx-1 text-muted-foreground/50" />
+          <div key={crumb.id || index} className="flex items-center shrink-0 max-w-[120px] sm:max-w-[200px] md:max-w-[300px] min-w-0">
+            <ChevronRight className="w-4 h-4 mx-1 text-muted-foreground/50 shrink-0" />
             {index === path.length - 1 ? (
-              <span className="text-foreground">{crumb.name}</span>
+              <span className="text-foreground truncate block min-w-0" title={crumb.name}>{crumb.name}</span>
             ) : (
               <Link 
                 to={`/dashboard/folder/${crumb.id}`}
-                className="hover:text-foreground transition-colors"
+                className="hover:text-foreground transition-colors truncate block min-w-0"
+                title={crumb.name}
               >
                 {crumb.name}
               </Link>
@@ -1242,8 +1243,11 @@ export function Dashboard() {
       </nav>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
+        <h1 
+          className="text-xl sm:text-2xl font-semibold tracking-tight truncate flex-1 min-w-0 pr-2"
+          title={(!folder || folder?.name === "My Drive") ? t("dashboard.myDrive") : folder.name}
+        >
           {(!folder || folder?.name === "My Drive") ? t("dashboard.myDrive") : folder.name}
         </h1>
         <div className="flex items-center gap-2 flex-wrap">

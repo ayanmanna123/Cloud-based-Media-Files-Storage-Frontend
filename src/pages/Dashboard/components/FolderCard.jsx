@@ -177,8 +177,8 @@ function FolderCardComponent({
           </div>
         </div>
       </div>
-      <div>
-        <div className="font-medium truncate pr-6">{folder.name}</div>
+      <div className="min-w-0">
+        <div className="font-medium truncate pr-2" title={folder.name}>{folder.name}</div>
         <div className="text-xs text-muted-foreground mt-0.5">
           {(() => {
             if (folder.fileCount === undefined && folder.folderCount === undefined) {

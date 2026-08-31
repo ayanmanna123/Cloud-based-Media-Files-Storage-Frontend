@@ -308,7 +308,7 @@ function FileCardComponent({
           ) : (
             <FileIcon filename={file.name} className="w-5 h-5 flex-shrink-0" />
           )}
-          <span className="text-sm font-medium truncate">{file.name}</span>
+          <span className="text-sm font-medium truncate" title={file.name}>{file.name}</span>
           {(file.isEncrypted || file.is_encrypted) && (
             <span 
               className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" 
