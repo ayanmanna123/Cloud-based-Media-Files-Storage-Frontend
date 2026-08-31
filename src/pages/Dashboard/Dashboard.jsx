@@ -411,20 +411,40 @@ export function Dashboard() {
     }
   }
 
-  const handleItemClick = (e, id, type) => {
-    e.stopPropagation();
+  const handleItemClick = (e, id, type, isCheckmarkClick = false) => {
+    if (e && e.stopPropagation) e.stopPropagation();
     const itemKey = `${type}_${id}`;
-    // If Ctrl/Meta key is pressed OR mobile selection mode is enabled, toggle selection
-    if (e.ctrlKey || e.metaKey || isMobileSelectMode) {
-      setSelectedItems(prev => prev.includes(itemKey) 
-        ? prev.filter(k => k !== itemKey) 
-        : [...prev, itemKey]);
+    
+    // If checkmark explicitly clicked, OR modifier keys pressed, OR Selection Mode active: TOGGLE
+    if (isCheckmarkClick || e.ctrlKey || e.metaKey || e.shiftKey || isMobileSelectMode) {
+      if (isCheckmarkClick && !isMobileSelectMode) {
+        setIsMobileSelectMode(true);
+      }
+      setSelectedItems(prev => {
+        const isAlreadySelected = prev.includes(itemKey);
+        if (isAlreadySelected) {
+          const updated = prev.filter(k => k !== itemKey);
+          if (updated.length === 0) setIsMobileSelectMode(false);
+          return updated;
+        } else {
+          return [...prev, itemKey];
+        }
+      });
     } else {
+      // Regular card body click without Ctrl/Cmd/Checkmark: Single select
       setSelectedItems([itemKey]);
     }
   }
 
-  const handleBackgroundClick = () => {
+  const handleBackgroundClick = (e) => {
+    if (e && e.target && e.target.closest('[data-item-key], button, input, a, [role="menuitem"], [role="dialog"], [data-no-drag]')) {
+      return;
+    }
+    // Don't deselect if user was dragging a marquee box
+    if (dragStartPosRef.current) {
+      const dist = Math.hypot(e.clientX - dragStartPosRef.current.clientX, e.clientY - dragStartPosRef.current.clientY);
+      if (dist > 4) return;
+    }
     setSelectedItems([]);
     setIsMobileSelectMode(false);
   }
@@ -468,7 +488,7 @@ export function Dashboard() {
       };
     });
 
-    if (e.ctrlKey || e.metaKey || e.shiftKey) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || isMobileSelectMode || selectedItems.length > 0) {
       initialSelectedItemsRef.current = [...selectedItems];
     } else {
       if (!e.target.closest('[data-item-key]')) {
@@ -514,6 +534,7 @@ export function Dashboard() {
     const scrollDeltaX = container.scrollLeft - (dragStartPosRef.current.scrollLeft || 0);
     const scrollDeltaY = container.scrollTop - (dragStartPosRef.current.scrollTop || 0);
 
+    const isAdding = isCtrl || isMeta || isShift || isMobileSelectMode || (initialSelectedItemsRef.current && initialSelectedItemsRef.current.length > 0);
     const selectedKeys = new Set(initialSelectedItemsRef.current);
     const items = cachedItemsRef.current || [];
 
@@ -533,13 +554,13 @@ export function Dashboard() {
 
       if (isIntersecting) {
         selectedKeys.add(itemKey);
-      } else if (!isCtrl && !isMeta && !isShift) {
+      } else if (!isAdding) {
         selectedKeys.delete(itemKey);
       }
     }
 
     setSelectedItems(Array.from(selectedKeys));
-  }, [selectionBox]);
+  }, [selectionBox, isMobileSelectMode]);
 
   const handleMarqueeMouseMove = useCallback((e) => {
     if (!isMouseDownRef.current) return;
@@ -1163,6 +1184,7 @@ export function Dashboard() {
       onMouseDown={handleMarqueeMouseDown}
       onMouseMove={handleMarqueeMouseMove}
       onMouseUp={handleMarqueeMouseUp}
+      onClick={handleBackgroundClick}
     >
       {/* Marquee Drag Selection Box */}
       {selectionBox && (
@@ -1242,7 +1264,7 @@ export function Dashboard() {
         ))}
       </nav>
 
-      {/* Header */}
+{/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
         <h1 
           className="text-xl sm:text-2xl font-semibold tracking-tight truncate flex-1 min-w-0 pr-2"
@@ -1251,40 +1273,6 @@ export function Dashboard() {
           {(!folder || folder?.name === "My Drive") ? t("dashboard.myDrive") : folder.name}
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Header 3-Dot (More Options) Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className={`h-10 w-10 border-input transition-all ${isMobileSelectMode ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/50 text-blue-600' : ''}`} 
-                title="More Options"
-              >
-                <MoreVertical className="w-4 h-4 text-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem 
-                onClick={() => {
-                  if (isMobileSelectMode) {
-                    setIsMobileSelectMode(false);
-                    setSelectedItems([]);
-                  } else {
-                    setIsMobileSelectMode(true);
-                  }
-                }}
-                className="cursor-pointer font-medium"
-              >
-                <CheckSquare className="w-4 h-4 mr-2 text-blue-500" />
-                {isMobileSelectMode ? "Exit Selection Mode" : "Select"}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSelectAll} className="cursor-pointer">
-                <CheckCircle2 className="w-4 h-4 mr-2 text-muted-foreground" />
-                {t("dashboard.selectAll") || "Select All"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {isMobileSelectMode && (
             <Button
               variant="default"
@@ -1421,7 +1409,8 @@ export function Dashboard() {
                     isSharedProp={f.permission || effectiveSharedRole}
                     starredItems={starredItems}
                     isSelected={selectedItems.includes(`folder_${f.id}`)}
-                    onClick={(e) => handleItemClick(e, f.id, 'folder')}
+                    isSelectionMode={isMobileSelectMode || selectedItems.length > 0}
+                    onClick={(e, isCheckmark) => handleItemClick(e, f.id, 'folder', isCheckmark)}
                     onDoubleClick={() => {
                       trackOpen(f.id, 'folder');
                       navigate(`/dashboard/folder/${f.id}`);
@@ -1485,7 +1474,8 @@ export function Dashboard() {
                           isSharedProp={file.permission || effectiveSharedRole}
                           starredItems={starredItems}
                           isSelected={selectedItems.includes(`file_${file.id}`)}
-                          onClick={(e) => handleItemClick(e, file.id, 'file')}
+                          isSelectionMode={isMobileSelectMode || selectedItems.length > 0}
+                          onClick={(e, isCheckmark) => handleItemClick(e, file.id, 'file', isCheckmark)}
                           onOpen={() => trackOpen(file.id, 'file')}
                           onToggleStar={toggleStar}
                           onShare={setShareModalData}
@@ -1518,7 +1508,8 @@ export function Dashboard() {
                         isSharedProp={file.permission || effectiveSharedRole}
                         starredItems={starredItems}
                         isSelected={selectedItems.includes(`file_${file.id}`)}
-                        onClick={(e) => handleItemClick(e, file.id, 'file')}
+                        isSelectionMode={isMobileSelectMode || selectedItems.length > 0}
+                        onClick={(e, isCheckmark) => handleItemClick(e, file.id, 'file', isCheckmark)}
                         onOpen={() => trackOpen(file.id, 'file')}
                         onToggleStar={toggleStar}
                         onShare={setShareModalData}

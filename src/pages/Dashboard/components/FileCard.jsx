@@ -301,13 +301,27 @@ function FileCardComponent({
             onDoubleClick={handleOpen}
           >
         <div className="flex-1 min-w-0 flex items-center gap-3">
-          {isSelected ? (
-            <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
-              <Check className="w-3 h-3" />
-            </div>
-          ) : (
-            <FileIcon filename={file.name} className="w-5 h-5 flex-shrink-0" />
-          )}
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick(e, true);
+            }}
+            className="shrink-0 flex items-center justify-center cursor-pointer group/chk p-0.5"
+            title={isSelected ? "Deselect" : "Select"}
+          >
+            {isSelected ? (
+              <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+              </div>
+            ) : (
+              <div className="relative w-5 h-5 flex items-center justify-center">
+                <FileIcon filename={file.name} className="w-5 h-5 flex-shrink-0 transition-opacity duration-150 group-hover/chk:opacity-0" />
+                <div className="absolute inset-0 w-5 h-5 rounded-full border border-muted-foreground/40 bg-background/80 opacity-0 group-hover/chk:opacity-100 flex items-center justify-center transition-opacity duration-150">
+                  <Check className="w-3 h-3 text-muted-foreground" />
+                </div>
+              </div>
+            )}
+          </div>
           <span className="text-sm font-medium truncate" title={file.name}>{file.name}</span>
           {(file.isEncrypted || file.is_encrypted) && (
             <span 
@@ -369,11 +383,20 @@ function FileCardComponent({
             title={t("dashboard.encrypted") || "Encrypted"} 
           />
         )}
-        {isSelected && (
-          <div className="absolute top-2.5 right-2.5 z-10 bg-blue-600 text-white rounded-full p-1 shadow-md animate-in zoom-in-50">
-            <Check className="w-3.5 h-3.5" />
-          </div>
-        )}
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick(e, true);
+          }}
+          className={`absolute top-2.5 right-2.5 z-10 p-1 rounded-full transition-all cursor-pointer ${
+            isSelected 
+              ? 'bg-blue-600 text-white shadow-md scale-100' 
+              : 'bg-background/90 hover:bg-muted border border-border/80 text-muted-foreground opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:scale-110 shadow-xs'
+          }`}
+          title={isSelected ? "Deselect" : "Select"}
+        >
+          <Check className={`w-3.5 h-3.5 ${isSelected ? 'stroke-[2.5]' : 'opacity-60'}`} />
+        </div>
         {(isImage || isPdf || isVideo) ? (
           <>
             <img 

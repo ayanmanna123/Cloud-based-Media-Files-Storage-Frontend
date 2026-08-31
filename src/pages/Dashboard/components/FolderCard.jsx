@@ -12,7 +12,8 @@ import {
   RotateCcw,
   Eye,
   EyeOff,
-  CheckCircle2
+  CheckCircle2,
+  Check
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -28,7 +29,6 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "../../../components/ui/context-menu"
-
 import { getItemPermissions } from "../../../lib/permissions"
 
 function FolderCardComponent({ 
@@ -123,9 +123,20 @@ function FolderCardComponent({
         </div>
         
         <div className="flex items-center gap-1">
-          {isSelected && (
-            <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400 fill-blue-500/20" />
-          )}
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick(e, true);
+            }}
+            className={`p-1 rounded-full transition-all cursor-pointer ${
+              isSelected 
+                ? 'bg-blue-600 text-white shadow-md scale-100' 
+                : 'bg-background/90 hover:bg-muted border border-border/80 text-muted-foreground opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:scale-110 shadow-xs'
+            }`}
+            title={isSelected ? "Deselect" : "Select"}
+          >
+            <Check className={`w-3.5 h-3.5 ${isSelected ? 'stroke-[2.5]' : 'opacity-60'}`} />
+          </div>
           <div onClick={e => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
