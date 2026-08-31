@@ -7,7 +7,8 @@
     "signin": "साइन इन",
     "getStarted": "मुफ़्त शुरू करें",
     "logout": "लॉग आउट",
-    "registerPasskey": "पासकी पंजीकृत करें"
+    "registerPasskey": "पासकी पंजीकृत करें",
+    "passkeyRegistered": "पासकी पंजीकृत है"
   },
   "dashboard": {
     "myDrive": "मेरी ड्राइव",

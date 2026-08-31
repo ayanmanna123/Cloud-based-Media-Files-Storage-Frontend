@@ -10,7 +10,8 @@ import {
   X,
   FileUp,
   FolderUp,
-  FolderPlus
+  FolderPlus,
+  Fingerprint
 } from "lucide-react"
 import { TrashBinIcon } from "../components/TrashBinIcon"
 import { FolderOpenIcon } from "../components/FolderOpenIcon"
@@ -135,6 +136,7 @@ export function DashboardLayout() {
         throw new Error(verification.error?.message || verification.error || "Passkey registration failed");
       }
 
+      login({ ...user, hasPasskey: true });
       alert("Passkey registered successfully! You can now use it to log in.");
     } catch (err) {
       alert(`Error: ${err.message}`);
@@ -326,9 +328,22 @@ export function DashboardLayout() {
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleRegisterPasskey} className="cursor-pointer">
-                  {t("nav.registerPasskey")}
-                </DropdownMenuItem>
+                {user?.hasPasskey ? (
+                  <DropdownMenuItem onClick={handleRegisterPasskey} className="cursor-pointer flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <Fingerprint className="w-4 h-4 text-emerald-500" />
+                      <span>{t("nav.passkeyRegistered", "Passkey Registered")}</span>
+                    </span>
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      ✓ Active
+                    </span>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={handleRegisterPasskey} className="cursor-pointer flex items-center gap-2">
+                    <Fingerprint className="w-4 h-4 text-muted-foreground" />
+                    <span>{t("nav.registerPasskey", "Register Passkey")}</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={logout} className="text-red-500 cursor-pointer">
                   {t("nav.logout")}
                 </DropdownMenuItem>

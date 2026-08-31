@@ -7,7 +7,8 @@
     "signin": "Sign in",
     "getStarted": "Get Started Free",
     "logout": "Log out",
-    "registerPasskey": "Register Passkey"
+    "registerPasskey": "Register Passkey",
+    "passkeyRegistered": "Passkey Registered"
   },
   "dashboard": {
     "myDrive": "My Drive",
