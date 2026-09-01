@@ -16,6 +16,8 @@ import { Home } from "./pages/Home"
 import { Features } from "./pages/Features"
 import { AboutUs } from "./pages/AboutUs"
 import { Terms } from "./pages/Terms"
+import { Security } from "./pages/Security"
+import { Changelog } from "./pages/Changelog"
 import { NotFound } from "./pages/NotFound"
 import { Footer } from "./layouts/Footer"
 
@@ -48,6 +50,8 @@ function App() {
             <Route path="/about" element={<AboutUs />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/terms-and-conditions" element={<Terms />} />
+            <Route path="/security" element={<Security />} />
+            <Route path="/changelog" element={<Changelog />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Register />} />
             <Route path="/verify" element={<VerifyEmail />} />

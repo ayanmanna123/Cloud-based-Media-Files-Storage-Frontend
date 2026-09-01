@@ -30,7 +30,7 @@ export function AboutUs() {
   ]
 
   return (
-    <div className="bg-background relative">
+    <div className="bg-background relative overflow-x-hidden">
       {/* Background Decorators */}
       <div className="absolute top-0 right-0 -z-10 translate-x-1/2 -translate-y-1/4">
         <div className="w-[800px] h-[800px] rounded-full bg-blue-500/5 dark:bg-blue-900/10 blur-3xl" />

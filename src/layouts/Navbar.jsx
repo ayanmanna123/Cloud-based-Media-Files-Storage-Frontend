@@ -41,7 +41,7 @@ export function Navbar() {
 
   return (
     <nav className="border-b border-border/80 sticky top-0 z-50 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 shadow-xs">
-      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 mx-auto max-w-[1600px] flex h-16 items-center justify-between gap-4">
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 mx-auto max-w-[1600px] flex h-16 items-center justify-between gap-4 relative">
         {/* Left Side - Brand/Logo */}
         <div className="flex items-center shrink-0">
           <Link 
@@ -58,8 +58,8 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* Center - Desktop Links */}
-        <div className="hidden md:flex items-center space-x-1 lg:space-x-2 text-sm font-medium">
+        {/* Center - Desktop Links (Centered in the middle of navbar) */}
+        <div className="hidden md:flex items-center space-x-1 lg:space-x-2 text-sm font-medium absolute left-1/2 -translate-x-1/2">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path
             return (

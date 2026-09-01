@@ -74,7 +74,7 @@ export function Terms() {
   ]
 
   return (
-    <div className="bg-background relative min-h-screen pb-16">
+    <div className="bg-background relative min-h-screen pb-16 overflow-x-hidden">
       {/* Background Glow Decorators */}
       <div className="absolute top-0 right-0 -z-10 translate-x-1/3 -translate-y-1/4 pointer-events-none">
         <div className="w-[600px] h-[600px] rounded-full bg-blue-500/10 dark:bg-blue-900/15 blur-3xl" />

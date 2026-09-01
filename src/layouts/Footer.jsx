@@ -35,10 +35,10 @@ export function Footer() {
                 <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.pricing")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.security")}</Link>
+                <Link to="/security" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.security")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.changelog")}</Link>
+                <Link to="/changelog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.changelog")}</Link>
               </li>
             </ul>
           </div>
