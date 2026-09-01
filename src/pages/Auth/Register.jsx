@@ -20,6 +20,7 @@ export function Register() {
   const { login } = useAuth()
 
   const [formData, setFormData] = useState({ name: "", email: "", password: "" })
+  const [agreeTerms, setAgreeTerms] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState("")
   const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -30,6 +31,10 @@ export function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!agreeTerms) {
+      setError(t("auth.mustAgreeTerms", "You must agree to the Terms of Service to create an account."))
+      return
+    }
     setLoading(true)
     setError("")
 
@@ -60,6 +65,10 @@ export function Register() {
   }
 
   const handleGoogleSuccess = async (credential) => {
+    if (!agreeTerms) {
+      setError(t("auth.mustAgreeTerms", "You must agree to the Terms of Service to create an account."))
+      return
+    }
     setLoading(true)
     setError("")
     
@@ -187,6 +196,27 @@ export function Register() {
               onExpire={() => setTurnstileToken("")}
               resetTrigger={turnstileResetKey}
             />
+
+            <div className="flex items-start space-x-2.5 pt-1 pb-1">
+              <input
+                type="checkbox"
+                id="agreeTerms"
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600 shrink-0"
+                required
+              />
+              <Label htmlFor="agreeTerms" className="text-xs text-muted-foreground leading-normal cursor-pointer">
+                {t("auth.iAgreeTo", "I agree to the")}{" "}
+                <Link to="/terms" target="_blank" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">
+                  {t("footer.terms", "Terms of Service")}
+                </Link>{" "}
+                {t("auth.and", "and")}{" "}
+                <Link to="/terms" target="_blank" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">
+                  {t("footer.privacy", "Privacy Policy")}
+                </Link>
+              </Label>
+            </div>
 
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
               {loading ? t("auth.signingIn") : t("auth.signUp")}

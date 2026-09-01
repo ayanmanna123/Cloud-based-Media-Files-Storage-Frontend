@@ -67,16 +67,16 @@ export function Footer() {
             <h3 className="font-semibold text-foreground mb-3 text-sm sm:text-base">{t("footer.legal")}</h3>
             <ul className="space-y-2.5">
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.privacy")}</Link>
+                <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.privacy")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.terms")}</Link>
+                <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.terms")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.cookiePolicy")}</Link>
+                <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.cookiePolicy")}</Link>
               </li>
               <li>
-                <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.acceptableUse")}</Link>
+                <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t("footer.acceptableUse")}</Link>
               </li>
             </ul>
           </div>
