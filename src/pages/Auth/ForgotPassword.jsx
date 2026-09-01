@@ -7,10 +7,13 @@ import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import GeometricGridBackground from "../../components/GeometricGridBackground"
+import { TurnstileWidget } from "../../components/Auth/TurnstileWidget"
 
 export function ForgotPassword() {
   const { t } = useTranslation()
   const [email, setEmail] = useState("")
+  const [turnstileToken, setTurnstileToken] = useState("")
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
@@ -25,7 +28,7 @@ export function ForgotPassword() {
       const response = await fetch(`${baseUrl}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, turnstileToken }),
       })
 
       const data = await response.json()
@@ -37,6 +40,8 @@ export function ForgotPassword() {
       setSuccess(true)
     } catch (err) {
       setError(err.message)
+      setTurnstileResetKey((prev) => prev + 1)
+      setTurnstileToken("")
     } finally {
       setLoading(false)
     }
@@ -114,6 +119,13 @@ export function ForgotPassword() {
                 onChange={(e) => setEmail(e.target.value)} 
               />
             </div>
+            
+            <TurnstileWidget 
+              onVerify={setTurnstileToken}
+              onError={() => setTurnstileToken("")}
+              onExpire={() => setTurnstileToken("")}
+              resetTrigger={turnstileResetKey}
+            />
             
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
               {loading ? t("modals.saving") : t("auth.sendResetLink")}

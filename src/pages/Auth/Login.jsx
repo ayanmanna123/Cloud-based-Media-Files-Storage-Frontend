@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useAuth } from "../../context/AuthContext"
 import GeometricGridBackground from "../../components/GeometricGridBackground"
 import { LoginHelpModal } from "../../components/LoginHelpModal"
+import { TurnstileWidget } from "../../components/Auth/TurnstileWidget"
 
 export function Login() {
   const { t } = useTranslation()
@@ -19,6 +20,8 @@ export function Login() {
   const redirectUrl = searchParams.get("redirect") || "/dashboard"
   const { login } = useAuth()
   const [formData, setFormData] = useState({ email: "", password: "" })
+  const [turnstileToken, setTurnstileToken] = useState("")
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -34,7 +37,7 @@ export function Login() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, turnstileToken }),
       })
 
       const data = await response.json()
@@ -48,6 +51,8 @@ export function Login() {
       
     } catch (err) {
       setError(err.message)
+      setTurnstileResetKey((prev) => prev + 1)
+      setTurnstileToken("")
     } finally {
       setLoading(false)
     }
@@ -185,6 +190,13 @@ export function Login() {
               </div>
             </div>
             
+            <TurnstileWidget 
+              onVerify={setTurnstileToken}
+              onError={() => setTurnstileToken("")}
+              onExpire={() => setTurnstileToken("")}
+              resetTrigger={turnstileResetKey}
+            />
+
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
               {loading ? t("auth.signingIn") : t("auth.signIn")}
             </Button>

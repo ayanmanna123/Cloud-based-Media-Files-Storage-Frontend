@@ -7,6 +7,7 @@ import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import GeometricGridBackground from "../../components/GeometricGridBackground"
+import { TurnstileWidget } from "../../components/Auth/TurnstileWidget"
 
 export function ResetPassword() {
   const { t } = useTranslation()
@@ -15,6 +16,8 @@ export function ResetPassword() {
   const token = searchParams.get("token")
 
   const [password, setPassword] = useState("")
+  const [turnstileToken, setTurnstileToken] = useState("")
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -38,7 +41,7 @@ export function ResetPassword() {
       const response = await fetch(`${baseUrl}/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ token, password, turnstileToken }),
       })
 
       const data = await response.json()
@@ -50,6 +53,8 @@ export function ResetPassword() {
       setSuccess(true)
     } catch (err) {
       setError(err.message)
+      setTurnstileResetKey((prev) => prev + 1)
+      setTurnstileToken("")
     } finally {
       setLoading(false)
     }
@@ -134,6 +139,13 @@ export function ResetPassword() {
               </div>
             </div>
             
+            <TurnstileWidget 
+              onVerify={setTurnstileToken}
+              onError={() => setTurnstileToken("")}
+              onExpire={() => setTurnstileToken("")}
+              resetTrigger={turnstileResetKey}
+            />
+
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading || !token}>
               {loading ? t("modals.saving") : t("auth.resetPasswordBtn")}
             </Button>
