@@ -20,14 +20,17 @@ import { Security } from "./pages/Security"
 import { Changelog } from "./pages/Changelog"
 import { NotFound } from "./pages/NotFound"
 import { Footer } from "./layouts/Footer"
+import { ScrollToTopButton } from "./components/ScrollToTopButton"
+import { ScrollToTopOnNavigation } from "./components/ScrollToTopOnNavigation"
 
 const PublicLayout = () => (
-  <div className="bg-background text-foreground">
+  <div className="bg-background text-foreground relative">
     <Navbar />
     <main className="min-h-[calc(100vh-64px)]">
       <Outlet />
     </main>
     <Footer />
+    <ScrollToTopButton />
   </div>
 )
 
@@ -41,6 +44,7 @@ function App() {
       duration={400}
     >
       <Router>
+        <ScrollToTopOnNavigation />
         <GoogleOneTapPrompt />
         <Routes>
           {/* Public Routes with Navbar */}

@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { SetSecretCodeModal } from "../pages/Dashboard/components/SetSecretCodeModal"
+import { ScrollToTopButton } from "../components/ScrollToTopButton"
 import { 
   Cloud, 
   Search, 
@@ -40,6 +41,7 @@ export function DashboardLayout() {
   const { user, logout, login } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  const mainRef = useRef(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [isSetCodeModalOpen, setIsSetCodeModalOpen] = useState(false)
@@ -353,10 +355,12 @@ export function DashboardLayout() {
         </header>
 
         {/* Main Content scrollable area */}
-        <main className="flex-1 overflow-auto bg-muted/10 p-4 sm:p-6 lg:p-8">
+        <main ref={mainRef} className="flex-1 overflow-auto bg-muted/10 p-4 sm:p-6 lg:p-8">
           <Outlet context={{ searchQuery, setSearchQuery }} />
         </main>
       </div>
+
+      <ScrollToTopButton containerRef={mainRef} />
 
       <SetSecretCodeModal 
         isOpen={isSetCodeModalOpen}
