@@ -49,9 +49,10 @@ export function AuthProvider({ children }) {
         method: "POST",
         credentials: "include"
       })
-      setUser(null)
     } catch (error) {
       console.error("Logout failed", error)
+    } finally {
+      setUser(null)
     }
   }
 
