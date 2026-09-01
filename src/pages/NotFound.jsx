@@ -23,6 +23,7 @@ export function NotFound() {
       </div>
 
       {/* Apple Liquid Glass Shatters Card (Ultra Transparent) */}
+      
       <div className="relative z-10 max-w-xl w-full text-center space-y-6 bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/50 dark:border-white/10 p-8 sm:p-12 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08),_inset_0_1px_1px_rgba(255,255,255,0.5)] dark:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.7),_inset_0_1px_1px_rgba(255,255,255,0.1)] transition-all duration-300 group hover:border-white/70 dark:hover:border-white/20">
         
         {/* Specular Light Reflection Sweep Line */}
