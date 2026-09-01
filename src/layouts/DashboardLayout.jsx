@@ -12,7 +12,8 @@ import {
   FileUp,
   FolderUp,
   FolderPlus,
-  Fingerprint
+  Fingerprint,
+  RefreshCw
 } from "lucide-react"
 import { TrashBinIcon } from "../components/TrashBinIcon"
 import { FolderOpenIcon } from "../components/FolderOpenIcon"
@@ -150,6 +151,7 @@ export function DashboardLayout() {
     { name: t("dashboard.recent"), path: "/dashboard/recent", icon: ClockIcon },
     { name: t("dashboard.starred"), path: "/dashboard/starred", icon: StarIcon },
     { name: t("dashboard.shared"), path: "/dashboard/shared", icon: UsersIcon },
+    { name: t("dashboard.deviceSync", "Device Sync"), path: "/dashboard/sync", icon: RefreshCw },
     { name: t("dashboard.trash"), path: "/dashboard/trash", icon: TrashBinIcon },
   ]
 

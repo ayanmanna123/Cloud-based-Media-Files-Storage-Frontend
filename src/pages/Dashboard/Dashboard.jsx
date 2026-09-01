@@ -66,6 +66,7 @@ import { VersionHistoryModal } from "./components/VersionHistoryModal"
 import { EditFileModal } from "./components/EditFileModal"
 import { LightboxModal } from "./components/LightboxModal"
 import { DashboardSkeleton } from "./components/DashboardSkeleton"
+import { DeviceSyncHub } from "./components/DeviceSyncHub"
 
 export function Dashboard() {
   const { t } = useTranslation()
@@ -1236,8 +1237,18 @@ export function Dashboard() {
         multiple
       />
 
-      {/* Breadcrumbs */}
-      <nav className="flex items-center text-sm font-medium text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 scrollbar-none max-w-full">
+      {currentView === "sync" ? (
+        <DeviceSyncHub 
+          uploadFile={uploadFile} 
+          refreshDrive={refresh} 
+          setUploadTasks={setUploadTasks}
+          setIsUploadToastExpanded={setIsUploadToastExpanded}
+          abortControllersRef={abortControllersRef}
+        />
+      ) : (
+        <>
+          {/* Breadcrumbs */}
+          <nav className="flex items-center text-sm font-medium text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 scrollbar-none max-w-full">
         <Link 
           to="/dashboard" 
           className="hover:text-foreground flex items-center transition-colors shrink-0"
@@ -1655,6 +1666,8 @@ export function Dashboard() {
             <X className="w-4 h-4" />
           </button>
         </div>
+      )}
+      </>
       )}
 
       <CreateFolderModal

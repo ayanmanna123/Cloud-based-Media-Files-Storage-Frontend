@@ -298,7 +298,7 @@ export function useDrive(folderId = null) {
     }
   };
 
-  const uploadFile = async (file, abortSignal = null, targetFolderId = folderId, targetFileId = null, onProgress = null, isEncrypted = false) => {
+  const uploadFile = async (file, abortSignal = null, targetFolderId = folderId, targetFileId = null, onProgress = null, isEncrypted = false, extraMeta = {}) => {
     try {
       let uploadBlob = file;
       let encryptionIv = null;
@@ -324,7 +324,9 @@ export function useDrive(folderId = null) {
           folderId: targetFolderId,
           targetFileId: targetFileId,
           isEncrypted: isEncrypted,
-          encryptionIv: encryptionIv
+          encryptionIv: encryptionIv,
+          sourceDevice: extraMeta?.sourceDevice || null,
+          isDeviceSync: !!extraMeta?.isDeviceSync
         }),
         signal: abortSignal
       });
@@ -335,6 +337,11 @@ export function useDrive(folderId = null) {
       }
       
       const initData = await initRes.json();
+      
+      if (initData.isDuplicate) {
+        if (onProgress) onProgress({ progress: 100, loaded: file.size, totalSize: file.size });
+        return { fileId: initData.fileId, isDuplicate: true };
+      }
       
       // 2. Upload directly to ImageKit using XMLHttpRequest for progress tracking
       const formData = new FormData();

@@ -76,6 +76,7 @@ function App() {
               <Route path="recent" element={<Dashboard />} />
               <Route path="starred" element={<Dashboard />} />
               <Route path="shared" element={<Dashboard />} />
+              <Route path="sync" element={<Dashboard />} />
               <Route path="trash" element={<Dashboard />} />
             </Route>
           </Route>
