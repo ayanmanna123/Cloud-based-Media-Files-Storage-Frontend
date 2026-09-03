@@ -31,6 +31,23 @@ export function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    const trimmedName = (formData.name || "").trim()
+    if (!trimmedName || trimmedName.length < 2) {
+      setError(t("auth.invalidNameMinLength", "Full name must be at least 2 characters long."))
+      return
+    }
+
+    if (/\d/.test(trimmedName)) {
+      setError(t("auth.invalidNameNumbers", "Full name cannot contain numbers (e.g., 123). Please enter a valid name."))
+      return
+    }
+
+    if (!/[\p{L}]/u.test(trimmedName)) {
+      setError(t("auth.invalidNameFormat", "Please enter a valid full name using letters."))
+      return
+    }
+
     if (!agreeTerms) {
       setError(t("auth.mustAgreeTerms", "You must agree to the Terms of Service to create an account."))
       return

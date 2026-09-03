@@ -1204,8 +1204,8 @@ export function Dashboard() {
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm border-2 border-dashed border-blue-500 rounded-2xl pointer-events-none">
           <div className="text-center">
             <UploadCloud className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-bounce" />
-            <h3 className="text-2xl font-bold text-foreground">Drop files to upload</h3>
-            <p className="text-muted-foreground mt-2">to {folder?.name || "My Drive"}</p>
+            <h3 className="text-2xl font-bold text-foreground">{t("dashboard.dropFilesToUpload", "Drop files to upload")}</h3>
+            <p className="text-muted-foreground mt-2">{t("dashboard.toDestination", "to {{name}}", { name: folder?.name || t("dashboard.myDrive", "My Drive") })}</p>
           </div>
         </div>
       )}
@@ -1295,7 +1295,7 @@ export function Dashboard() {
               className="h-10 px-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold gap-1.5"
             >
               <X className="w-4 h-4" />
-              <span>Done</span>
+              <span>{t("dashboard.done", "Done")}</span>
             </Button>
           )}
 
@@ -1323,11 +1323,11 @@ export function Dashboard() {
                 {t("dashboard.sort")}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setSortMethod("name-asc")}>Name (A-Z) {sortMethod === "name-asc" && "✓"}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortMethod("name-desc")}>Name (Z-A) {sortMethod === "name-desc" && "✓"}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortMethod("date-desc")}>Newest First {sortMethod === "date-desc" && "✓"}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortMethod("date-asc")}>Oldest First {sortMethod === "date-asc" && "✓"}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortMethod("size-desc")}>Size (Largest) {sortMethod === "size-desc" && "✓"}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortMethod("name-asc")}>{t("dashboard.sortNameAsc", "Name (A-Z)")} {sortMethod === "name-asc" && "✓"}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortMethod("name-desc")}>{t("dashboard.sortNameDesc", "Name (Z-A)")} {sortMethod === "name-desc" && "✓"}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortMethod("date-desc")}>{t("dashboard.sortDateDesc", "Newest First")} {sortMethod === "date-desc" && "✓"}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortMethod("date-asc")}>{t("dashboard.sortDateAsc", "Oldest First")} {sortMethod === "date-asc" && "✓"}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortMethod("size-desc")}>{t("dashboard.sortSizeDesc", "Size (Largest)")} {sortMethod === "size-desc" && "✓"}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -1453,7 +1453,7 @@ export function Dashboard() {
                     <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                     <Input 
                       type="text" 
-                      placeholder="Search..." 
+                      placeholder={t("dashboard.mobileSearchPlaceholder", "Search...")} 
                       className="pl-8 h-8 text-xs bg-muted/40 border-border rounded-lg"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
@@ -1466,10 +1466,10 @@ export function Dashboard() {
                 <div className="bg-card border border-border rounded-xl overflow-hidden">
                   {/* Table Header */}
                   <div className="flex items-center gap-4 p-4 border-b border-border bg-muted/50 text-sm font-medium text-muted-foreground">
-                    <div className="flex-1 min-w-0">Name</div>
-                    <div className="hidden sm:block w-32 shrink-0">Owner</div>
-                    <div className="hidden md:block w-32 shrink-0">Last modified</div>
-                    <div className="hidden sm:block w-20 shrink-0">Size</div>
+                    <div className="flex-1 min-w-0">{t("dashboard.tableName", "Name")}</div>
+                    <div className="hidden sm:block w-32 shrink-0">{t("dashboard.tableOwner", "Owner")}</div>
+                    <div className="hidden md:block w-32 shrink-0">{t("dashboard.tableModified", "Last modified")}</div>
+                    <div className="hidden sm:block w-20 shrink-0">{t("dashboard.tableSize", "Size")}</div>
                     <div className="w-8 shrink-0"></div>
                   </div>
                   {/* Table Body */}
@@ -1551,9 +1551,31 @@ export function Dashboard() {
           {filteredFolders.length === 0 && filteredFiles.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border rounded-xl">
               <FolderOpen className="w-16 h-16 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-medium text-foreground">This folder is empty</h3>
+              <h3 className="text-lg font-medium text-foreground">
+                {currentView === 'trash'
+                  ? t("dashboard.trashEmptyTitle", "Trash is empty")
+                  : currentView === 'starred'
+                  ? t("dashboard.starredEmptyTitle", "No starred items")
+                  : currentView === 'shared'
+                  ? t("dashboard.sharedEmptyTitle", "No shared files")
+                  : currentView === 'recent'
+                  ? t("dashboard.recentEmptyTitle", "No recent files")
+                  : (currentView === 'secret' || currentView === secretHash)
+                  ? t("dashboard.secretEmptyTitle", "Vault is empty")
+                  : t("dashboard.folderEmptyTitle", "This folder is empty")}
+              </h3>
               <p className="text-sm text-muted-foreground max-w-sm mt-2">
-                Upload files or create new folders to get started.
+                {currentView === 'trash'
+                  ? t("dashboard.trashEmptyDesc", "Items deleted by you will appear here.")
+                  : currentView === 'starred'
+                  ? t("dashboard.starredEmptyDesc", "Star important files and folders to easily find them later.")
+                  : currentView === 'shared'
+                  ? t("dashboard.sharedEmptyDesc", "Files and folders shared with you will appear here.")
+                  : currentView === 'recent'
+                  ? t("dashboard.recentEmptyDesc", "Files you recently opened or edited will appear here.")
+                  : (currentView === 'secret' || currentView === secretHash)
+                  ? t("dashboard.secretEmptyDesc", "Your hidden files and folders will appear here.")
+                  : t("dashboard.folderEmptyDesc", "Upload files or create new folders to get started.")}
               </p>
             </div>
           )}

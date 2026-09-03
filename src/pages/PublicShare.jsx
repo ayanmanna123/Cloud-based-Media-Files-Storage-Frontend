@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { Loader2, Download, FileText, FileImage, FileVideo, FileSpreadsheet, FolderOpen, AlertCircle, Archive, CheckCircle2, LogIn, X } from "lucide-react"
 import { Button } from "../components/ui/button"
 import JSZip from "jszip"
@@ -7,6 +8,7 @@ import { deriveEncryptionKey, decryptFileWithFallbackKeys } from "../lib/cryptoU
 import { useAuth } from "../context/AuthContext"
 
 export function PublicShare({ isBundle = false }) {
+  const { t } = useTranslation()
   const { token } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -304,7 +306,7 @@ export function PublicShare({ isBundle = false }) {
               ) : null}
               <div className={`flex flex-col items-center justify-center text-muted-foreground w-full h-full ${(isImage || isPdf) ? 'hidden' : 'flex'}`}>
                 <Icon className="w-24 h-24 mb-4 opacity-50" />
-                <p className="text-lg font-medium">No preview available</p>
+                <p className="text-lg font-medium">{t("publicShare.noPreviewAvailable", "No preview available")}</p>
               </div>
             </div>
           ) : (
@@ -312,7 +314,9 @@ export function PublicShare({ isBundle = false }) {
               <FolderOpen className="w-20 h-20 text-blue-400 mb-6 opacity-80" />
               <h2 className="text-2xl font-semibold mb-2">{resource?.name}</h2>
               <p className="text-muted-foreground max-w-md mb-6">
-                This folder contains {data?.files?.length || 0} files. You can download them all as a ZIP archive.
+                {!data?.files || data.files.length === 0 
+                  ? t("publicShare.emptyFolder", "This folder is empty.") 
+                  : t("publicShare.folderContainsFiles", "This folder contains {{count}} files. You can download them all as a ZIP archive.", { count: data.files.length })}
               </p>
               
               {data?.files && data.files.length > 0 && (
@@ -337,23 +341,23 @@ export function PublicShare({ isBundle = false }) {
           {/* Action Footer */}
           <div className="bg-muted/50 p-6 border-t border-border flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Shared securely via Cloud Storage</span>
+              <span className="text-sm text-muted-foreground">{t("publicShare.sharedSecurely", "Shared securely via Cloud Storage")}</span>
             </div>
             
             {isBundle ? (
               <Button onClick={() => handleBundleDownload(data.files)} size="lg" disabled={isZipping} className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm rounded-full px-8">
                 {isZipping ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
-                {isZipping ? "Zipping Files..." : "Download All (ZIP)"}
+                {isZipping ? t("publicShare.zippingFiles", "Zipping Files...") : t("publicShare.downloadAllZip", "Download All (ZIP)")}
               </Button>
             ) : isFile ? (
               <Button onClick={() => handleDownload(resource)} size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm rounded-full px-8">
                 <Download className="w-5 h-5" />
-                Download File
+                {t("publicShare.downloadFile", "Download File")}
               </Button>
             ) : (
               <Button onClick={() => handleBundleDownload(data.files, resource?.name)} size="lg" disabled={isZipping || !data?.files?.length} className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm rounded-full px-8">
                 {isZipping ? <Loader2 className="w-5 h-5 animate-spin" /> : <Archive className="w-5 h-5" />}
-                {isZipping ? "Zipping Folder..." : "Download Folder (ZIP)"}
+                {isZipping ? t("publicShare.zippingFolder", "Zipping Folder...") : t("publicShare.downloadFolderZip", "Download Folder (ZIP)")}
               </Button>
             )}
           </div>
@@ -365,7 +369,7 @@ export function PublicShare({ isBundle = false }) {
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
               <span className="text-sm font-medium text-emerald-950 dark:text-emerald-200">
-                Saved to your <span className="font-semibold underline">Shared with me</span> section with view access.
+                {t("publicShare.savedToSharedWithMe", "Saved to your Shared with me section with view access.")}
               </span>
             </div>
             <Button 
