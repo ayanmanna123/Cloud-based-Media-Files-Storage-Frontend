@@ -169,8 +169,12 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
     setSuccess("")
 
     try {
-      await shareResource(resourceType, resourceId, email, role, message)
-      setSuccess(`Shared successfully with ${email}`)
+      const res = await shareResource(resourceType, resourceId, email.trim(), role, message)
+      if (res && res.isUnregistered) {
+        setSuccess(t("shareModal.unregisteredSuccess", { email: email.trim(), defaultValue: `Public share link emailed successfully to ${email.trim()}!` }))
+      } else {
+        setSuccess(t("shareModal.shareSuccess", { email: email.trim(), defaultValue: `Shared successfully with ${email.trim()}` }))
+      }
       setEmail("")
       setMessage("")
       loadShares()
@@ -276,8 +280,13 @@ export function ShareModal({ isOpen, onClose, resourceType, resourceId, resource
                         ))}
                       </div>
                     ) : (
-                      <div className="p-3 text-xs text-muted-foreground text-center">
-                        No registered user found matching "{email}"
+                      <div className="p-3 text-xs text-center space-y-1 bg-muted/20">
+                        <p className="font-medium text-amber-600 dark:text-amber-400">
+                          {t("shareModal.unregisteredUserNotice", { defaultValue: "User not registered on CloudBox." })}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {t("shareModal.unregisteredUserDesc", { defaultValue: "Sending invite will email them a direct public share link." })}
+                        </p>
                       </div>
                     )}
                   </div>

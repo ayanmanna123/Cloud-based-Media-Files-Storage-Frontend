@@ -345,7 +345,11 @@
     "deleteLink": "Delete Link",
     "linkExpires": "Expiration date (optional)",
     "showQrCode": "Show QR Code",
-    "qrCodeTitle": "Scan QR Code to open"
+    "qrCodeTitle": "Scan QR Code to open",
+    "unregisteredSuccess": "Public share link emailed successfully to {{email}}!",
+    "shareSuccess": "Shared successfully with {{email}}",
+    "unregisteredUserNotice": "User not registered on CloudBox.",
+    "unregisteredUserDesc": "Sending invite will email them a direct public share link."
   },
   "notFound": {
     "title": "404 - Page Not Found",
