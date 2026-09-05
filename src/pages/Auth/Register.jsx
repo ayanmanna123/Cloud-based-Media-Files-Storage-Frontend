@@ -142,7 +142,7 @@ export function Register() {
             </div>
           </div>
           <div className="w-full flex flex-col gap-3">
-            <Link to="/login" className="w-full block">
+            <Link to={redirectUrl !== "/dashboard" ? `/login?redirect=${encodeURIComponent(redirectUrl)}` : "/login"} className="w-full block">
               <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 rounded-xl h-11 gap-2 transition-all">
                 {t("auth.signIn")} <ArrowRight className="w-4 h-4" />
               </Button>

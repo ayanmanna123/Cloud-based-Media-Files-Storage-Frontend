@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react"
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { Loader2, Download, FileText, FileImage, FileVideo, FileSpreadsheet, FolderOpen, AlertCircle, Archive, CheckCircle2, LogIn, X } from "lucide-react"
+import { Loader2, Download, FileText, FileImage, FileVideo, FileSpreadsheet, FolderOpen, AlertCircle, Archive, CheckCircle2, LogIn, X, UserPlus, UserCheck, Sparkles } from "lucide-react"
 import { Button } from "../components/ui/button"
+import { Dialog, DialogContent } from "../components/ui/dialog"
 import JSZip from "jszip"
 import { deriveEncryptionKey, decryptFileWithFallbackKeys } from "../lib/cryptoUtils"
 import { useAuth } from "../context/AuthContext"
@@ -86,6 +87,11 @@ export function PublicShare({ isBundle = false }) {
   const handleGoToLogin = () => {
     const currentPath = location.pathname + location.search;
     navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
+  }
+
+  const handleGoToRegister = () => {
+    const currentPath = location.pathname + location.search;
+    navigate(`/signup?redirect=${encodeURIComponent(currentPath)}`);
   }
 
   const getFileIcon = (fileName) => {
@@ -383,6 +389,91 @@ export function PublicShare({ isBundle = false }) {
           </div>
         )}
       </div>
+
+      {/* Guest Access Choice Modal for Unregistered / Guest Users */}
+      <Dialog open={showGuestModal} onOpenChange={(open) => { if (!open) handleDismissGuestModal(); }}>
+        <DialogContent showCloseButton={true} className="sm:max-w-md p-0 overflow-hidden bg-background border border-border/80 shadow-2xl rounded-2xl">
+          {/* Gradient Banner Header */}
+          <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-6 text-white text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent)] pointer-events-none" />
+            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center mx-auto mb-3 shadow-lg">
+              <FolderOpen className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold tracking-tight">Shared Item Access</h3>
+            <p className="text-sm text-blue-100 mt-1 max-w-xs mx-auto">
+              {data?.resource?.name 
+                ? t("publicShare.sharedInviteSubtitle", "Someone shared \"{{name}}\" with you on CloudBox.", { name: data.resource.name })
+                : t("publicShare.sharedInviteSubtitleGeneric", "Someone shared a media item with you on CloudBox.")}
+            </p>
+          </div>
+
+          {/* Modal Options */}
+          <div className="p-6 space-y-3.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+              Choose how to proceed
+            </p>
+
+            {/* Option 1: Continue as Guest */}
+            <div 
+              onClick={handleDismissGuestModal}
+              className="group relative flex items-start gap-3.5 p-3.5 rounded-xl border border-border bg-card hover:bg-accent/40 hover:border-blue-500/50 cursor-pointer transition-all duration-200 shadow-xs"
+            >
+              <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform mt-0.5">
+                <Download className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                    Continue as Guest
+                  </h4>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
+                    Instant
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  View and download this file directly in your browser without creating an account.
+                </p>
+              </div>
+            </div>
+
+            {/* Option 2: Register / Create Free Account */}
+            <div 
+              onClick={handleGoToRegister}
+              className="group relative flex items-start gap-3.5 p-3.5 rounded-xl border border-blue-500/40 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/70 cursor-pointer transition-all duration-200 shadow-xs"
+            >
+              <div className="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform mt-0.5">
+                <UserPlus className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                    Register / Sign Up
+                  </h4>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded-full shadow-xs">
+                    Recommended
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  Save this item permanently to your cloud storage, access version history, and get free drive space.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer Login Link */}
+            <div className="pt-3 text-center border-t border-border/60">
+              <p className="text-xs text-muted-foreground">
+                Already have a CloudBox account?{" "}
+                <button 
+                  onClick={handleGoToLogin}
+                  className="font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                >
+                  Log in <LogIn className="w-3 h-3" />
+                </button>
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
