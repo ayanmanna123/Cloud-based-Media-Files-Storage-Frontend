@@ -262,16 +262,27 @@ export function DashboardLayout() {
         <div className="p-4 border-t border-border">
           <div className="mb-2 flex justify-between text-xs font-medium text-muted-foreground">
             <span>{t("dashboard.storage")}</span>
-            <span>
+            <span className={(user?.storageUsed || 0) >= (user?.storageLimit || 50 * 1024 * 1024) ? "text-red-500 font-semibold" : ""}>
               {formatBytes(user?.storageUsed || 0)} / {formatBytes(user?.storageLimit || 50 * 1024 * 1024)}
             </span>
           </div>
           <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-1">
             <div 
-              className="h-full bg-blue-500 rounded-full transition-all duration-500" 
-              style={{ width: `${user?.storageLimit ? Math.min(100, (user.storageUsed / user.storageLimit) * 100) : 0}%` }}
+              className={`h-full rounded-full transition-all duration-500 ${
+                (user?.storageUsed || 0) >= (user?.storageLimit || 50 * 1024 * 1024)
+                  ? "bg-red-500"
+                  : (user?.storageUsed || 0) >= (user?.storageLimit || 50 * 1024 * 1024) * 0.85
+                  ? "bg-amber-500"
+                  : "bg-blue-500"
+              }`} 
+              style={{ width: `${user?.storageLimit ? Math.min(100, ((user.storageUsed || 0) / user.storageLimit) * 100) : 0}%` }}
             />
           </div>
+          {(user?.storageUsed || 0) >= (user?.storageLimit || 50 * 1024 * 1024) && (
+            <p className="text-[11px] text-red-500 font-medium mt-1">
+              Storage full (50 MB limit reached)
+            </p>
+          )}
         </div>
       </aside>
 

@@ -11,7 +11,7 @@ if (typeof window !== 'undefined') {
 }
 
 export function useDrive(folderId = null) {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const cacheKey = `${user?.id || 'guest'}_${folderId || 'root'}`;
   
   const activeCacheKeyRef = useRef(cacheKey);
@@ -300,6 +300,13 @@ export function useDrive(folderId = null) {
 
   const uploadFile = async (file, abortSignal = null, targetFolderId = folderId, targetFileId = null, onProgress = null, isEncrypted = false, extraMeta = {}) => {
     try {
+      // 0. Pre-check storage quota on client side (50 MB limit)
+      const currentUsed = Number(user?.storageUsed || 0);
+      const limit = Number(user?.storageLimit || 50 * 1024 * 1024);
+      if (currentUsed + Number(file.size || 0) > limit) {
+        throw new Error('Storage limit of 50 MB exceeded. Please delete existing files to upload more.');
+      }
+
       let uploadBlob = file;
       let encryptionIv = null;
 
@@ -437,8 +444,9 @@ export function useDrive(folderId = null) {
         throw new Error(err.message || 'Failed to complete upload');
       }
 
-      // 4. Refresh to show new file
+      // 4. Refresh to show new file and updated storage
       await fetchFolder(false);
+      if (refreshUser) await refreshUser();
       
     } catch (err) {
       if (err.name === 'AbortError') {
@@ -485,6 +493,7 @@ export function useDrive(folderId = null) {
           files: prev.children.files.filter(f => f.id !== id)
         }
       }));
+      if (refreshUser) refreshUser();
     } catch (err) { throw err; }
   };
 
@@ -548,6 +557,7 @@ export function useDrive(folderId = null) {
           }
         }));
       }
+      if (refreshUser) refreshUser();
       return newFile;
     } catch (err) { throw err; }
   };

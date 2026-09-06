@@ -57,11 +57,27 @@ export function AuthProvider({ children }) {
   }
 
   
+  const refreshUser = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+        credentials: "include"
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+        return data.user
+      }
+    } catch (error) {
+      console.error("Failed to refresh user session", error)
+    }
+  }
+
   const value = {
     user,
     loading,
     login,
-    logout
+    logout,
+    refreshUser
   }
 
   return (
