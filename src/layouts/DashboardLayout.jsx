@@ -13,7 +13,8 @@ import {
   FolderUp,
   FolderPlus,
   Fingerprint,
-  RefreshCw
+  RefreshCw,
+  LogOut
 } from "lucide-react"
 import { TrashBinIcon } from "../components/TrashBinIcon"
 import { FolderOpenIcon } from "../components/FolderOpenIcon"
@@ -333,34 +334,36 @@ export function DashboardLayout() {
                   <AvatarFallback>{user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end">
-                <div className="px-2 py-1.5 text-sm font-normal">
+              <DropdownMenuContent className="w-72 p-1.5" align="end">
+                <div className="px-3 py-2 text-sm font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
+                    <p className="text-sm font-semibold leading-none text-foreground truncate">{user?.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground truncate">
                       {user?.email}
                     </p>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
                 {user?.hasPasskey ? (
-                  <DropdownMenuItem onClick={handleRegisterPasskey} className="cursor-pointer flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <Fingerprint className="w-4 h-4 text-emerald-500" />
-                      <span>{t("nav.passkeyRegistered", "Passkey Registered")}</span>
-                    </span>
-                    <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <DropdownMenuItem onClick={handleRegisterPasskey} className="cursor-pointer flex items-center justify-between gap-3 py-2.5 px-3">
+                    <div className="flex items-center gap-2.5">
+                      <Fingerprint className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span className="text-sm font-medium whitespace-nowrap">{t("nav.passkeyRegistered", "Passkey Registered")}</span>
+                    </div>
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0 whitespace-nowrap">
                       ✓ Active
                     </span>
                   </DropdownMenuItem>
                 ) : (
-                  <DropdownMenuItem onClick={handleRegisterPasskey} className="cursor-pointer flex items-center gap-2">
-                    <Fingerprint className="w-4 h-4 text-muted-foreground" />
-                    <span>{t("nav.registerPasskey", "Register Passkey")}</span>
+                  <DropdownMenuItem onClick={handleRegisterPasskey} className="cursor-pointer flex items-center gap-2.5 py-2.5 px-3">
+                    <Fingerprint className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <span className="text-sm font-medium whitespace-nowrap">{t("nav.registerPasskey", "Register Passkey")}</span>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={logout} className="text-red-500 cursor-pointer">
-                  {t("nav.logout")}
+                <DropdownMenuSeparator className="my-1" />
+                <DropdownMenuItem onClick={logout} className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer flex items-center gap-2.5 py-2.5 px-3">
+                  <LogOut className="w-4 h-4 text-red-500 shrink-0" />
+                  <span className="font-medium text-sm whitespace-nowrap">{t("nav.logout")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
