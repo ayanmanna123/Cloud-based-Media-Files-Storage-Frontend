@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import { Shield, Lock, KeyRound, Server, EyeOff, FileCheck2, CheckCircle2, ArrowLeft, ShieldAlert, Cpu } from "lucide-react"
 import { Button } from "../components/ui/button"
+import SEO from "../components/SEO"
 
 export function Security() {
   const { t } = useTranslation()
@@ -48,8 +49,67 @@ export function Security() {
     "Zero Third-Party Advertising Data Sharing"
   ]
 
+  const securityStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Security",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/security"
+          }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does CloudBox protect files with AES-256 encryption?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "CloudBox performs client-side AES-256 GCM encryption directly inside the user's browser before files are uploaded to the cloud, ensuring nobody else can read your files without the key."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the CloudBox Secret Vault?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The Secret Vault is an extra security layer that hides sensitive photos, videos, and documents behind a dedicated 4-digit PIN code with brute-force protection."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are public share links secure?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, public share links can be secured with custom passwords, view/download access restrictions, and automatic expiration dates."
+            }
+          }
+        ]
+      }
+    ]
+  }
+
   return (
     <div className="bg-background relative min-h-screen pb-16 overflow-x-hidden">
+      <SEO
+        title="Security & Zero-Knowledge Architecture - CloudBox"
+        description="Discover how CloudBox protects your data with AES-256 encryption, TLS 1.3 protocols, WebAuthn passkeys, and zero-knowledge secret PIN vaults."
+        canonical="/security"
+        keywords="cloud storage security, AES-256 encryption, zero knowledge storage, secret vault PIN, WebAuthn passkey"
+        structuredData={securityStructuredData}
+      />
       {/* Background Decorators */}
       <div className="absolute top-0 right-0 -z-10 translate-x-1/3 -translate-y-1/4 pointer-events-none">
         <div className="w-[600px] h-[600px] rounded-full bg-blue-500/10 dark:bg-blue-900/15 blur-3xl" />

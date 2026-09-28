@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "../../components/ui/button"
 import { Card } from "../../components/ui/card"
 import GeometricGridBackground from "../../components/GeometricGridBackground"
+import SEO from "../../components/SEO"
 
 export function VerifyEmail() {
   const { t } = useTranslation()
@@ -44,6 +45,11 @@ export function VerifyEmail() {
 
   return (
     <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+      <SEO
+        title="Verify Email - CloudBox"
+        description="Verify your email address to activate your CloudBox account."
+        noindex={true}
+      />
       <div className="absolute inset-0 z-0">
         <GeometricGridBackground
           gridSpacing={40}

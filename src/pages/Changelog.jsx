@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import { Sparkles, Calendar, Tag, ArrowLeft, Rocket, ShieldCheck, Zap, Layers, Lock, Globe } from "lucide-react"
 import { Button } from "../components/ui/button"
+import SEO from "../components/SEO"
 
 export function Changelog() {
   const { t } = useTranslation()
@@ -75,8 +76,44 @@ export function Changelog() {
     }
   }
 
+  const changelogStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Changelog",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/changelog"
+          }
+        ]
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "CloudBox Changelog & Release Notes",
+        "url": "https://cloud-based-media-files-storage-fro.vercel.app/changelog",
+        "description": "Latest updates, releases, and security patches for CloudBox platform."
+      }
+    ]
+  }
+
   return (
     <div className="bg-background relative min-h-screen pb-16 overflow-x-hidden">
+      <SEO
+        title="Changelog & Release Notes - CloudBox"
+        description="See what's new, improved, and fixed in CloudBox. Discover the latest releases, secret vault updates, and encryption features."
+        canonical="/changelog"
+        keywords="cloudbox changelog, cloud storage release notes, version history, product updates"
+        structuredData={changelogStructuredData}
+      />
       {/* Background Decorators */}
       <div className="absolute top-0 right-0 -z-10 translate-x-1/3 -translate-y-1/4 pointer-events-none">
         <div className="w-[600px] h-[600px] rounded-full bg-blue-500/10 dark:bg-blue-900/15 blur-3xl" />

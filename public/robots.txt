@@ -1,2 +1,30 @@
+# Robots.txt for CloudBox
+# https://cloud-based-media-files-storage-fro.vercel.app
+
 User-agent: *
 Allow: /
+Allow: /features
+Allow: /about
+Allow: /security
+Allow: /terms
+Allow: /terms-and-conditions
+Allow: /changelog
+Allow: /login
+Allow: /signup
+
+# Disallow Private and Authenticated Application Endpoints
+Disallow: /dashboard/
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /verify
+Disallow: /verify/
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /share/
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Sitemaps
+Sitemap: https://cloud-based-media-files-storage-fro.vercel.app/sitemap.xml
+

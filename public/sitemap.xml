@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Home Page -->
+  <url>
+    <loc>https://cloud-based-media-files-storage-fro.vercel.app/</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Features Page -->
+  <url>
+    <loc>https://cloud-based-media-files-storage-fro.vercel.app/features</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Security Page -->
+  <url>
+    <loc>https://cloud-based-media-files-storage-fro.vercel.app/security</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- About Us Page -->
+  <url>
+    <loc>https://cloud-based-media-files-storage-fro.vercel.app/about</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Changelog Page -->
+  <url>
+    <loc>https://cloud-based-media-files-storage-fro.vercel.app/changelog</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Terms & Privacy Page -->
+  <url>
+    <loc>https://cloud-based-media-files-storage-fro.vercel.app/terms</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Sign Up Page -->
+  <url>
+    <loc>https://cloud-based-media-files-storage-fro.vercel.app/signup</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Sign In Page -->
+  <url>
+    <loc>https://cloud-based-media-files-storage-fro.vercel.app/login</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+</urlset>

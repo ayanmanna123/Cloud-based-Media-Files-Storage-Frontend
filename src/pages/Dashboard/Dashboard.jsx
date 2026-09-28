@@ -67,6 +67,7 @@ import { EditFileModal } from "./components/EditFileModal"
 import { LightboxModal } from "./components/LightboxModal"
 import { DashboardSkeleton } from "./components/DashboardSkeleton"
 import { DeviceSyncHub } from "./components/DeviceSyncHub"
+import SEO from "../../components/SEO"
 
 export function Dashboard() {
   const { t } = useTranslation()
@@ -1187,6 +1188,25 @@ export function Dashboard() {
       onMouseUp={handleMarqueeMouseUp}
       onClick={handleBackgroundClick}
     >
+      <SEO
+        title={
+          currentView === "recent"
+            ? "Recent Files - CloudBox"
+            : currentView === "starred"
+            ? "Starred - CloudBox"
+            : currentView === "trash"
+            ? "Trash - CloudBox"
+            : currentView === "secret"
+            ? "Secret Vault - CloudBox"
+            : currentView === "shared"
+            ? "Shared with me - CloudBox"
+            : folder?.name
+            ? `${folder.name} - CloudBox`
+            : "Dashboard - CloudBox"
+        }
+        noindex={true}
+        nofollow={true}
+      />
       {/* Marquee Drag Selection Box */}
       {selectionBox && (
         <div 

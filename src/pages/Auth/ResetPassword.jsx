@@ -8,6 +8,7 @@ import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import GeometricGridBackground from "../../components/GeometricGridBackground"
 import { TurnstileWidget } from "../../components/Auth/TurnstileWidget"
+import SEO from "../../components/SEO"
 
 export function ResetPassword() {
   const { t } = useTranslation()
@@ -94,6 +95,11 @@ export function ResetPassword() {
 
   return (
     <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+      <SEO
+        title="Reset Password - CloudBox"
+        description="Set a new secure password for your CloudBox account."
+        noindex={true}
+      />
       <div className="absolute inset-0 z-0">
         <GeometricGridBackground
           gridSpacing={40}

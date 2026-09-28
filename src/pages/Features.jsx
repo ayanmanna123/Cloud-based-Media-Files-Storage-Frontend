@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next"
+import SEO from "../components/SEO"
 import { 
   ShieldCheck, 
   FolderTree, 
@@ -137,8 +138,44 @@ export function Features() {
     }
   ]
 
+  const featuresStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Features",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/features"
+          }
+        ]
+      },
+      {
+        "@type": "ItemPage",
+        "name": "CloudBox Features & Storage Capabilities",
+        "url": "https://cloud-based-media-files-storage-fro.vercel.app/features",
+        "description": "Explore CloudBox secure cloud features: client-side AES-256 encryption, secret vault PIN protection, expirable share links, and passkey authentication."
+      }
+    ]
+  }
+
   return (
     <div className="bg-background relative overflow-hidden">
+      <SEO
+        title="Features - CloudBox | Encrypted Storage & Secret Vault"
+        description="Explore CloudBox features: client-side AES-256 encryption, secret PIN vault, password-protected share links, instant multi-file search, and passkey biometric login."
+        canonical="/features"
+        keywords="cloud storage features, encrypted files, secret vault PIN, share links password, passkey webauthn, file versions"
+        structuredData={featuresStructuredData}
+      />
       {/* Background Gradients */}
       <div className="absolute top-0 right-0 -z-10 translate-x-1/3 -translate-y-1/4">
         <div className="w-[800px] h-[800px] rounded-full bg-blue-500/10 dark:bg-blue-900/20 blur-3xl" />

@@ -9,6 +9,7 @@ import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import { useAuth } from "../../context/AuthContext"
+import SEO from "../../components/SEO"
 import GeometricGridBackground from "../../components/GeometricGridBackground"
 import { LoginHelpModal } from "../../components/LoginHelpModal"
 import { TurnstileWidget } from "../../components/Auth/TurnstileWidget"
@@ -137,6 +138,11 @@ export function Login() {
 
   return (
     <div className="relative flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-background overflow-hidden">
+      <SEO
+        title="Sign In - CloudBox | Secure Cloud Storage"
+        description="Sign in to your CloudBox account to securely access, manage, and share your encrypted media, files, and secret vaults."
+        canonical="/login"
+      />
       <div className="absolute inset-0 z-0">
         <GeometricGridBackground
           gridSpacing={40}

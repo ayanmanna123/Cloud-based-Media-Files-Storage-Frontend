@@ -3,15 +3,114 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.json" />
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="CloudBox is a secure, fast, and reliable cloud storage platform for all your media and files. Store, share, and access your data anywhere." />
-    <meta name="theme-color" content="#3b82f6" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
+    <!-- Primary Meta Tags -->
+    <title>CloudBox - Secure Cloud Storage & Private Media Vault</title>
+    <meta name="title" content="CloudBox - Secure Cloud Storage & Private Media Vault" />
+    <meta name="description" content="CloudBox is a high-performance, secure cloud storage platform. Store, share, and protect your media and documents with client-side AES-256 encryption, secret vault PIN locking, and instant link sharing." />
+    <meta name="keywords" content="cloud storage, secure file storage, media vault, client-side encryption, AES-256 GCM, secret vault, password protected sharing, zero knowledge cloud, cloud drive, photo backup" />
+    <meta name="author" content="CloudBox Inc." />
+    <meta name="publisher" content="CloudBox" />
+    <meta name="application-name" content="CloudBox" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="rating" content="General" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="canonical" href="https://cloud-based-media-files-storage-fro.vercel.app/" />
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CloudBox" />
+    <meta property="og:url" content="https://cloud-based-media-files-storage-fro.vercel.app/" />
+    <meta property="og:title" content="CloudBox - Secure Cloud Storage & Private Media Vault" />
+    <meta property="og:description" content="Secure, fast, and end-to-end encrypted cloud storage for your photos, videos, and documents. Access anywhere with client-side encryption and secret PIN vault protection." />
+    <meta property="og:image" content="https://cloud-based-media-files-storage-fro.vercel.app/og-image.png" />
+    <meta property="og:image:alt" content="CloudBox Cloud Storage Platform" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@CloudBox" />
+    <meta name="twitter:creator" content="@CloudBox" />
+    <meta name="twitter:url" content="https://cloud-based-media-files-storage-fro.vercel.app/" />
+    <meta name="twitter:title" content="CloudBox - Secure Cloud Storage & Private Media Vault" />
+    <meta name="twitter:description" content="Store, share, and protect your files with client-side AES-256 encryption, secret PIN vault, and lightning-fast global access." />
+    <meta name="twitter:image" content="https://cloud-based-media-files-storage-fro.vercel.app/og-image.png" />
+    <meta name="twitter:image:alt" content="CloudBox Cloud Storage Preview" />
+
+    <!-- Mobile & PWA Optimizations -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#090d16" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="CloudBox" />
-    <meta name="robots" content="index, follow" />
-    <title>CloudBox - Secure Cloud Storage</title>
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Resource Preconnects for Performance -->
+    <link rel="dns-prefetch" href="https://ik.imagekit.io" />
+
+    <!-- Structured Data (JSON-LD) - Organization & WebApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://cloud-based-media-files-storage-fro.vercel.app/#organization",
+          "name": "CloudBox",
+          "url": "https://cloud-based-media-files-storage-fro.vercel.app",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://cloud-based-media-files-storage-fro.vercel.app/favicon.svg",
+            "caption": "CloudBox Logo"
+          },
+          "description": "Secure, fast, and encrypted cloud storage platform with zero-knowledge secret vault protection."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://cloud-based-media-files-storage-fro.vercel.app/#website",
+          "url": "https://cloud-based-media-files-storage-fro.vercel.app",
+          "name": "CloudBox",
+          "description": "Secure Cloud Storage & Private Media Vault",
+          "publisher": {
+            "@id": "https://cloud-based-media-files-storage-fro.vercel.app/#organization"
+          },
+          "inLanguage": "en-US"
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://cloud-based-media-files-storage-fro.vercel.app/#webapp",
+          "name": "CloudBox",
+          "url": "https://cloud-based-media-files-storage-fro.vercel.app",
+          "applicationCategory": "ProductivityApplication, StorageApplication, SecurityApplication",
+          "operatingSystem": "Web, Windows, macOS, Linux, iOS, Android",
+          "browserRequirements": "Requires JavaScript. Requires HTML5.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock"
+          },
+          "featureList": [
+            "Client-Side AES-256 Encryption",
+            "Secret Vault with 4-Digit PIN Security",
+            "Password-Protected Expirable Share Links",
+            "Multi-Cloud Redundant Storage",
+            "WebAuthn Passkey Biometric Login",
+            "Real-Time Multi-Device Sync",
+            "Version History & 30-Day Trash Recovery"
+          ]
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

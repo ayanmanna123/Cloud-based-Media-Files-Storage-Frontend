@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { Shield, Target, Users, Zap, Globe, Award } from "lucide-react"
+import SEO from "../components/SEO"
 
 export function AboutUs() {
   const { t } = useTranslation()
@@ -29,8 +30,44 @@ export function AboutUs() {
     { label: t("aboutPage.statsUptime"), value: "99.99%" }
   ]
 
+  const aboutStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "About Us",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/about"
+          }
+        ]
+      },
+      {
+        "@type": "AboutPage",
+        "name": "About CloudBox - Mission & Vision",
+        "url": "https://cloud-based-media-files-storage-fro.vercel.app/about",
+        "description": "Learn about CloudBox's mission to build the world's most secure, private, and accessible cloud media storage platform."
+      }
+    ]
+  }
+
   return (
     <div className="bg-background relative overflow-x-hidden">
+      <SEO
+        title="About Us - CloudBox | Secure Cloud Mission & Vision"
+        description="Learn about CloudBox, our zero-knowledge mission, our security infrastructure, and our commitment to privacy-first cloud storage."
+        canonical="/about"
+        keywords="about cloudbox, cloud storage company, zero knowledge team, secure storage mission"
+        structuredData={aboutStructuredData}
+      />
       {/* Background Decorators */}
       <div className="absolute top-0 right-0 -z-10 translate-x-1/2 -translate-y-1/4">
         <div className="w-[800px] h-[800px] rounded-full bg-blue-500/5 dark:bg-blue-900/10 blur-3xl" />

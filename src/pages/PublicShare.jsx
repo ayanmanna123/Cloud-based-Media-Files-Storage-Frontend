@@ -7,6 +7,7 @@ import { Dialog, DialogContent } from "../components/ui/dialog"
 import JSZip from "jszip"
 import { deriveEncryptionKey, decryptFileWithFallbackKeys } from "../lib/cryptoUtils"
 import { useAuth } from "../context/AuthContext"
+import SEO from "../components/SEO"
 
 export function PublicShare({ isBundle = false }) {
   const { t } = useTranslation()
@@ -220,6 +221,12 @@ export function PublicShare({ isBundle = false }) {
 
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col items-center justify-center p-4 sm:p-8 relative">
+      <SEO
+        title={isBundle ? "Shared Bundle - CloudBox" : (resource?.name ? `${resource.name} - Shared on CloudBox` : "Shared Content - CloudBox")}
+        description="View or download shared files securely on CloudBox."
+        noindex={true}
+        nofollow={true}
+      />
       {/* Guest Prompt Modal */}
       {showGuestModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">

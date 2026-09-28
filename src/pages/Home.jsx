@@ -2,6 +2,7 @@ import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { useAuth } from "../context/AuthContext"
 import { Button } from "../components/ui/button"
+import SEO from "../components/SEO"
 import GradientWaves from "../components/GradientWaves"
 import GradientText from "../components/GradientText"
 import TextType from "../components/TextType"
@@ -20,8 +21,36 @@ export function Home() {
   const { t } = useTranslation()
   const { user } = useAuth()
 
+  const homeStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CloudBox",
+    "url": "https://cloud-based-media-files-storage-fro.vercel.app/",
+    "applicationCategory": "ProductivityApplication, StorageApplication",
+    "description": "Secure, fast, and encrypted cloud storage for your photos, videos, and documents.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "Client-Side AES-256 GCM File Encryption",
+      "Secret Vault Protected by PIN Code",
+      "Granular Public Share Links with Expiration",
+      "WebAuthn Passkey Biometric Login",
+      "Multi-Language Localization",
+      "Smart Trash 30-Day Recovery"
+    ]
+  }
+
   return (
     <div className="flex flex-col">
+      <SEO
+        title="CloudBox - Secure Cloud Storage & Private Media Vault"
+        description="CloudBox is a high-performance, secure cloud storage platform. Store, share, and protect your media and documents with client-side AES-256 encryption, secret vault PIN locking, and instant link sharing."
+        canonical="/"
+        structuredData={homeStructuredData}
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden min-h-[75vh] sm:min-h-[85vh] flex items-center justify-center pt-6 sm:pt-12 md:pt-20 pb-12 sm:pb-16 md:pb-20 border-b border-border">
         {/* Background Gradient Waves */}

@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import { ShieldCheck, FileText, Lock, Share2, AlertTriangle, Mail, CheckCircle2, ArrowLeft, BookOpen } from "lucide-react"
 import { Button } from "../components/ui/button"
+import SEO from "../components/SEO"
 
 export function Terms() {
   const { t } = useTranslation()
@@ -73,8 +74,44 @@ export function Terms() {
     }
   ]
 
+  const termsStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Terms & Privacy",
+            "item": "https://cloud-based-media-files-storage-fro.vercel.app/terms"
+          }
+        ]
+      },
+      {
+        "@type": "DigitalDocument",
+        "name": "CloudBox Terms of Service & Privacy Conditions",
+        "url": "https://cloud-based-media-files-storage-fro.vercel.app/terms",
+        "description": "CloudBox Terms and Conditions, acceptable use policy, and data retention guidelines."
+      }
+    ]
+  }
+
   return (
     <div className="bg-background relative min-h-screen pb-16 overflow-x-hidden">
+      <SEO
+        title="Terms of Service & Privacy Conditions - CloudBox"
+        description="Review CloudBox's Terms of Service, Acceptable Use Policy, Media Storage security standards, and user privacy guidelines."
+        canonical="/terms"
+        keywords="cloudbox terms, terms of service, privacy conditions, acceptable use policy"
+        structuredData={termsStructuredData}
+      />
       {/* Background Glow Decorators */}
       <div className="absolute top-0 right-0 -z-10 translate-x-1/3 -translate-y-1/4 pointer-events-none">
         <div className="w-[600px] h-[600px] rounded-full bg-blue-500/10 dark:bg-blue-900/15 blur-3xl" />

@@ -5,6 +5,7 @@ import FuzzyText from '../components/FuzzyText';
 import GeometricGridBackground from '../components/GeometricGridBackground';
 import { Button } from '../components/ui/button';
 import { Home, LayoutDashboard, ArrowLeft, CloudOff } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export function NotFound() {
   const { t } = useTranslation();
@@ -12,6 +13,12 @@ export function NotFound() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] w-full bg-background overflow-hidden px-4">
+      <SEO
+        title="404 Page Not Found - CloudBox"
+        description="The page you are looking for does not exist or has been moved."
+        noindex={true}
+        nofollow={true}
+      />
       {/* Background Interactive Canvas */}
       <div className="absolute inset-0 z-0">
         <GeometricGridBackground
