@@ -18,6 +18,8 @@ import { AboutUs } from "./pages/AboutUs"
 import { Terms } from "./pages/Terms"
 import { Security } from "./pages/Security"
 import { Changelog } from "./pages/Changelog"
+import { Careers } from "./pages/Careers"
+import { Blog } from "./pages/Blog"
 import { NotFound } from "./pages/NotFound"
 import { Footer } from "./layouts/Footer"
 import { ScrollToTopButton } from "./components/ScrollToTopButton"
@@ -56,6 +58,8 @@ function App() {
             <Route path="/terms-and-conditions" element={<Terms />} />
             <Route path="/security" element={<Security />} />
             <Route path="/changelog" element={<Changelog />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/blog" element={<Blog />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Register />} />
             <Route path="/verify" element={<VerifyEmail />} />
